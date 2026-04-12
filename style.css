@@ -255,9 +255,6 @@ body.light-mode .leaflet-popup-tip { background: rgba(255,255,255,0.95); }
     width: 90%;
     max-width: 700px;
     max-height: 90vh;
-    background: #ffffff;
-    backdrop-filter: none;
-    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -302,11 +299,13 @@ body.light-mode .leaflet-popup-tip { background: rgba(255,255,255,0.95); }
 .history-item .content p { font-size: 0.8rem; color: #94a3b8; }
 
 body.light-mode #history-modal .glass-panel {
-    background: white;
-    border-color: #e2e8f0;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border-color: #cbd5e1;
 }
 body.light-mode .history-item {
-    background: #f8fafc;
+    background: #ffffff !important;
+    border: 1px solid #f1f5f9;
 }
 body.light-mode .history-item .date-box .day { color: #0f172a; }
 body.light-mode .history-item .date-box .month { color: #475569; }
