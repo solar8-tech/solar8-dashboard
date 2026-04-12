@@ -232,14 +232,32 @@ body.light-mode .leaflet-popup-tip { background: rgba(255,255,255,0.95); }
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+#history-modal[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+#analysis-modal {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+#analysis-modal[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
 }
 #history-modal .glass-panel {
     width: 90%;
     max-width: 700px;
     max-height: 90vh;
-    background: rgba(20,20,23,0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: #ffffff;
+    backdrop-filter: none;
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 1.5rem;
     display: flex;
     flex-direction: column;

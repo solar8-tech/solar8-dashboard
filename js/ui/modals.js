@@ -12,23 +12,14 @@ const _COLOR_MAP = {
 window.toggleHistoryModal = async function toggleHistoryModal(show) {
     const modal = document.getElementById("history-modal");
     if (!modal) return;
-    const panel = modal.querySelector(".glass-panel");
 
     if (show) {
         // Geçmiş henüz yüklenmediyse APIden çek
-        if (!window.App.data.history) {
-            await window.fetchHistory?.();
-        }
+        if (!window.App.data.history) await window.fetchHistory?.();
         window.renderHistoryList();
-        modal.classList.remove("hidden");
-        requestAnimationFrame(() => {
-            modal.classList.remove("opacity-0");
-            panel?.classList.replace("scale-95", "scale-100");
-        });
+        modal.dataset.open = "true";
     } else {
-        modal.classList.add("opacity-0");
-        panel?.classList.replace("scale-100", "scale-95");
-        setTimeout(() => modal.classList.add("hidden"), 300);
+        modal.dataset.open = "false";
     }
 };
 
@@ -93,17 +84,5 @@ window.renderHistoryList = function renderHistoryList() {
 window.toggleAnalysisModal = function toggleAnalysisModal(show) {
     const modal = document.getElementById("analysis-modal");
     if (!modal) return;
-    const panel = modal.querySelector(".glass-panel");
-
-    if (show) {
-        modal.classList.remove("hidden");
-        requestAnimationFrame(() => {
-            modal.classList.remove("opacity-0");
-            panel?.classList.replace("scale-95", "scale-100");
-        });
-    } else {
-        modal.classList.add("opacity-0");
-        panel?.classList.replace("scale-100", "scale-95");
-        setTimeout(() => modal.classList.add("hidden"), 300);
-    }
+    modal.dataset.open = show ? "true" : "false";
 };

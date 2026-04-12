@@ -55,9 +55,9 @@
     </div>
 
     <!--ANALİZ MODAL-->
-    <div id="analysis-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm transition-opacity opacity-0 p-0 md:p-4">
-        <div class="glass-panel w-full h-full md:h-auto md:max-w-4xl md:rounded-3xl relative transform scale-95 transition-transform flex flex-col md:flex-row overflow-hidden bg-[#0a0a0a]">
-
+    <div id="analysis-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4" data-open="false">
+        <div class="glass-panel w-full h-full md:h-auto md:max-w-4xl md:rounded-3xl relative flex flex-col md:flex-row overflow-hidden bg-[#0a0a0a]">
+            
             <button onclick="toggleAnalysisModal(false)" class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-md md:hidden">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
@@ -131,8 +131,8 @@
     </div>
 
     <!--GEÇMİŞ MODAL-->
-    <div id="history-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.3s ease;">
-        <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 relative transform scale-95 transition-transform" style="transition: transform 0.3s ease;">
+    <div id="history-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm" data-open="false">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 relative">
             <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                 <div>
                     <h3 class="text-xl font-bold text-white flex items-center gap-2">
