@@ -364,3 +364,16 @@ body.light-mode .predict-item.border-purple-500 { border-left-color: #a855f7 !im
 body.light-mode .predict-item .text-purple-400 { color: #9333ea !important; }
 body.light-mode .predict-item.border-blue-500 { border-left-color: #3b82f6 !important; }
 body.light-mode .predict-item .text-blue-400 { color: #2563eb !important; }
+
+@media (max-width: 767px) {
+    #dashboard-container main {
+        /* Menü boyu kadar alanı ekran yüksekliğinden çıkar */
+        height: calc(100vh - 94px) !important;
+    }
+    .last-box {
+    margin-bottom: 0.8rem;
+    }
+}
+
+
+
