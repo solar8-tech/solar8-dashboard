@@ -127,26 +127,24 @@ window.generateFaultList = function generateFaultList(list) {
         const time     = window.localise(item.time);
 
         const div = document.createElement("div");
-        // Kenarlığı ve gölgeyi burada da netleştirdik
-        div.className = `fault-item mb-3 p-3 rounded-xl bg-white border border-[var(--surface-glass-bdr)] shadow-[var(--surface-glass-shd)] cursor-pointer transition-all group hover:translate-y-[-2px]`;
+        div.className = `fault-item mb-3 p-4 rounded-xl border border-[var(--surface-glass-bdr)] shadow-[var(--surface-glass-shd)] cursor-pointer transition-all group hover:translate-y-[-2px] backdrop-blur-md`;
 
         const row = document.createElement("div");
-        row.className = "flex justify-between flex-wrap gap-1";
+        row.className = "flex justify-between items-center mb-2";
 
         const titleSpan = document.createElement("span");
-        titleSpan.className = "text-xs font-semibold text-[color:var(--txt-strong)] group-hover:underline";
+        titleSpan.className = "text-xs font-bold text-[color:var(--txt-strong)] group-hover:text-blue-500 transition-colors";
         titleSpan.textContent = title;
 
         const tagSpan = document.createElement("span");
-        tagSpan.className = `text-[10px] ${c.text} ${c.tagBg} px-1.5 py-0.5 rounded font-bold border border-current border-opacity-10`;
+        tagSpan.className = `text-[9px] ${c.text} ${c.tagBg} px-2 py-0.5 rounded-full font-bold border border-current border-opacity-10`;
         tagSpan.textContent = tag;
 
         row.appendChild(titleSpan);
         row.appendChild(tagSpan);
 
         const descEl = document.createElement("p");
-        // font-medium okunaklılığı artırır
-        descEl.className = "text-[10px] text-[color:var(--txt-muted)] mt-1 break-words font-medium";
+        descEl.className = "text-[10px] text-[color:var(--txt-muted)] leading-relaxed font-medium";
         descEl.textContent = desc;
 
         div.appendChild(row);
@@ -154,7 +152,7 @@ window.generateFaultList = function generateFaultList(list) {
 
         if (time) {
             const timeEl = document.createElement("p");
-            timeEl.className = "text-[9px] text-[color:var(--txt-faint)] mt-1 font-medium";
+            timeEl.className = "text-[9px] text-[color:var(--txt-faint)] mt-2 flex items-center gap-1.5 font-medium";
             timeEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${time}`;
             div.appendChild(timeEl);
         }
