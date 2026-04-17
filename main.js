@@ -1,5 +1,7 @@
+// main.js
+
 document.addEventListener("DOMContentLoaded", () => {
- 
+
     localStorage.removeItem("activeTab");
 
     const login = document.getElementById("view-login");
@@ -12,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dash?.classList.add("view-hidden");
 
     if (localStorage.getItem("theme") === "light") {
-        document.body.classList.add("light-mode");
+        document.documentElement.dataset.theme = "light";
         window.updateThemeUI?.(true);
     }
 
@@ -21,15 +23,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     _initParticleCanvas();
 
-    document.getElementById("refresh-hourly")?.addEventListener("click", async (e) => {
-        const btn = e.currentTarget;
-        btn.classList.add("animate-spin");
-        try {
-            await window.fetchDashboardFromAWS?.();
-        } finally {
-            setTimeout(() => btn.classList.remove("animate-spin"), 600);
-        }
-    });
+    const refreshBtn = document.getElementById("refresh-hourly");
+    if (refreshBtn) {
+        const onRefresh = async (e) => {
+            const btn = e.currentTarget;
+            btn.classList.add("animate-spin");
+            try {
+                await window.fetchDashboardFromAWS?.();
+            } finally {
+                setTimeout(() => btn.classList.remove("animate-spin"), 600);
+            }
+        };
+        refreshBtn.addEventListener("click", onRefresh);
+    }
 
     _startClock();
 
@@ -43,12 +49,16 @@ function _initParticleCanvas() {
     const ctx = canvas.getContext("2d");
     let w, h, particles = [];
 
+    const resizeController = new AbortController();
+
     const resize = () => {
         w = canvas.width  = window.innerWidth;
         h = canvas.height = window.innerHeight;
     };
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { signal: resizeController.signal });
     resize();
+
+    canvas._destroyParticles = () => resizeController.abort();
 
     class Particle {
         constructor() { this.reset(); }
@@ -76,7 +86,9 @@ function _initParticleCanvas() {
 
     for (let i = 0; i < 60; i++) particles.push(new Particle());
 
+    let animId;
     (function animate() {
+        if (resizeController.signal.aborted) { cancelAnimationFrame(animId); return; }
         ctx.clearRect(0, 0, w, h);
         particles.forEach((p, i) => {
             p.update();
@@ -95,14 +107,16 @@ function _initParticleCanvas() {
                 }
             }
         });
-        requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate);
     })();
 }
 
 function _startClock() {
     const update = () => {
         const el = document.getElementById("clock");
-        if (el) el.innerText = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+        if (!el) return;
+        const locale = window.App?.lang === "en" ? "en-GB" : "tr-TR";
+        el.innerText = new Date().toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
     };
     setInterval(update, 1000);
     update();
