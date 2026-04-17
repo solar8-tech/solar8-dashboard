@@ -89,8 +89,7 @@
                         color             0.4s ease,
                         border-color      0.4s ease,
                         box-shadow        0.4s ease;
-    
-  /*m Mobil yükseklik sorunu çözümü*/
+    /*m Mobil yükseklik sorunu çözümü*/
     @media (max-width: 767px) {
     #dashboard-container main {
         height: calc(100vh - 94px) !important;
@@ -335,11 +334,13 @@ aside {
 .predict-item:hover i { filter: drop-shadow(0 0 6px currentColor); }
 
 .fault-item {
-    background-color: var(--fault-bg);
-    border-color    : var(--fault-bdr);
+    background-color: var(--surface-glass);
+    border-color: var(--surface-glass-bdr);
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
+
 .fault-item:hover {
-    box-shadow: 0 0 0 1px rgba(239,68,68,0.4), 0 0 30px rgba(239,68,68,0.4);
+    background-color: var(--surface-soft);
 }
 
 /*HARİTA*/
