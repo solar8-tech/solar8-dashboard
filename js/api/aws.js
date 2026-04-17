@@ -1,29 +1,13 @@
-/* api/aws.js
- GET /live     > anlık dashboard + twin verisi
- GET /plants   > tesis listesi
- GET /reports  > rapor verileri
- GET /history  > arıza olay geçmişi */
-
-
-/*const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
-
-const ENDPOINTS = {
-    live    : `${API_BASE}/live`,             //BURAYA DOKUNMAYALIM, AWS BAĞLANDIKTAN SONRA AŞAĞIDAKİ YAPI SİLİNİP YERİNE BU GELECEK.
-    plants  : `${API_BASE}/plants`,
-    reports : `${API_BASE}/reports`,
-    history : `${API_BASE}/history`
-};*/
+// ui/aws.js
 
 const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
 
 const ENDPOINTS = {
     live    : "https://gist.githubusercontent.com/talhakocak/105539e0cfa7f8a11e9dd5ff90b1c7c1/raw/solar8-mock-data.json",
     plants  : 'data:application/json;charset=utf-8,{"plants":[{"name":{"tr":"Okan Üniversitesi Sahası","en":"Okan University Site"},"lat":40.9538,"lon":29.3923,"capacity":1.2,"inverters":12}]}',
-
     reports : `${API_BASE}/reports`,
     history : `${API_BASE}/history`
 };
-
 
 async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
@@ -32,21 +16,16 @@ async function _apiFetch(url, options = {}) {
     try {
         const res = await fetch(url, {
             method : "GET",
-            //headers: { "Content-Type": "application/json" }, //AWSYE BAĞLARKEN BUNU YORUM SATIRINDAN ÇIKAR !!!!!!!!!!!!!!!!!!!!!
             signal : controller.signal,
             ...options
         });
-        clearTimeout(timeout);
-
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         return await res.json();
-    } catch (err) {
+    } finally {
         clearTimeout(timeout);
-        throw err;
     }
 }
 
-//live — Anlık dashboard + twin verisi
 window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
     if (window.App.isRefreshing) return;
     window.App.isRefreshing = true;
@@ -77,7 +56,6 @@ window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
     }
 };
 
-//plants - Tesis listesi
 window.fetchPlants = async function fetchPlants() {
     try {
         const json = await _apiFetch(ENDPOINTS.plants);
@@ -90,7 +68,6 @@ window.fetchPlants = async function fetchPlants() {
     }
 };
 
-//reports — Rapor verileri
 window.fetchReports = async function fetchReports() {
     try {
         const json = await _apiFetch(ENDPOINTS.reports);
@@ -102,7 +79,6 @@ window.fetchReports = async function fetchReports() {
     }
 };
 
-//history — Arıza olay geçmişi
 window.fetchHistory = async function fetchHistory() {
     try {
         const json = await _apiFetch(ENDPOINTS.history);
@@ -119,6 +95,11 @@ function _mapLiveData(api) {
         return;
     }
 
+    const _coord = (v) => {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+    };
+
     window.App.data.context = {
         user : {
             name  : api.user?.name   ?? api.userName   ?? null,
@@ -127,8 +108,8 @@ function _mapLiveData(api) {
         plant: {
             name: api.plant?.name ?? api.plantName ?? null,
             city: api.plant?.city ?? api.city      ?? null,
-            lat : api.plant?.lat  ?? api.lat        ?? null,
-            lon : api.plant?.lon  ?? api.lon        ?? null
+            lat : _coord(api.plant?.lat ?? api.lat),
+            lon : _coord(api.plant?.lon ?? api.lon)
         }
     };
 
@@ -137,11 +118,11 @@ function _mapLiveData(api) {
         dailyProduction : api.dailyProduction ?? null,
         revenue         : api.revenue         ?? null,
 
-        hourlyLabels    : api.hourlyLabels ?? [],
-        hourlyData      : api.hourlyData   ?? [],
+        hourlyLabels    : Array.isArray(api.hourlyLabels) ? api.hourlyLabels : [],
+        hourlyData      : Array.isArray(api.hourlyData)   ? api.hourlyData   : [],
 
         riskTitle       : api.riskTitle ?? null,
-        riskLevel       : api.riskLevel ?? 0,
+        riskLevel       : typeof api.riskLevel === "number" ? api.riskLevel : 0,
         riskDesc        : api.riskDesc  ?? null,
         alertMsg        : api.alertMsg  ?? null,
 
@@ -165,7 +146,7 @@ function _mapLiveData(api) {
 
     if (!window.App.weatherStarted) {
         const { lat, lon } = window.App.data.context.plant;
-        if (lat && lon) {
+        if (lat !== null && lon !== null) {
             if (typeof window.startWeatherRefresh === "function") window.startWeatherRefresh();
             window.App.weatherStarted = true;
         }
