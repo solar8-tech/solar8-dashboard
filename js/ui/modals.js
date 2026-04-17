@@ -63,18 +63,18 @@ window.renderHistoryList = function renderHistoryList() {
         const [day, month = ""] = String(dateRaw).split(" ");
 
         return `
-            <div class="flex gap-4 p-4 mb-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group">
-                <div class="flex flex-col items-center justify-center min-w-[60px] border-r border-white/10 pr-4">
-                    <span class="text-xs font-bold text-white">${day}</span>
-                    <span class="text-[10px] text-slate-400 uppercase">${month}</span>
-                    <span class="text-[9px] text-slate-500 mt-1">${item.time ?? ""}</span>
+            <div class="flex gap-4 p-4 mb-3 rounded-xl bg-[var(--surface-soft)] border border-[var(--surface-soft-bdr)] hover:bg-[var(--surface-glass)] transition group shadow-sm">
+                <div class="flex flex-col items-center justify-center min-w-[60px] border-r border-[var(--surface-soft-bdr)] pr-4">
+                    <span class="text-xs font-bold text-[color:var(--txt-strong)]">${day}</span>
+                    <span class="text-[10px] text-[color:var(--txt-muted)] uppercase">${month}</span>
+                    <span class="text-[9px] text-[color:var(--txt-faint)] mt-1">${item.time ?? ""}</span>
                 </div>
                 <div class="flex-1">
                     <div class="flex justify-between items-start mb-1">
-                        <h4 class="text-sm font-bold text-white group-hover:text-blue-400 transition">${type}</h4>
+                        <h4 class="text-sm font-bold text-[color:var(--txt-strong)] group-hover:text-blue-400 transition">${type}</h4>
                         <span class="text-[9px] px-2 py-0.5 rounded ${c.bg} ${c.text} border ${c.border} border-opacity-30">${category}</span>
                     </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">${desc}</p>
+                    <p class="text-xs text-[color:var(--txt-muted)] leading-relaxed">${desc}</p>
                 </div>
             </div>`;
     }).join("");

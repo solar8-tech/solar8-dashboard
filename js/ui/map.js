@@ -6,7 +6,7 @@ const _TILE_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.
 const _MARKER_CLASSES = ["pulse-marker", "pulse-marker blue", "pulse-marker purple", "pulse-marker green"];
 
 window.initMap = function initMap() {
-    const isLight = document.body.classList.contains("light-mode");
+    const isLight = document.documentElement.getAttribute("data-theme") === "light" || document.body.classList.contains("light-mode");
     const tileUrl = isLight ? _TILE_LIGHT : _TILE_DARK;
 
     if (!window.App.map.instance) {
@@ -41,16 +41,20 @@ window.initMap = function initMap() {
         const name = window.localise(plant.name) ?? plant.name ?? "--";
         const cls  = _MARKER_CLASSES[i % _MARKER_CLASSES.length];
 
+        const colors = ["var(--clr-energy)", "var(--clr-env)", "var(--clr-predict)", "var(--clr-success)"];
+        const btnColor = colors[i % colors.length];
+
         const icon    = L.divIcon({ className: cls, iconSize: [16, 16] });
         const marker  = L.marker([lat, lon], { icon }).addTo(window.App.map.instance);
 
         marker.bindPopup(`
             <div style="text-align:center; font-family:'Inter'">
-                <strong style="font-size:13px; display:block; margin-bottom:5px; color:inherit;">${name}</strong>
+                <strong style="font-size:13px; display:block; margin-bottom:8px; color:var(--txt-strong);">${name}</strong>
                 <button
-                    onclick="selectPlant(${JSON.stringify(name)}, [${lat}, ${lon}])"
-                    style="background:var(--energy); color:#000; border:none; padding:4px 12px;
-                           border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;">
+                    onclick="window.selectPlant('${name}', [${lat}, ${lon}])" 
+                    style="background:${btnColor}; color:#ffffff; border:none; padding:6px 14px;
+                        border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; transition:opacity 0.2s;"
+                    onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
                     ${btnText}
                 </button>
             </div>
