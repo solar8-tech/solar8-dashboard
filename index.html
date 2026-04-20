@@ -171,11 +171,11 @@
                 <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-sm font-semibold tracking-wide -translate-y-8">Tekrar Hoş Geldiniz!</p>
-                    <h1 class="text-[1.6rem] font-medium leading-tight">
+                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş Geldiniz!</p>
+                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="login_heading">
                         <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="login_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
                     </p>
                 </div>
@@ -186,13 +186,13 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="email" id="login-email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
+                        <input type="email" id="login-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="login-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <input type="password" id="login-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
                     </div>
                     <div class="flex justify-end px-1">
-                        <a href="#" class="text-xs hover:text-[#000000] transition-colors">Şifremi Unuttum</a>
+                        <a href="javascript:void(0)" onclick="navToForgot()" class="text-xs text-slate-500 hover:text-[#000000] transition-colors" data-key="forgot_pass_link">Şifremi Unuttum</a>
                     </div>
                     <div id="login-error" class="hidden text-center text-xs text-red-400"></div>
                     <div class="flex justify-center">
@@ -203,6 +203,9 @@
                     <div class="text-center">
                         <p class="text-xs pt-5">Hesabınız yok mu?
                             <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Yeni Hesap Oluştur</a>
+                        <p class="text-xs pt-5 text-slate-500">
+                            <span data-key="has_no_account">Hesabınız yok mu?</span>
+                            <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_create_account">Yeni Hesap Oluştur</a>
                         </p>
                     </div>
                 </div>
@@ -211,7 +214,7 @@
     </div>
 
     <!-- REGISTER -->
-        <div id="view-register" class="view-section flex items-center justify-center fixed inset-0 z-[200]">
+    <div id="view-register" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
             <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
                 <div id="register-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
@@ -227,11 +230,11 @@
                 <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-m font-semibold tracking-wide -translate-y-8">Hoş Geldiniz!</p>
-                    <h1 class="text-[1.6rem] font-medium leading-tight">
+                    <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!</p>
+                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="reg_heading">
                         <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="reg_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
                     </p>
                 </div>
@@ -242,20 +245,20 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="text" id="reg-name" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Ad Soyad">
+                        <input type="text" id="reg-name" data-ph-key="inp_name" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Ad Soyad">
                     </div>
                     <div class="relative group">
-                        <input type="email" id="reg-email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
+                        <input type="email" id="reg-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <input type="password" id="reg-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass-confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
+                        <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
                     </div>
                     <div class="flex justify-center">
-                        <button onclick="navToSelection()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
-                            <span data-key="btn_register">KAYIT OL</span> <!-- DÜZENLENECEK -->
+                        <button onclick="handleRegister(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                            <span data-key="btn_register">KAYIT OL</span>
                         </button>
                     </div>
                     <div class="text-center">
