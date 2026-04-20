@@ -1,10 +1,10 @@
 // ui/aws.js
 
-const API_BASE = //"https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
+const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
 
 const ENDPOINTS = {
-    live    : //"https://gist.githubusercontent.com/talhakocak/105539e0cfa7f8a11e9dd5ff90b1c7c1/raw/solar8-mock-data.json",
-    plants  : //'data:application/json;charset=utf-8,{"plants":[{"name":{"tr":"Okan Üniversitesi Sahası","en":"Okan University Site"},"lat":40.9538,"lon":29.3923,"capacity":1.2,"inverters":12}]}',
+    live    : "https://gist.githubusercontent.com/talhakocak/105539e0cfa7f8a11e9dd5ff90b1c7c1/raw/solar8-mock-data.json",
+    plants  : 'data:application/json;charset=utf-8,{"plants":[{"name":{"tr":"Okan Üniversitesi Sahası","en":"Okan University Site"},"lat":40.9538,"lon":29.3923,"capacity":1.2,"inverters":12}]}',
     reports : `${API_BASE}/reports`,
     history : `${API_BASE}/history`
 };
