@@ -1,6 +1,6 @@
 // ui/aws.js
 
-const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
+const API_BASE = //"https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
 
 const ENDPOINTS = {
     live    : //"https://gist.githubusercontent.com/talhakocak/105539e0cfa7f8a11e9dd5ff90b1c7c1/raw/solar8-mock-data.json",
