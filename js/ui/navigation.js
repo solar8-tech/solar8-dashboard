@@ -71,8 +71,9 @@ window.switchTab = function switchTab(tabName) {
 };
 
 window.navToSelection = async function navToSelection() {
-    _setView("view-login",          false);
-    _setView("view-register",       false);
+    _setView("view-login",    false);
+    _setView("view-register", false);
+    _setView("view-forgot",   false);
     _setView("dashboard-container", false);
 
     const canvas = document.getElementById("canvas-bg");
@@ -98,12 +99,27 @@ window.navToSelection = async function navToSelection() {
 
 window.navToRegister = function() {
     _setView("view-login", false);  
+    _setView("view-forgot", false);
     _setView("view-register", true); 
 };
 
 window.navToLogin = function() {
     _setView("view-register", false); 
+    _setView("view-forgot", false);
     _setView("view-login", true);
+};
+
+window.navToForgot = function() {
+    _setView("view-login", false);
+    _setView("view-register", false);
+    _setView("view-forgot", true);
+};
+
+window.navToVerify = function() {
+    _setView("view-login", false);
+    _setView("view-register", false);
+    _setView("view-forgot", false);
+    _setView("view-verify", true); // Verify ekranını açar
 };
 
 window.selectPlant = async function selectPlant(name, coords) {

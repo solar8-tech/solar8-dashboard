@@ -171,11 +171,11 @@
                 <div class="absolute inset-0 z-0"></div>
                 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-sm font-semibold tracking-wide -translate-y-8">Tekrar Hoş Geldiniz!</p>
-                    <h1 class="text-[1.6rem] font-medium leading-tight">
+                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş Geldiniz!</p>
+                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="login_heading">
                         <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="login_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
                     </p>
                 </div>
@@ -186,13 +186,13 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="email" id="login-email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
+                        <input type="email" id="login-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="login-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <input type="password" id="login-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
                     </div>
                     <div class="flex justify-end px-1">
-                        <a href="#" class="text-xs hover:text-[#000000] transition-colors">Şifremi Unuttum</a>
+                        <a href="javascript:void(0)" onclick="navToForgot()" class="text-xs text-slate-500 hover:text-[#000000] transition-colors" data-key="forgot_pass_link">Şifremi Unuttum</a>
                     </div>
                     <div class="flex justify-center">
                         <button onclick="navToSelection()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
@@ -200,8 +200,9 @@
                         </button>
                     </div>
                     <div class="text-center">
-                        <p class="text-xs pt-5">Hesabınız yok mu? 
-                            <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Yeni Hesap Oluştur</a>
+                        <p class="text-xs pt-5 text-slate-500">
+                            <span data-key="has_no_account">Hesabınız yok mu?</span> 
+                            <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_create_account">Yeni Hesap Oluştur</a>
                         </p>
                     </div>
                 </div>
@@ -210,7 +211,7 @@
     </div>
 
     <!-- REGISTER -->
-        <div id="view-register" class="view-section flex items-center justify-center fixed inset-0 z-[200]">
+    <div id="view-register" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
             <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
                 <div id="register-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
@@ -226,11 +227,11 @@
                 <div class="absolute inset-0 z-0"></div>
                 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-m font-semibold tracking-wide -translate-y-8">Hoş Geldiniz!</p>
-                    <h1 class="text-[1.6rem] font-medium leading-tight">
+                    <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!</p>
+                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="reg_heading">
                         <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="reg_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
                     </p>
                 </div>
@@ -241,25 +242,112 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="text" id="reg-name" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Ad Soyad">
+                        <input type="text" id="reg-name" data-ph-key="inp_name" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Ad Soyad">
                     </div>
                     <div class="relative group">
-                        <input type="email" id="reg-email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
+                        <input type="email" id="reg-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <input type="password" id="reg-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass-confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
+                        <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
                     </div>
                     <div class="flex justify-center">
-                        <button onclick="navToSelection()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
-                            <span data-key="btn_register">KAYIT OL</span> <!-- DÜZENLENECEK -->
+                        <button onclick="handleRegister(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                            <span data-key="btn_register">KAYIT OL</span>
                         </button>
                     </div>
                     <div class="text-center">
-                        <p class="text-xs pt-5">Hesabınız var mı? 
-                              <a href="javascript:void(0)" onclick="navToLogin()"  class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Giriş Yap</a>
+                        <p class="text-xs pt-5 text-slate-500">
+                            <span data-key="has_account">Hesabınız var mı?</span> 
+                            <a href="javascript:void(0)" onclick="navToLogin()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_go_login">Giriş Yap</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
+        <div class="absolute top-6 right-6 z-50 flex gap-2">
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
+                <div id="forgot-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
+                <div id="forgot-btn-en" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">EN</div>
+            </div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleTheme()">
+                <div id="forgot-btn-light" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]"><i class="fa-solid fa-sun"></i></div>
+                <div id="forgot-btn-dark"  class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black"><i class="fa-solid fa-moon"></i></div>
+            </div>
+        </div>
+        
+        <div class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
+                <div class="absolute inset-0 z-0"></div>
+                <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
+                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">Endişelenmeyin!</p>
+                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="forgot_heading">
+                        <span class="text-[#D579EF]">Şifrenizi</span> Yeniden <span class="text-[#D579EF]">Belirleyin</span>
+                    </h1>
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="forgot_desc">
+                        Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col justify-center items-center p-10 md:p-14 relative bg-white">
+                <div class="mb-12 transition-all duration-300">
+                    <img src="logo1.png" class="w-[140px] h-auto object-contain opacity-90" alt="logo">
+                </div>
+                <div class="w-full max-w-[280px] space-y-4">
+                    <div class="relative group">
+                        <input type="email" id="forgot-email" data-ph-key="inp_forgot_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail Adresiniz">
+                    </div>
+                    <div class="flex justify-center mt-6">
+                        <button onclick="handleForgotPass()" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
+                            <span data-key="btn_send_link">BAĞLANTI GÖNDER</span>
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs pt-5 text-slate-500">
+                            <span data-key="forgot_back">Hatırladınız mı?</span> 
+                            <a href="javascript:void(0)" onclick="navToLogin()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_go_login">Giriş Yap</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Doğrulama-->
+    <div id="view-verify" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
+        <div class="register-modern flex w-[90%] max-w-[400px] min-h-[400px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)] bg-white relative">
+            <div class="absolute top-8 left-8 z-50">
+                <button onclick="navToRegister()" class="flex items-center justify-center w-10 h-10 rounded-full transition-all group text-[#2C2072] hover:bg-slate-50">
+                    <i class="fa-solid fa-arrow-left text-lg transition-transform group-hover:-translate-x-1"></i>
+                </button>
+            </div>
+            <div class="flex flex-col justify-center items-center p-10 w-full relative">
+                <div class="mb-8">
+                    <img src="logo1.png" class="w-[120px] h-auto object-contain opacity-90" alt="logo">
+                </div>
+                <div class="text-center mb-6">
+                    <h2 class="text-[1.6rem] font-bold text-[#2C2072] leading-tight" data-key="verify_title">Kodu Doğrula</h2>
+                    <p class="text-xs px-4 mt-2 text-slate-500" data-key="verify_desc">Lütfen e-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.</p>
+                </div>
+                <div class="w-full max-w-[250px] space-y-4">
+                    <div class="relative group">
+                        <input type="text" id="inp-verify-code" class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black" placeholder="******" maxlength="6">
+                    </div>
+                    <div class="flex justify-center">
+                        <button onclick="handleVerify(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                            <span data-key="btn_verify">ONAYLA</span>
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="text-xs text-slate-500">
+                            <span data-key="verify_no_code">Kod gelmedi mi?</span> 
+                            <a href="javascript:void(0)" onclick="resendCode()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_resend">Tekrar Gönder</a>
                         </p>
                     </div>
                 </div>

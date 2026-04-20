@@ -56,7 +56,45 @@ window.TRANSLATIONS = {
         error_no_plants: "Erişilebilir tesis bulunamadı.",
         no_faults: "Aktif arıza yok", no_predictions: "Analiz yok",
         // Units
-        unit_hours: " Saat", unit_device: "Cihaz"
+        unit_hours: " Saat", unit_device: "Cihaz",
+        // --- LOGIN ---
+        login_welcome: "Tekrar Hoş Geldiniz!",
+        login_hl1: "Tek",
+        login_hl2: "Tam",
+        login_desc: "Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!",
+        // --- REGISTER ---
+        reg_welcome: "Hoş Geldiniz!",
+        reg_hl1: "Tek",
+        reg_hl2: "Tam",
+        reg_desc: "Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!",
+        // --- FORGOT PASS ---
+        forgot_title: "Endişelenmeyin!",
+        forgot_hl1: "Şifrenizi",
+        forgot_hl2: "Belirleyin",
+        forgot_desc: "Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.",
+        forgot_back: "Hatırladınız mı?",
+        // --- INPUTS & BUTTONS ---
+        inp_name: "Ad Soyad",
+        inp_email: "E-Mail",
+        inp_pass: "Parola",
+        inp_pass_confirm: "Parola (tekrar)",
+        inp_forgot_email: "E-Mail Adresiniz",
+        forgot_pass_link: "Şifremi Unuttum",
+        btn_login: "GİRİŞ YAP",
+        btn_register: "KAYIT OL",
+        btn_send_link: "BAĞLANTI GÖNDER",
+        has_no_account: "Hesabınız yok mu?",
+        btn_create_account: "Yeni Hesap Oluştur",
+        has_account: "Hesabınız var mı?",
+        btn_go_login: "Giriş Yap",
+        verify_title: "Kodu Doğrula",
+        verify_desc: "Lütfen e-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.",
+        btn_verify: "ONAYLA",
+        verify_no_code: "Kod gelmedi mi?",
+        btn_resend: "Tekrar Gönder",
+        login_heading: "<span class='text-[#D579EF]'>Tek</span> Panel İle <span class='text-[#D579EF]'>Tam</span> Kontrol",
+        reg_heading: "<span class='text-[#D579EF]'>Tek</span> Panel İle <span class='text-[#D579EF]'>Tam</span> Kontrol",
+        forgot_heading: "<span class='text-[#D579EF]'>Şifrenizi</span> Yeniden <span class='text-[#D579EF]'>Belirleyin</span>"
     },
     en: {
         nav_dashboard: "Dashboard", nav_twin: "Predictive Maint.", nav_reports: "Reports", nav_settings: "System Settings",
@@ -101,7 +139,45 @@ window.TRANSLATIONS = {
         loading_data: "Loading data...", error_data_source: "Cannot reach data source",
         error_no_plants: "No accessible plants found.",
         no_faults: "No active faults", no_predictions: "No analysis",
-        unit_hours: " Hours", unit_device: "Device"
+        unit_hours: " Hours", unit_device: "Device",
+        // --- LOGIN ---
+        login_welcome: "Welcome Back!",
+        login_hl1: "Total",
+        login_hl2: "Single", // Total Control with a Single Panel
+        login_desc: "Achieve maximum efficiency across the plant with panel-level control!",
+        // --- REGISTER ---
+        reg_welcome: "Welcome!",
+        reg_hl1: "Total",
+        reg_hl2: "Single",
+        reg_desc: "Achieve maximum efficiency across the plant with panel-level control!",
+        // --- FORGOT PASS ---
+        forgot_title: "Don't Worry!",
+        forgot_hl1: "Reset",
+        forgot_hl2: "Password",
+        forgot_desc: "Enter your registered email address, and we'll send you a password reset link.",
+        forgot_back: "Remembered it?",
+        // --- INPUTS & BUTTONS ---
+        inp_name: "Full Name",
+        inp_email: "E-Mail",
+        inp_pass: "Password",
+        inp_pass_confirm: "Confirm Password",
+        inp_forgot_email: "E-Mail Address",
+        forgot_pass_link: "Forgot Password?",
+        btn_login: "LOGIN",
+        btn_register: "SIGN UP",
+        btn_send_link: "SEND LINK",
+        has_no_account: "Don't have an account?",
+        btn_create_account: "Create Account",
+        has_account: "Already have an account?",
+        btn_go_login: "Login",
+        verify_title: "Verify Code",
+        verify_desc: "Please enter the 6-digit verification code sent to your email address.",
+        btn_verify: "CONFIRM",
+        verify_no_code: "Didn't receive a code?",
+        btn_resend: "Resend",
+        login_heading: "<span class='text-[#D579EF]'>Total</span> Control with a <span class='text-[#D579EF]'>Single</span> Panel",
+        reg_heading: "<span class='text-[#D579EF]'>Total</span> Control with a <span class='text-[#D579EF]'>Single</span> Panel",
+        forgot_heading: "<span class='text-[#D579EF]'>Reset</span> Your <span class='text-[#D579EF]'>Password</span>"
     }
 };
 
@@ -116,13 +192,15 @@ window.updateLanguage = function updateLanguage() {
         if (t[key] !== undefined) el.innerHTML = t[key];
     });
 
-    const inpId   = document.getElementById("inp-id");
-    const inpPass = document.getElementById("inp-pass");
-    if (inpId)   inpId.placeholder   = t.inp_id_placeholder;
-    if (inpPass) inpPass.placeholder = t.inp_pass_placeholder;
+    document.querySelectorAll("[data-ph-key]").forEach(el => {
+        const key = el.getAttribute("data-ph-key");
+        if (t[key] !== undefined) el.setAttribute("placeholder", t[key]);
+    });
 
-    _toggleBtn("btn-tr",       "btn-en",       window.App.lang === "tr");
-    _toggleBtn("login-btn-tr", "login-btn-en", window.App.lang === "tr");
+    _toggleBtn("btn-tr",          "btn-en",          window.App.lang === "tr");
+    _toggleBtn("login-btn-tr",    "login-btn-en",    window.App.lang === "tr");
+    _toggleBtn("register-btn-tr", "register-btn-en", window.App.lang === "tr");
+    _toggleBtn("forgot-btn-tr",   "forgot-btn-en",   window.App.lang === "tr");
 
     const activeTab = localStorage.getItem("activeTab");
     if (activeTab === "reports" && typeof window.loadReport === "function") {
@@ -148,8 +226,10 @@ window.toggleLanguage = function toggleLanguage() {
 };
 
 window.updateThemeUI = function updateThemeUI(isLight) {
-    _toggleBtn("btn-light",       "btn-dark",       isLight);
-    _toggleBtn("login-btn-light", "login-btn-dark", isLight);
+    _toggleBtn("btn-light",          "btn-dark",          isLight);
+    _toggleBtn("login-btn-light",    "login-btn-dark",    isLight);
+    _toggleBtn("register-btn-light", "register-btn-dark", isLight);
+    _toggleBtn("forgot-btn-light",   "forgot-btn-dark",   isLight);
 };
 
 function _toggleBtn(activeId, inactiveId, condition) {
