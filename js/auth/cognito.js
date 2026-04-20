@@ -6,6 +6,7 @@
 
 (function initCognitoModule() {
     const AUTH_STORAGE_KEY = "solar8.auth.session";
+    const PENDING_SIGNUP_KEY = "solar8.auth.pendingSignup";
 
     // Cognito app settings:
     // These values tell the frontend which User Pool and App Client to use.
@@ -26,6 +27,25 @@
             passwordInput: document.getElementById("login-pass") || document.getElementById("inp-pass"),
             errorBox: document.getElementById("login-error"),
             loginButton: document.getElementById("btn-login")
+        };
+    }
+
+    function getRegisterElements() {
+        return {
+            nameInput: document.getElementById("reg-name"),
+            emailInput: document.getElementById("reg-email"),
+            passwordInput: document.getElementById("reg-pass"),
+            confirmInput: document.getElementById("reg-pass-confirm"),
+            errorBox: document.getElementById("register-error"),
+            successBox: document.getElementById("register-success")
+        };
+    }
+
+    function getVerifyElements() {
+        return {
+            codeInput: document.getElementById("inp-verify-code"),
+            errorBox: document.getElementById("verify-error"),
+            successBox: document.getElementById("verify-success")
         };
     }
 
@@ -58,6 +78,66 @@
         loginButton.setAttribute("aria-busy", String(isBusy));
         loginButton.classList.toggle("opacity-60", isBusy);
         loginButton.classList.toggle("pointer-events-none", isBusy);
+    }
+
+    function setButtonBusy(button, isBusy) {
+        if (!button) return;
+        button.disabled = isBusy;
+        button.setAttribute("aria-busy", String(isBusy));
+        button.classList.toggle("opacity-60", isBusy);
+        button.classList.toggle("pointer-events-none", isBusy);
+    }
+
+    function showMessage(box, message) {
+        if (!box) {
+            console.warn("[Auth]", message);
+            return;
+        }
+
+        box.textContent = message;
+        box.classList.remove("hidden");
+    }
+
+    function hideMessage(box) {
+        if (!box) return;
+        box.textContent = "";
+        box.classList.add("hidden");
+    }
+
+    function showRegisterError(message) {
+        const { errorBox, successBox } = getRegisterElements();
+        hideMessage(successBox);
+        showMessage(errorBox, message);
+    }
+
+    function showRegisterSuccess(message) {
+        const { errorBox, successBox } = getRegisterElements();
+        hideMessage(errorBox);
+        showMessage(successBox, message);
+    }
+
+    function clearRegisterMessages() {
+        const { errorBox, successBox } = getRegisterElements();
+        hideMessage(errorBox);
+        hideMessage(successBox);
+    }
+
+    function showVerifyError(message) {
+        const { errorBox, successBox } = getVerifyElements();
+        hideMessage(successBox);
+        showMessage(errorBox, message);
+    }
+
+    function showVerifySuccess(message) {
+        const { errorBox, successBox } = getVerifyElements();
+        hideMessage(errorBox);
+        showMessage(successBox, message);
+    }
+
+    function clearVerifyMessages() {
+        const { errorBox, successBox } = getVerifyElements();
+        hideMessage(errorBox);
+        hideMessage(successBox);
     }
 
     function getConfigFromWindow() {
@@ -111,6 +191,26 @@
 
     function clearPersistedSession() {
         sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+
+    function persistPendingSignup(data) {
+        sessionStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(data));
+    }
+
+    function readPendingSignup() {
+        const raw = sessionStorage.getItem(PENDING_SIGNUP_KEY);
+        if (!raw) return null;
+
+        try {
+            return JSON.parse(raw);
+        } catch {
+            sessionStorage.removeItem(PENDING_SIGNUP_KEY);
+            return null;
+        }
+    }
+
+    function clearPendingSignup() {
+        sessionStorage.removeItem(PENDING_SIGNUP_KEY);
     }
 
     function syncUserToApp(user) {
@@ -258,14 +358,55 @@
         };
     }
 
+    async function signUpUser(name, email, password) {
+        return postToCognito(
+            "AWSCognitoIdentityProviderService.SignUp",
+            {
+                ClientId: state.config.userPoolClientId,
+                Username: email,
+                Password: password,
+                UserAttributes: [
+                    { Name: "email", Value: email },
+                    { Name: "name", Value: name }
+                ]
+            }
+        );
+    }
+
+    async function confirmUserSignUp(email, code) {
+        return postToCognito(
+            "AWSCognitoIdentityProviderService.ConfirmSignUp",
+            {
+                ClientId: state.config.userPoolClientId,
+                Username: email,
+                ConfirmationCode: code
+            }
+        );
+    }
+
+    async function resendConfirmation(email) {
+        return postToCognito(
+            "AWSCognitoIdentityProviderService.ResendConfirmationCode",
+            {
+                ClientId: state.config.userPoolClientId,
+                Username: email
+            }
+        );
+    }
+
     function mapAuthError(error) {
         const message = error instanceof Error ? error.message : String(error);
         const name = error?.name || "";
 
         if (/UserNotFound/i.test(name) || /UserNotFound/i.test(message)) return "Bu kullanici bulunamadi.";
+        if (/UsernameExists/i.test(name) || /UsernameExists/i.test(message)) return "Bu e-posta adresiyle zaten bir hesap var.";
         if (/NotAuthorized/i.test(name) || /Incorrect username or password/i.test(message)) return "Kullanici adi veya parola hatali.";
         if (/UserNotConfirmed/i.test(name) || /UserNotConfirmed/i.test(message)) return "Bu kullanici henuz dogrulanmamis.";
         if (/PasswordResetRequired/i.test(name) || /PasswordResetRequired/i.test(message)) return "Sifre sifirlama gerekiyor.";
+        if (/CodeMismatch/i.test(name) || /CodeMismatch/i.test(message)) return "Doğrulama kodu hatalı.";
+        if (/ExpiredCode/i.test(name) || /ExpiredCode/i.test(message)) return "Doğrulama kodunun süresi dolmuş.";
+        if (/InvalidPassword/i.test(name) || /InvalidPassword/i.test(message)) return "Şifre Cognito kurallarını karşılamıyor.";
+        if (/InvalidParameter/i.test(name) || /InvalidParameter/i.test(message)) return "Gönderilen bilgiler geçersiz görünüyor.";
         if (/Network/i.test(message) || /Failed to fetch/i.test(message)) return "Cognito servisine ulasilamadi. Ag veya CORS problemi olabilir.";
 
         return message || "Giris sirasinda beklenmeyen bir hata olustu.";
@@ -363,5 +504,120 @@
         }
 
         window.location.reload();
+    };
+
+    window.handleRegister = async function handleRegister(buttonEl) {
+        ensureInitialized();
+        clearRegisterMessages();
+
+        const { nameInput, emailInput, passwordInput, confirmInput } = getRegisterElements();
+        const name = nameInput?.value.trim() || "";
+        const email = emailInput?.value.trim().toLowerCase() || "";
+        const password = passwordInput?.value || "";
+        const confirmPassword = confirmInput?.value || "";
+
+        if (!name || !email || !password || !confirmPassword) {
+            showRegisterError("Lutfen tum alanlari doldurun.");
+            return null;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showRegisterError("Gecerli bir e-posta adresi girin.");
+            return null;
+        }
+
+        if (password !== confirmPassword) {
+            showRegisterError("Parolalar birbiriyle ayni degil.");
+            return null;
+        }
+
+        setButtonBusy(buttonEl, true);
+
+        try {
+            const result = await signUpUser(name, email, password);
+            persistPendingSignup({ name, email });
+            showRegisterSuccess("Doğrulama kodu e-posta adresinize gönderildi.");
+
+            if (result?.UserSub) {
+                console.info("[Auth] Signup created:", result.UserSub);
+            }
+
+            if (typeof window.navToVerify === "function") {
+                window.navToVerify();
+            }
+
+            return result;
+        } catch (error) {
+            showRegisterError(mapAuthError(error));
+            return null;
+        } finally {
+            setButtonBusy(buttonEl, false);
+        }
+    };
+
+    window.handleVerify = async function handleVerify(buttonEl) {
+        ensureInitialized();
+        clearVerifyMessages();
+
+        const pendingSignup = readPendingSignup();
+        const code = getVerifyElements().codeInput?.value.trim() || "";
+
+        if (!pendingSignup?.email) {
+            showVerifyError("Doğrulama için önce kayıt olmanız gerekiyor.");
+            return null;
+        }
+
+        if (!code) {
+            showVerifyError("Lutfen doğrulama kodunu girin.");
+            return null;
+        }
+
+        setButtonBusy(buttonEl, true);
+
+        try {
+            const result = await confirmUserSignUp(pendingSignup.email, code);
+            clearPendingSignup();
+            showVerifySuccess("Hesabiniz doğrulandı. Şimdi giriş yapabilirsiniz.");
+
+            const loginInput = document.getElementById("login-email");
+            if (loginInput) loginInput.value = pendingSignup.email;
+
+            setTimeout(() => {
+                if (typeof window.navToLogin === "function") {
+                    window.navToLogin();
+                }
+            }, 700);
+
+            return result;
+        } catch (error) {
+            showVerifyError(mapAuthError(error));
+            return null;
+        } finally {
+            setButtonBusy(buttonEl, false);
+        }
+    };
+
+    window.resendCode = async function resendCode() {
+        ensureInitialized();
+        clearVerifyMessages();
+
+        const pendingSignup = readPendingSignup();
+        if (!pendingSignup?.email) {
+            showVerifyError("Kod tekrar göndermek için önce kayıt olmanız gerekiyor.");
+            return null;
+        }
+
+        try {
+            const result = await resendConfirmation(pendingSignup.email);
+            showVerifySuccess("Doğrulama kodu tekrar gönderildi.");
+            return result;
+        } catch (error) {
+            showVerifyError(mapAuthError(error));
+            return null;
+        }
+    };
+
+    window.handleForgotPass = async function handleForgotPass() {
+        console.warn("[Auth] Forgot password flow is not wired yet.");
     };
 })();
