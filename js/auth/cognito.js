@@ -22,8 +22,8 @@
 
     function getLoginElements() {
         return {
-            usernameInput: document.getElementById("inp-id"),
-            passwordInput: document.getElementById("inp-pass"),
+            usernameInput: document.getElementById("login-email") || document.getElementById("inp-id"),
+            passwordInput: document.getElementById("login-pass") || document.getElementById("inp-pass"),
             errorBox: document.getElementById("login-error"),
             loginButton: document.getElementById("btn-login")
         };
