@@ -140,6 +140,21 @@
         hideMessage(successBox);
     }
 
+    function routeToVerifyForEmail(email, message) {
+        if (!email) return;
+
+        persistPendingSignup({ email });
+
+        if (typeof window.navToVerify === "function") {
+            window.navToVerify();
+        }
+
+        clearVerifyMessages();
+        if (message) {
+            showVerifyError(message);
+        }
+    }
+
     function getConfigFromWindow() {
         const incoming = window.COGNITO_CONFIG;
         return incoming && typeof incoming === "object" ? incoming : {};
@@ -484,7 +499,20 @@
 
             return session.user;
         } catch (error) {
-            showLoginError(mapAuthError(error));
+            const authError = mapAuthError(error);
+
+            if (
+                /UserNotConfirmed/i.test(error?.name || "") ||
+                /UserNotConfirmed/i.test(error?.message || "")
+            ) {
+                routeToVerifyForEmail(
+                    username,
+                    "Hesabiniz henüz doğrulanmamis. Devam etmek için mailinize gelen kodu girin."
+                );
+                return null;
+            }
+
+            showLoginError(authError);
             return null;
         } finally {
             setLoginBusy(false);
