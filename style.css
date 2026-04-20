@@ -103,6 +103,7 @@
 [data-theme="light"] {
     /*Arka Plan ve Kutular*/
     --bg-body           : #f1f3f4;
+    --bg-body-grad      : none;
     --surface-glass     : #ffffff; 
     --surface-soft      : #ffffff; 
     --surface-glass-bdr : rgba(0, 0, 0, 0.12); 
