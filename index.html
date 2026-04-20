@@ -57,11 +57,11 @@
     <!--ANALİZ MODAL-->
     <div id="analysis-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4" data-open="false">
         <div class="glass-panel w-full h-full md:h-auto md:max-w-4xl md:rounded-3xl relative flex flex-col md:flex-row overflow-hidden">
-            
+
             <button onclick="toggleAnalysisModal(false)" class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-[var(--surface-glass)] text-[color:var(--txt-strong)] flex items-center justify-center backdrop-blur-md md:hidden">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            
+
             <div class="w-full md:w-5/12 bg-[var(--surface-glass)] border-b md:border-b-0 md:border-r border-[var(--surface-glass-bdr)] p-6 flex flex-col relative shrink-0">
                 <h3 class="text-xl font-bold text-[color:var(--txt-strong)] mb-1 flex items-center gap-2 relative z-10 mt-8 md:mt-0">
                     <i class="fa-solid fa-triangle-exclamation text-danger animate-pulse"></i>
@@ -169,7 +169,7 @@
         <div class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
             <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
-                
+
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş Geldiniz!</p>
                     <h1 class="text-[1.6rem] font-medium leading-tight" data-key="login_heading">
@@ -194,14 +194,15 @@
                     <div class="flex justify-end px-1">
                         <a href="javascript:void(0)" onclick="navToForgot()" class="text-xs text-slate-500 hover:text-[#000000] transition-colors" data-key="forgot_pass_link">Şifremi Unuttum</a>
                     </div>
+                    <div id="login-error" class="hidden text-center text-xs text-red-400"></div>
                     <div class="flex justify-center">
-                        <button onclick="navToSelection()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
+                        <button id="btn-login" onclick="handleLogin()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
                             <span data-key="btn_login">GİRİŞ YAP</span>
                         </button>
                     </div>
                     <div class="text-center">
                         <p class="text-xs pt-5 text-slate-500">
-                            <span data-key="has_no_account">Hesabınız yok mu?</span> 
+                            <span data-key="has_no_account">Hesabınız yok mu?</span>
                             <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_create_account">Yeni Hesap Oluştur</a>
                         </p>
                     </div>
@@ -225,7 +226,7 @@
         <div class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
             <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:150%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
-                
+
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!</p>
                     <h1 class="text-[1.6rem] font-medium leading-tight" data-key="reg_heading">
@@ -253,15 +254,16 @@
                     <div class="relative group">
                         <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
                     </div>
+                    <div id="register-error" class="hidden text-center text-xs text-red-400"></div>
+                    <div id="register-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center">
                         <button onclick="handleRegister(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
                             <span data-key="btn_register">KAYIT OL</span>
                         </button>
                     </div>
                     <div class="text-center">
-                        <p class="text-xs pt-5 text-slate-500">
-                            <span data-key="has_account">Hesabınız var mı?</span> 
-                            <a href="javascript:void(0)" onclick="navToLogin()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_go_login">Giriş Yap</a>
+                        <p class="text-xs pt-5">Hesabınız var mı?
+                              <a href="javascript:void(0)" onclick="navToLogin()"  class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Giriş Yap</a>
                         </p>
                     </div>
                 </div>
@@ -269,6 +271,7 @@
         </div>
     </div>
 
+    <!--SANTRAL SEÇİM-->
     <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
             <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
@@ -280,7 +283,7 @@
                 <div id="forgot-btn-dark"  class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black"><i class="fa-solid fa-moon"></i></div>
             </div>
         </div>
-        
+
         <div class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
             <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
@@ -309,7 +312,7 @@
                     </div>
                     <div class="text-center">
                         <p class="text-xs pt-5 text-slate-500">
-                            <span data-key="forgot_back">Hatırladınız mı?</span> 
+                            <span data-key="forgot_back">Hatırladınız mı?</span>
                             <a href="javascript:void(0)" onclick="navToLogin()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_go_login">Giriş Yap</a>
                         </p>
                     </div>
@@ -338,6 +341,8 @@
                     <div class="relative group">
                         <input type="text" id="inp-verify-code" class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black" placeholder="******" maxlength="6">
                     </div>
+                    <div id="verify-error" class="hidden text-center text-xs text-red-400"></div>
+                    <div id="verify-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center">
                         <button onclick="handleVerify(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
                             <span data-key="btn_verify">ONAYLA</span>
@@ -346,7 +351,7 @@
 
                     <div class="text-center mt-4">
                         <p class="text-xs text-slate-500">
-                            <span data-key="verify_no_code">Kod gelmedi mi?</span> 
+                            <span data-key="verify_no_code">Kod gelmedi mi?</span>
                             <a href="javascript:void(0)" onclick="resendCode()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_resend">Tekrar Gönder</a>
                         </p>
                     </div>
@@ -355,7 +360,6 @@
         </div>
     </div>
 
-    <!--SANTRAL SEÇİM-->
     <div id="view-selection" class="view-section view-hidden fixed inset-0 z-[190] flex flex-col md:flex-row">
         <div class="w-full md:w-[420px] p-8 flex flex-col relative z-20 border-r border-[var(--surface-soft-bdr)] shadow-2xl transition-colors duration-300 selection-sidebar">
             <div class="glass-panel absolute inset-0 -z-10 !border-0 !bg-opacity-95"></div>
@@ -437,8 +441,8 @@
                                 <p class="text-xs text-green-400" id="user-status">--</p>
                             </div>
                         </div>
-                        <button onclick="location.reload()" 
-                                class="hidden xl:flex w-8 h-8 items-center justify-center rounded-lg 
+                        <button onclick="location.reload()"
+                                class="hidden xl:flex w-8 h-8 items-center justify-center rounded-lg
                                     bg-transparent hover:bg-red-500/10 border border-transparent hover:border-red-500/30
                                     text-[color:var(--txt-faint)] hover:text-red-500 transition-all duration-300 group/btn"
                                 title="Güvenli Çıkış">
@@ -558,11 +562,11 @@
                             <div class="absolute top-0 right-0 p-6 opacity-50">
                                 <i class="fa-solid fa-triangle-exclamation text-2xl text-danger animate-pulse"></i>
                             </div>
-                            
+
                             <h3 class="text-2xl font-semibold text-[color:var(--txt-primary)] mt-1 relative z-10" id="val-risk-title">--</h3>
-                            
+
                             <p class="text-sm text-[color:var(--txt-secondary)] mt-3 relative z-10 font-light" id="val-risk-desc">--</p>
-                            
+
                             <div class="mt-4 h-1.5 w-full bg-danger/10 rounded-full overflow-hidden relative z-10">
                                 <div id="risk-bar" class="h-full bg-danger rounded-full transition-all" style="width:0%"></div>
                             </div>
@@ -881,6 +885,18 @@
     <!--Core-->
     <script src="js/core/state.js"></script>
     <script src="js/core/i18n.js"></script>
+
+    <!--Auth config: public browser-side Cognito identifiers-->
+    <script>
+        window.COGNITO_CONFIG = {
+            region: "eu-central-1",
+            userPoolId: "eu-central-1_t9Q84vBs2",
+            userPoolClientId: "1lddm78eieupm2vhlpd368uadu"
+        };
+    </script>
+
+    <!--Custom auth layer: reads the form and calls Cognito directly-->
+    <script src="js/auth/cognito.js"></script>
 
     <!--API-->
     <script src="js/api/aws.js"></script>
