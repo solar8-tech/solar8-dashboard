@@ -15,13 +15,13 @@ window.toggleTheme = function toggleTheme() {
 window.switchTab = function switchTab(tabName) {
     localStorage.setItem("activeTab", tabName);
 
-    ["view-overview", "view-twin", "view-reports", "view-settings"].forEach(id => {
+    ["view-overview", "view-twin", "view-reports"].forEach(id => {
         const el = document.getElementById(id);
         el?.classList.add("view-hidden");
         el?.setAttribute("aria-hidden", "true");
     });
 
-    ["nav-dashboard","nav-twin","nav-reports","nav-settings","mob-nav-dashboard","mob-nav-twin","mob-nav-reports"].forEach(id => {
+    ["nav-dashboard","nav-twin","nav-reports","mob-nav-dashboard","mob-nav-twin","mob-nav-reports"].forEach(id => {
         const btn = document.getElementById(id);
         if (!btn) return;
         btn.classList.remove("active", "text-white", "bg-white/5");
@@ -32,8 +32,7 @@ window.switchTab = function switchTab(tabName) {
     const TAB_MAP = {
         dashboard : { view: "view-overview", navs: ["nav-dashboard","mob-nav-dashboard"], titleKey: "page_overview"  },
         twin      : { view: "view-twin",     navs: ["nav-twin",     "mob-nav-twin"    ], titleKey: "page_twin"      },
-        reports   : { view: "view-reports",  navs: ["nav-reports",  "mob-nav-reports" ], titleKey: "page_reports"   },
-        settings  : { view: "view-settings", navs: ["nav-settings"], titleKey: "nav_settings"   }
+        reports   : { view: "view-reports",  navs: ["nav-reports",  "mob-nav-reports" ], titleKey: "page_reports"   }
     };
     const cfg = TAB_MAP[tabName] ?? TAB_MAP.dashboard;
 
@@ -57,9 +56,7 @@ window.switchTab = function switchTab(tabName) {
     }
 
     setTimeout(() => {
-        if (tabName === "settings") {
-            window.switchSettingsTab(localStorage.getItem("activeSettingsTab") || "general");
-        }
+
         if (tabName === "dashboard") {
             window.App.charts.main?.resize?.();
         }
@@ -75,6 +72,7 @@ window.switchTab = function switchTab(tabName) {
 
 window.navToSelection = async function navToSelection() {
     _setView("view-login",          false);
+    _setView("view-register",       false);
     _setView("dashboard-container", false);
 
     const canvas = document.getElementById("canvas-bg");
@@ -96,6 +94,16 @@ window.navToSelection = async function navToSelection() {
             }, 300);
         }
     }, 50);
+};
+
+window.navToRegister = function() {
+    _setView("view-login", false);  
+    _setView("view-register", true); 
+};
+
+window.navToLogin = function() {
+    _setView("view-register", false); 
+    _setView("view-login", true);
 };
 
 window.selectPlant = async function selectPlant(name, coords) {
@@ -138,45 +146,3 @@ function _setView(id, visible) {
         el.classList.add("view-hidden");
     }
 }
-
-window.switchSettingsTab = function switchSettingsTab(tabId) {
-    if (!/^[\w-]+$/.test(tabId)) return;
-
-    localStorage.setItem("activeSettingsTab", tabId);
-
-    document.querySelectorAll(".settings-menu-item").forEach(btn => {
-        btn.classList.remove("bg-white/5", "border-white/5", "text-white");
-        btn.classList.add("text-slate-400", "border-transparent");
-        btn.setAttribute("aria-selected", "false");
-        btn.setAttribute("tabindex", "-1");
-        const icon = btn.querySelector("span:first-child");
-        if (icon) {
-            icon.className = icon.className
-                .replace(/bg-\w+-500\/15|bg-\w+-500\/20|text-\w+-400|text-amber-400/g, "")
-                .trim() + " bg-slate-500/10 text-slate-500";
-        }
-    });
-
-    document.querySelectorAll(".settings-panel").forEach(panel => {
-        panel.classList.add("hidden");
-        panel.setAttribute("aria-hidden", "true");
-    });
-
-    const activeBtn = document.getElementById(`stab-btn-${tabId}`);
-    if (activeBtn) {
-        activeBtn.classList.remove("text-slate-400", "border-transparent");
-        activeBtn.classList.add("bg-white/5", "border-white/5", "text-white");
-        activeBtn.setAttribute("aria-selected", "true");
-        activeBtn.setAttribute("tabindex", "0");
-    }
-
-    const activePanel = document.getElementById(`stab-${tabId}`);
-    if (activePanel) {
-        activePanel.classList.remove("hidden");
-        activePanel.setAttribute("aria-hidden", "false");
-    }
-
-    if (tabId === "roles" && typeof window.initRbacPanel === "function") {
-        window.initRbacPanel();
-    }
-};
