@@ -1,17 +1,12 @@
 // main.js
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     localStorage.removeItem("activeTab");
 
     const login = document.getElementById("view-login");
     const sel   = document.getElementById("view-selection");
     const dash  = document.getElementById("dashboard-container");
-
-    login?.classList.remove("view-hidden");
-    login?.classList.add("view-active");
-    sel?.classList.add("view-hidden");
-    dash?.classList.add("view-hidden");
 
     if (localStorage.getItem("theme") === "light") {
         document.documentElement.dataset.theme = "light";
@@ -40,6 +35,23 @@ document.addEventListener("DOMContentLoaded", () => {
     _startClock();
 
     window.updateLanguage?.();
+
+    try {
+        await window.initAuth?.();
+        const currentUser = await window.restoreSession?.();
+
+        if (currentUser) {
+            await window.navToSelection?.();
+            return;
+        }
+    } catch (error) {
+        console.warn("[Auth]", error);
+    }
+
+    login?.classList.remove("view-hidden");
+    login?.classList.add("view-active");
+    sel?.classList.add("view-hidden");
+    dash?.classList.add("view-hidden");
 });
 
 function _initParticleCanvas() {

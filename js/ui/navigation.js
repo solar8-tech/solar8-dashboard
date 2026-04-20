@@ -100,18 +100,21 @@ window.navToSelection = async function navToSelection() {
 window.navToRegister = function() {
     _setView("view-login", false);  
     _setView("view-forgot", false);
+    _setView("view-verify", false);
     _setView("view-register", true); 
 };
 
 window.navToLogin = function() {
     _setView("view-register", false); 
     _setView("view-forgot", false);
+    _setView("view-verify", false);
     _setView("view-login", true);
 };
 
 window.navToForgot = function() {
     _setView("view-login", false);
     _setView("view-register", false);
+    _setView("view-verify", false);
     _setView("view-forgot", true);
 };
 
