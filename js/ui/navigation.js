@@ -104,10 +104,20 @@ window.navToRegister = function() {
 
 window.navToLogin = function() {
     window.stopDashboardRefresh?.();
+    if (window.App?.weatherIntervalId !== null) {
+        clearInterval(window.App.weatherIntervalId);
+        window.App.weatherIntervalId = null;
+    }
+
+    _setView("view-selection", false);
+    _setView("dashboard-container", false);
     _setView("view-register", false); 
     _setView("view-forgot", false);
     _setView("view-verify", false);
     _setView("view-login", true);
+
+    const canvas = document.getElementById("canvas-bg");
+    if (canvas) canvas.style.opacity = "1";
 };
 
 window.navToForgot = function() {
@@ -140,6 +150,7 @@ window.selectPlant = async function selectPlant(plantOrName, coords) {
         lat,
         lon
     };
+    localStorage.setItem("selectedPlant", JSON.stringify(window.App.data.context.plant));
 
     const dash = document.getElementById("dashboard-container");
     if (!dash) return;
@@ -147,8 +158,8 @@ window.selectPlant = async function selectPlant(plantOrName, coords) {
 
     setTimeout(async () => {
         dash.classList.add("view-active");
-        localStorage.setItem("activeTab", "dashboard");
-        window.switchTab("dashboard");
+        const activeTab = localStorage.getItem("activeTab") || "dashboard";
+        window.switchTab(activeTab);
         window.startDashboardRefresh?.();
         await window.fetchDashboardFromAWS?.();
         window.startWeatherRefresh?.();
