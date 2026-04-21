@@ -71,7 +71,7 @@ window.TRANSLATIONS = {
         forgot_title: "Endişelenmeyin!",
         forgot_hl1: "Şifrenizi",
         forgot_hl2: "Belirleyin",
-        forgot_desc: "Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.",
+        forgot_desc: "Kayıtlı e-posta adresinizi girin, size şifre sıfırlama kodu gönderelim.",
         forgot_back: "Hatırladınız mı?",
         // --- INPUTS & BUTTONS ---
         inp_name: "Ad Soyad",
@@ -82,7 +82,7 @@ window.TRANSLATIONS = {
         forgot_pass_link: "Şifremi Unuttum",
         btn_login: "GİRİŞ YAP",
         btn_register: "KAYIT OL",
-        btn_send_link: "BAĞLANTI GÖNDER",
+        btn_send_link: "DOĞRULAMA KODU GÖNDER",
         has_no_account: "Hesabınız yok mu?",
         btn_create_account: "Yeni Hesap Oluştur",
         has_account: "Hesabınız var mı?",
@@ -92,6 +92,11 @@ window.TRANSLATIONS = {
         btn_verify: "ONAYLA",
         verify_no_code: "Kod gelmedi mi?",
         btn_resend: "Tekrar Gönder",
+        password_rules_title: "Parola koşulları",
+        password_rule_length: "En az 8 karakter",
+        password_rule_uppercase: "En az 1 büyük harf",
+        password_rule_number: "En az 1 sayı",
+        password_rule_special: "En az 1 özel karakter",
         login_heading: "<span class='text-[#D579EF]'>Tek</span> Panel İle <span class='text-[#D579EF]'>Tam</span> Kontrol",
         reg_heading: "<span class='text-[#D579EF]'>Tek</span> Panel İle <span class='text-[#D579EF]'>Tam</span> Kontrol",
         forgot_heading: "<span class='text-[#D579EF]'>Şifrenizi</span> Yeniden <span class='text-[#D579EF]'>Belirleyin</span>"
@@ -154,7 +159,7 @@ window.TRANSLATIONS = {
         forgot_title: "Don't Worry!",
         forgot_hl1: "Reset",
         forgot_hl2: "Password",
-        forgot_desc: "Enter your registered email address, and we'll send you a password reset link.",
+        forgot_desc: "Enter your registered email address, and we'll send you a password reset code.",
         forgot_back: "Remembered it?",
         // --- INPUTS & BUTTONS ---
         inp_name: "Full Name",
@@ -165,7 +170,7 @@ window.TRANSLATIONS = {
         forgot_pass_link: "Forgot Password?",
         btn_login: "LOGIN",
         btn_register: "SIGN UP",
-        btn_send_link: "SEND LINK",
+        btn_send_link: "SEND VERIFICATION CODE",
         has_no_account: "Don't have an account?",
         btn_create_account: "Create Account",
         has_account: "Already have an account?",
@@ -175,6 +180,11 @@ window.TRANSLATIONS = {
         btn_verify: "CONFIRM",
         verify_no_code: "Didn't receive a code?",
         btn_resend: "Resend",
+        password_rules_title: "Password rules",
+        password_rule_length: "At least 8 characters",
+        password_rule_uppercase: "At least 1 uppercase letter",
+        password_rule_number: "At least 1 number",
+        password_rule_special: "At least 1 special character",
         login_heading: "<span class='text-[#D579EF]'>Total</span> Control with a <span class='text-[#D579EF]'>Single</span> Panel",
         reg_heading: "<span class='text-[#D579EF]'>Total</span> Control with a <span class='text-[#D579EF]'>Single</span> Panel",
         forgot_heading: "<span class='text-[#D579EF]'>Reset</span> Your <span class='text-[#D579EF]'>Password</span>"
@@ -209,6 +219,8 @@ window.updateLanguage = function updateLanguage() {
     if (activeTab === "dashboard" && typeof window.renderApp === "function") {
         window.renderApp();
     }
+    window.syncForgotPasswordUI?.();
+    window.syncVerifyFlowUI?.();
     const sel = document.getElementById("view-selection");
     if (sel && !sel.classList.contains("view-hidden") && typeof window.initMap === "function") {
         window.initMap();
