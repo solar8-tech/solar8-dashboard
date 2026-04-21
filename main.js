@@ -1,9 +1,6 @@
 // main.js
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-    localStorage.removeItem("activeTab");
-
     const login = document.getElementById("view-login");
     const sel   = document.getElementById("view-selection");
     const dash  = document.getElementById("dashboard-container");
@@ -41,6 +38,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         const currentUser = await window.restoreSession?.();
 
         if (currentUser) {
+            const savedPlantRaw = localStorage.getItem("selectedPlant");
+            if (savedPlantRaw) {
+                try {
+                    const savedPlant = JSON.parse(savedPlantRaw);
+                    await window.selectPlant?.(savedPlant);
+                    return;
+                } catch (error) {
+                    console.warn("[App] Saved plant restore failed:", error);
+                    localStorage.removeItem("selectedPlant");
+                }
+            }
+
             await window.navToSelection?.();
             return;
         }

@@ -30,7 +30,7 @@
             codeMismatch: "Doğrulama kodu hatalı.",
             expiredCode: "Doğrulama kodunun süresi dolmuş.",
             attemptLimitExceeded: "Çok fazla deneme yapıldı. Lütfen biraz bekleyip tekrar deneyin.",
-            invalidPassword: "Şifre Cognito kurallarıyla eşleşmiyor.",
+            invalidPassword: "Şifre güvenlik gereksinimlerini karşılamıyor.",
             invalidParameter: "Gönderilen bilgiler geçersiz görünüyor.",
             networkError: "Cognito servisine ulaşılamadı. Ağ veya CORS problemi olabilir.",
             unexpectedError: "Beklenmeyen bir hata oluştu.",
@@ -73,7 +73,7 @@
             codeMismatch: "The verification code is incorrect.",
             expiredCode: "The verification code has expired.",
             attemptLimitExceeded: "Too many attempts were made. Please wait a bit and try again.",
-            invalidPassword: "Your password does not meet the Cognito password policy.",
+            invalidPassword: "Your password does not meet the security requirements.",
             invalidParameter: "The submitted information appears to be invalid.",
             networkError: "The Cognito service could not be reached. There may be a network or CORS issue.",
             unexpectedError: "An unexpected error occurred.",
@@ -167,6 +167,7 @@
         return {
             titleEl: document.querySelector('#view-verify [data-key="verify_title"]'),
             descEl: document.querySelector('#view-verify [data-key="verify_desc"]'),
+            codeGroup: document.getElementById("verify-code-group"),
             codeInput: document.getElementById("inp-verify-code"),
             resetFields: document.getElementById("verify-reset-fields"),
             passwordInput: document.getElementById("verify-new-pass"),
@@ -175,9 +176,11 @@
             errorBox: document.getElementById("verify-error"),
             successBox: document.getElementById("verify-success"),
             validityBox: document.getElementById("verify-validity"),
+            metaBox: document.getElementById("verify-meta"),
             cooldownBox: document.getElementById("verify-cooldown"),
             submitLabel: document.getElementById("verify-submit-label"),
             backButton: document.querySelector("#view-verify .absolute.top-8.left-8 button"),
+            resendGroup: document.getElementById("verify-resend-group"),
             resendLink: document.querySelector('#view-verify [data-key="btn_resend"]')
         };
     }
@@ -448,12 +451,15 @@
         const {
             titleEl,
             descEl,
+            codeGroup,
             codeInput,
             resetFields,
             passwordInput,
             confirmInput,
+            metaBox,
             submitLabel,
-            backButton
+            backButton,
+            resendGroup
         } = getVerifyFlowElements();
         const lang = window.App?.lang === "en" ? "en" : "tr";
         const appCopy = window.TRANSLATIONS?.[lang] || {};
@@ -479,6 +485,18 @@
 
         if (resetFields) {
             resetFields.classList.toggle("hidden", !isResetPassword);
+        }
+
+        if (codeGroup) {
+            codeGroup.classList.toggle("hidden", isResetPassword);
+        }
+
+        if (metaBox) {
+            metaBox.classList.toggle("hidden", isResetPassword);
+        }
+
+        if (resendGroup) {
+            resendGroup.classList.toggle("hidden", isResetPassword);
         }
 
         if (codeInput) {
@@ -509,7 +527,9 @@
         }
 
         if (backButton) {
-            backButton.onclick = isResetVerify || isResetPassword ? window.navToForgot : window.navToRegister;
+            const pendingSignup = readPendingSignup();
+            const backTarget = pendingSignup?.sourceView === "login" ? window.navToLogin : window.navToRegister;
+            backButton.onclick = isResetVerify || isResetPassword ? window.navToForgot : backTarget;
         }
         updatePasswordTooltip(getVerifyFlowElements().tooltipEl, passwordInput?.value || "", isResetPassword && document.activeElement === passwordInput);
     }
@@ -623,7 +643,7 @@
         if (!email) return;
 
         clearPendingReset();
-        persistPendingSignup(withCodeTiming({ email }));
+        persistPendingSignup(withCodeTiming({ email, sourceView: "login" }));
         window.navToVerify?.();
         syncVerifyFlowUI();
         clearVerifyMessages();
@@ -843,6 +863,29 @@
         element.dataset.enterBound = "true";
         element.addEventListener("keydown", (event) => {
             if (event.key !== "Enter") return;
+            if (event.defaultPrevented) return;
+            event.preventDefault();
+            handler();
+        });
+    }
+
+    function bindGlobalEnterSubmit(element, handler) {
+        if (!element || typeof handler !== "function") return;
+        if (element.dataset.globalEnterBound === "true") return;
+
+        element.dataset.globalEnterBound = "true";
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter") return;
+            if (event.defaultPrevented) return;
+            if (element.classList.contains("view-hidden")) return;
+
+            const target = event.target;
+            if (target instanceof HTMLElement) {
+                const tagName = target.tagName;
+                if (tagName === "TEXTAREA" || tagName === "SELECT") return;
+                if (target.isContentEditable) return;
+            }
+
             event.preventDefault();
             handler();
         });
@@ -863,6 +906,11 @@
         const registerButton = document.getElementById("btn-register");
         const forgotButton = document.getElementById("btn-forgot");
         const verifyButton = document.getElementById("btn-verify");
+
+        bindGlobalEnterSubmit(document.getElementById("view-login"), () => window.handleLogin?.());
+        bindGlobalEnterSubmit(document.getElementById("view-register"), () => window.handleRegister?.(registerButton));
+        bindGlobalEnterSubmit(document.getElementById("view-forgot"), () => window.handleForgotPass?.(forgotButton));
+        bindGlobalEnterSubmit(document.getElementById("view-verify"), () => window.handleVerify?.(verifyButton));
 
         bindEnterSubmit(document.getElementById("login-email"), () => window.handleLogin?.());
         bindEnterSubmit(document.getElementById("login-pass"), () => window.handleLogin?.());
@@ -968,9 +1016,31 @@
 
     window.handleLogout = async function handleLogout() {
         clearPersistedSession();
+        clearPendingSignup();
+        clearPendingReset();
+        localStorage.removeItem("selectedPlant");
+        localStorage.removeItem("activeTab");
+        clearLoginError();
+        clearRegisterMessages();
+        clearForgotMessages();
+        clearVerifyMessages();
+        stopVerifyTimer();
+        window.stopDashboardRefresh?.();
 
-        if (window.App?.data?.context?.user) {
+        if (window.App?.weatherIntervalId !== null) {
+            clearInterval(window.App.weatherIntervalId);
+            window.App.weatherIntervalId = null;
+        }
+
+        if (window.App?.data?.context) {
             window.App.data.context.user = {};
+            window.App.data.context.plant = {};
+        }
+
+        if (window.App?.data) {
+            window.App.data.live = null;
+            window.App.data.history = null;
+            window.App.data.reports = null;
         }
 
         if (typeof window.navToLogin === "function") {
@@ -1017,7 +1087,7 @@
         try {
             const result = await signUpUser(name, email, password);
             clearPendingReset();
-            persistPendingSignup(withCodeTiming({ name, email }));
+            persistPendingSignup(withCodeTiming({ name, email, sourceView: "register" }));
             showRegisterSuccess(t("registerVerifySent"));
 
             if (result?.UserSub) {
