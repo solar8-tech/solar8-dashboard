@@ -529,3 +529,115 @@ body.light-mode .from-black\/80 {
     border-color    : #D579EF;
     outline         : none;
 }
+
+.password-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    padding: 0.8rem 0.9rem;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 18px 40px -16px rgba(15, 23, 42, 0.55);
+    color: #e2e8f0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.password-tooltip::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 18px;
+    width: 12px;
+    height: 12px;
+    background: inherit;
+    border-left: 1px solid rgba(148, 163, 184, 0.2);
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    transform: rotate(45deg);
+}
+
+.password-tooltip.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.password-tooltip-title {
+    margin: 0 0 0.45rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #cbd5e1;
+}
+
+.password-tooltip-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.password-tooltip-rule + .password-tooltip-rule {
+    margin-top: 0.32rem;
+}
+
+.password-tooltip-rule i {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.password-tooltip-rule.is-valid {
+    color: #86efac;
+}
+
+.password-tooltip-rule.is-valid i {
+    color: #22c55e;
+    transform: scale(1.05);
+}
+
+[data-theme="light"] .password-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(148, 163, 184, 0.26);
+    box-shadow: 0 18px 40px -18px rgba(15, 23, 42, 0.22);
+    color: #334155;
+}
+
+[data-theme="light"] .password-tooltip-title {
+    color: #334155;
+}
+
+[data-theme="light"] .password-tooltip-rule {
+    color: #64748b;
+}
+
+[data-theme="light"] .password-tooltip-rule i {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .password-tooltip-rule.is-valid {
+    color: #166534;
+}
+
+@media (max-width: 767px) {
+    .password-tooltip {
+        top: calc(100% + 8px);
+        right: auto;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .password-tooltip::before {
+        top: -6px;
+        left: 22px;
+        right: auto;
+        border-left: 1px solid rgba(148, 163, 184, 0.2);
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        transform: rotate(45deg);
+    }
+}

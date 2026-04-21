@@ -4,6 +4,7 @@ window.App = {
     lang              : localStorage.getItem('appLang') || 'tr',
     theme             : localStorage.getItem('theme')   || 'dark',
     isRefreshing      : false,
+    dashboardIntervalId: null,
     weatherStarted    : false,
     weatherIntervalId : null,
     toastTimeout      : null,

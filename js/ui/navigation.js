@@ -64,13 +64,15 @@ window.switchTab = function switchTab(tabName) {
             if (!window.App.data.reports) {
                 window.fetchReports?.();
             } else {
-                window.loadReport?.(localStorage.getItem("lastReportId") || "monthly");
+                const lastId = localStorage.getItem("lastReportId") || Object.keys(window.App.data.reports ?? {})[0];
+                if (lastId) window.loadReport?.(lastId);
             }
         }
     }, 50);
 };
 
 window.navToSelection = async function navToSelection() {
+    window.stopDashboardRefresh?.();
     _setView("view-login",    false);
     _setView("view-register", false);
     _setView("view-forgot",   false);
@@ -81,11 +83,7 @@ window.navToSelection = async function navToSelection() {
 
     _setView("view-selection", true);
 
-    if (!window.App.data.plants) {
-        await window.fetchPlants?.();
-    } else {
-        window.renderPlantList?.();
-    }
+    await window.fetchPlants?.();
 
     setTimeout(() => {
         if (typeof window.initMap === "function") {
@@ -105,6 +103,7 @@ window.navToRegister = function() {
 };
 
 window.navToLogin = function() {
+    window.stopDashboardRefresh?.();
     _setView("view-register", false); 
     _setView("view-forgot", false);
     _setView("view-verify", false);
@@ -125,18 +124,19 @@ window.navToVerify = function() {
     _setView("view-verify", true); // Verify ekranını açar
 };
 
-window.selectPlant = async function selectPlant(name, coords) {
-    if (typeof name !== "string") return;
-    if (!Array.isArray(coords) || coords.length < 2) return;
+window.selectPlant = async function selectPlant(plantOrName, coords) {
+    const plant = typeof plantOrName === "object" && plantOrName !== null
+        ? plantOrName
+        : { name: plantOrName, lat: coords?.[0], lon: coords?.[1] };
 
-    const [lat, lon] = coords.map(Number);
+    const [lat, lon] = [plant.lat, plant.lon].map(Number);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
     _setView("view-selection", false);
 
     window.App.data.context.plant = {
         ...(window.App.data.context.plant ?? {}),
-        name,
+        ...plant,
         lat,
         lon
     };
@@ -149,6 +149,7 @@ window.selectPlant = async function selectPlant(name, coords) {
         dash.classList.add("view-active");
         localStorage.setItem("activeTab", "dashboard");
         window.switchTab("dashboard");
+        window.startDashboardRefresh?.();
         await window.fetchDashboardFromAWS?.();
         window.startWeatherRefresh?.();
     }, 50);
