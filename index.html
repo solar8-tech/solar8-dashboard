@@ -250,6 +250,25 @@
                     </div>
                     <div class="relative group">
                         <input type="password" id="reg-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <div id="register-password-tooltip" class="password-tooltip" aria-live="polite">
+                            <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
+                            <div class="password-tooltip-rule" data-password-rule="length">
+                                <i class="fa-solid fa-circle"></i>
+                                <span data-key="password_rule_length">En az 8 karakter</span>
+                            </div>
+                            <div class="password-tooltip-rule" data-password-rule="uppercase">
+                                <i class="fa-solid fa-circle"></i>
+                                <span data-key="password_rule_uppercase">En az 1 büyük harf</span>
+                            </div>
+                            <div class="password-tooltip-rule" data-password-rule="number">
+                                <i class="fa-solid fa-circle"></i>
+                                <span data-key="password_rule_number">En az 1 sayı</span>
+                            </div>
+                            <div class="password-tooltip-rule" data-password-rule="special">
+                                <i class="fa-solid fa-circle"></i>
+                                <span data-key="password_rule_special">En az 1 özel karakter</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="relative group">
                         <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola (tekrar)">
@@ -305,9 +324,11 @@
                     <div class="relative group">
                         <input type="email" id="forgot-email" data-ph-key="inp_forgot_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="E-Mail Adresiniz">
                     </div>
+                    <div id="forgot-error" class="hidden text-center text-xs text-red-400"></div>
+                    <div id="forgot-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center mt-6">
-                        <button type="button" onclick="handleForgotPass()" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
-                            <span data-key="btn_send_link">BAĞLANTI GÖNDER</span>
+                        <button id="btn-forgot" type="button" onclick="handleForgotPass(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
+                            <span id="forgot-submit-label" data-key="btn_send_link">DOĞRULAMA KODU GÖNDER</span>
                         </button>
                     </div>
                     <div class="text-center">
@@ -339,13 +360,43 @@
                 </div>
                 <div class="w-full max-w-[250px] space-y-4">
                     <div class="relative group">
-                        <input type="text" id="inp-verify-code" class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black" placeholder="******" maxlength="6">
+                        <input type="text" id="inp-verify-code" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black" placeholder="******" maxlength="6">
+                    </div>
+                    <div id="verify-reset-fields" class="hidden space-y-4">
+                        <div class="relative group">
+                            <input type="password" id="verify-new-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Yeni Parola">
+                            <div id="reset-password-tooltip" class="password-tooltip" aria-live="polite">
+                                <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
+                                <div class="password-tooltip-rule" data-password-rule="length">
+                                    <i class="fa-solid fa-circle"></i>
+                                    <span data-key="password_rule_length">En az 8 karakter</span>
+                                </div>
+                                <div class="password-tooltip-rule" data-password-rule="uppercase">
+                                    <i class="fa-solid fa-circle"></i>
+                                    <span data-key="password_rule_uppercase">En az 1 büyük harf</span>
+                                </div>
+                                <div class="password-tooltip-rule" data-password-rule="number">
+                                    <i class="fa-solid fa-circle"></i>
+                                    <span data-key="password_rule_number">En az 1 sayı</span>
+                                </div>
+                                <div class="password-tooltip-rule" data-password-rule="special">
+                                    <i class="fa-solid fa-circle"></i>
+                                    <span data-key="password_rule_special">En az 1 özel karakter</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <input type="password" id="verify-new-pass-confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Yeni Parola (tekrar)">
+                        </div>
                     </div>
                     <div id="verify-error" class="hidden text-center text-xs text-red-400"></div>
                     <div id="verify-success" class="hidden text-center text-xs text-green-500"></div>
+                    <div id="verify-meta" class="space-y-1 text-center">
+                        <p id="verify-cooldown" class="hidden text-[11px] text-slate-400"></p>
+                    </div>
                     <div class="flex justify-center">
-                        <button onclick="handleVerify(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
-                            <span data-key="btn_verify">ONAYLA</span>
+                        <button id="btn-verify" onclick="handleVerify(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                            <span id="verify-submit-label" data-key="btn_verify">ONAYLA</span>
                         </button>
                     </div>
 
