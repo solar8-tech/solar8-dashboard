@@ -224,7 +224,7 @@ window.renderPlantList = function renderPlantList() {
         inner.appendChild(arrowDiv);
         div.appendChild(inner);
 
-        const handler = () => window.selectPlant(name, [lat, lon]);
+        const handler = () => window.selectPlant(plant);
         div.addEventListener("click", handler);
         div.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handler(); } });
 

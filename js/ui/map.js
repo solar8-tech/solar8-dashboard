@@ -51,7 +51,7 @@ window.initMap = function initMap() {
             <div style="text-align:center; font-family:'Inter'">
                 <strong style="font-size:13px; display:block; margin-bottom:8px; color:var(--txt-strong);">${name}</strong>
                 <button
-                    onclick="window.selectPlant('${name}', [${lat}, ${lon}])" 
+                    onclick="window.selectPlant(window.App.data.plants[${i}])" 
                     style="background:${btnColor}; color:#ffffff; border:none; padding:6px 14px;
                         border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; transition:opacity 0.2s;"
                     onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">

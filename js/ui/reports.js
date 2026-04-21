@@ -58,8 +58,8 @@ window.initReportChart = function initReportChart() {
         return;
     }
 
-    const lastId = localStorage.getItem("lastReportId") || "monthly";
-    window.loadReport(lastId);
+    const lastId = localStorage.getItem("lastReportId") || Object.keys(window.App.data.reports ?? {})[0];
+    if (lastId) window.loadReport(lastId);
 };
 
 function _setText(id, text) {
