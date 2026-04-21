@@ -71,7 +71,7 @@ window.TRANSLATIONS = {
         forgot_title: "Endişelenmeyin!",
         forgot_hl1: "Şifrenizi",
         forgot_hl2: "Belirleyin",
-        forgot_desc: "Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.",
+        forgot_desc: "Kayıtlı e-posta adresinizi girin, size şifre sıfırlama kodu gönderelim.",
         forgot_back: "Hatırladınız mı?",
         // --- INPUTS & BUTTONS ---
         inp_name: "Ad Soyad",
@@ -82,7 +82,7 @@ window.TRANSLATIONS = {
         forgot_pass_link: "Şifremi Unuttum",
         btn_login: "GİRİŞ YAP",
         btn_register: "KAYIT OL",
-        btn_send_link: "BAĞLANTI GÖNDER",
+        btn_send_link: "DOĞRULAMA KODU GÖNDER",
         has_no_account: "Hesabınız yok mu?",
         btn_create_account: "Yeni Hesap Oluştur",
         has_account: "Hesabınız var mı?",
@@ -154,7 +154,7 @@ window.TRANSLATIONS = {
         forgot_title: "Don't Worry!",
         forgot_hl1: "Reset",
         forgot_hl2: "Password",
-        forgot_desc: "Enter your registered email address, and we'll send you a password reset link.",
+        forgot_desc: "Enter your registered email address, and we'll send you a password reset code.",
         forgot_back: "Remembered it?",
         // --- INPUTS & BUTTONS ---
         inp_name: "Full Name",
@@ -165,7 +165,7 @@ window.TRANSLATIONS = {
         forgot_pass_link: "Forgot Password?",
         btn_login: "LOGIN",
         btn_register: "SIGN UP",
-        btn_send_link: "SEND LINK",
+        btn_send_link: "SEND VERIFICATION CODE",
         has_no_account: "Don't have an account?",
         btn_create_account: "Create Account",
         has_account: "Already have an account?",
@@ -209,6 +209,8 @@ window.updateLanguage = function updateLanguage() {
     if (activeTab === "dashboard" && typeof window.renderApp === "function") {
         window.renderApp();
     }
+    window.syncForgotPasswordUI?.();
+    window.syncVerifyFlowUI?.();
     const sel = document.getElementById("view-selection");
     if (sel && !sel.classList.contains("view-hidden") && typeof window.initMap === "function") {
         window.initMap();
