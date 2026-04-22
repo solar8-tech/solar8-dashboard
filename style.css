@@ -511,7 +511,7 @@ body.light-mode .from-black\/80 {
     border    : 1px solid var(--toast-bdr);
     box-shadow: var(--toast-shd);
 }
-#toast-notification h4 { color: var(--clr-risk); }
+#toast-notification h4 { transition: color 0.2s ease; }
 
 /*Login*/
 .login-modern {
@@ -624,15 +624,21 @@ body.light-mode .from-black\/80 {
 }
 
 [data-theme="light"] .password-tooltip-rule {
-    color: #64748b;
+    color: #475569;
 }
 
 [data-theme="light"] .password-tooltip-rule i {
-    color: #94a3b8;
+    color: #64748b;
 }
 
 [data-theme="light"] .password-tooltip-rule.is-valid {
     color: #166534;
+    font-weight: 600;
+}
+
+[data-theme="light"] .password-tooltip-rule.is-valid i {
+    color: #16a34a;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 @media (max-width: 767px) {
