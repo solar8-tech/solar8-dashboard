@@ -255,7 +255,7 @@
 
     function showLoginError(message) {
         hideMessage(getLoginElements().errorBox);
-        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Giriş Hatası" : "Login Error" });
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Giriş Hatası" : "Login Error", variant: "error" });
     }
 
     function clearLoginError() {
@@ -270,13 +270,18 @@
         const { errorBox, successBox } = getRegisterElements();
         hideMessage(successBox);
         hideMessage(errorBox);
-        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Kayıt Hatası" : "Registration Error" });
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Kayıt Hatası" : "Registration Error", variant: "error" });
     }
 
     function showRegisterSuccess(message) {
         const { errorBox, successBox } = getRegisterElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Doğrulama Kodu Gönderildi" : "Verification Code Sent",
+            variant: "info",
+            iconClass: "fa-solid fa-paper-plane text-sky-400"
+        });
     }
 
     function clearRegisterMessages() {
@@ -289,13 +294,18 @@
         const { errorBox, successBox } = getVerifyElements();
         hideMessage(successBox);
         hideMessage(errorBox);
-        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Doğrulama Hatası" : "Verification Error" });
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Doğrulama Hatası" : "Verification Error", variant: "error" });
     }
 
     function showVerifySuccess(message) {
         const { errorBox, successBox } = getVerifyElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Doğrulama Başarılı" : "Verification Successful",
+            variant: "success",
+            iconClass: "fa-solid fa-circle-check text-emerald-400"
+        });
     }
 
     function clearVerifyMessages() {
@@ -308,13 +318,18 @@
         const { errorBox, successBox } = getForgotElements();
         hideMessage(successBox);
         hideMessage(errorBox);
-        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Sıfırlama Hatası" : "Reset Error" });
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Sıfırlama Hatası" : "Reset Error", variant: "error" });
     }
 
     function showForgotSuccess(message) {
         const { errorBox, successBox } = getForgotElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Şifre Sıfırlama" : "Password Reset",
+            variant: "info",
+            iconClass: "fa-solid fa-key text-sky-400"
+        });
     }
 
     function clearForgotMessages() {
@@ -1378,3 +1393,6 @@
     setupEnterKeyHandlers();
     setupPasswordTooltips();
 })();
+
+
+
