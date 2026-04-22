@@ -251,7 +251,8 @@
     }
 
     function showLoginError(message) {
-        showMessage(getLoginElements().errorBox, message);
+        hideMessage(getLoginElements().errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Giriş Hatası" : "Login Error" });
     }
 
     function clearLoginError() {
@@ -265,7 +266,8 @@
     function showRegisterError(message) {
         const { errorBox, successBox } = getRegisterElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Kayıt Hatası" : "Registration Error" });
     }
 
     function showRegisterSuccess(message) {
@@ -283,7 +285,8 @@
     function showVerifyError(message) {
         const { errorBox, successBox } = getVerifyElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Doğrulama Hatası" : "Verification Error" });
     }
 
     function showVerifySuccess(message) {
@@ -301,7 +304,8 @@
     function showForgotError(message) {
         const { errorBox, successBox } = getForgotElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Sıfırlama Hatası" : "Reset Error" });
     }
 
     function showForgotSuccess(message) {
