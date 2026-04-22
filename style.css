@@ -538,6 +538,10 @@ body.light-mode .from-black\/80 {
     outline         : none;
 }
 
+.register-modern .text-center > p.text-xs.pt-5 {
+    color: #64748b;
+}
+
 .password-tooltip {
     position: absolute;
     top: calc(100% + 10px);

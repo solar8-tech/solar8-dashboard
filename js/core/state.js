@@ -65,7 +65,7 @@ window.localise = function localise(val) {
     return val ?? "";
 };
 
-window.showToast = function showToast(messageKey) {
+window.showToast = function showToast(messageKey, options = {}) {
     const toast = document.getElementById("toast-notification");
     const msgEl = document.getElementById("toast-message");
     if (!toast || !msgEl) return;
@@ -75,7 +75,12 @@ window.showToast = function showToast(messageKey) {
     msgEl.innerText = msg;
 
     const titleEl = toast.querySelector("h4");
+    const defaultToastTitle = messageKey === "msg_demo_feature"
+        ? (window.App.lang === "tr" ? "Erişim Kısıtlı" : "Access Denied")
+        : (window.App.lang === "tr" ? "Uyarı" : "Warning");
     if (titleEl) titleEl.innerText = window.App.lang === "tr" ? "Erişim Kısıtlı" : "Access Denied";
+
+    if (titleEl) titleEl.innerText = options.title ?? defaultToastTitle;
 
     if (window.App.toastTimeout !== null) {
         clearTimeout(window.App.toastTimeout);
