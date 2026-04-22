@@ -77,7 +77,7 @@ window.TRANSLATIONS = {
         inp_name: "Ad Soyad",
         inp_email: "E-Mail",
         inp_pass: "Parola",
-        inp_pass_confirm: "Parola (tekrar)",
+        inp_pass_confirm: "Parola (Tekrar)",
         inp_forgot_email: "E-Mail Adresiniz",
         forgot_pass_link: "Şifremi Unuttum",
         btn_login: "GİRİŞ YAP",
