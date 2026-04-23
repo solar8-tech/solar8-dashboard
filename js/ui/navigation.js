@@ -96,6 +96,7 @@ window.navToSelection = async function navToSelection() {
 };
 
 window.navToRegister = function() {
+    window.resetRegisterForm?.();
     _setView("view-login", false);  
     _setView("view-forgot", false);
     _setView("view-verify", false);
@@ -116,11 +117,17 @@ window.navToLogin = function() {
     _setView("view-verify", false);
     _setView("view-login", true);
 
+    window.resetRegisterForm?.();
+    window.resetForgotForm?.();
+    window.resetVerifyForm?.();
+    window.resetLoginForm?.({ keepUsername: true });
+
     const canvas = document.getElementById("canvas-bg");
     if (canvas) canvas.style.opacity = "1";
 };
 
 window.navToForgot = function() {
+    window.resetForgotForm?.();
     _setView("view-login", false);
     _setView("view-register", false);
     _setView("view-verify", false);
@@ -128,6 +135,7 @@ window.navToForgot = function() {
 };
 
 window.navToVerify = function() {
+    window.resetVerifyForm?.();
     _setView("view-login", false);
     _setView("view-register", false);
     _setView("view-forgot", false);
