@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,10 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link  href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
-    <link  rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
@@ -18,14 +20,14 @@
                 extend: {
                     fontFamily: { sans: ["Inter", "sans-serif"] },
                     colors: {
-                        glass      : "rgba(255,255,255,0.03)",
+                        glass: "rgba(255,255,255,0.03)",
                         glassBorder: "rgba(255,255,255,0.08)",
-                        solar      : "#F59E0B",
-                        cold       : "#3B82F6",
-                        danger     : "#EF4444",
-                        success    : "#10B981",
-                        brand      : "#2C2072",
-                        brandLight : "#9181F4"
+                        solar: "#F59E0B",
+                        cold: "#3B82F6",
+                        danger: "#EF4444",
+                        success: "#10B981",
+                        brand: "#2C2072",
+                        brandLight: "#9181F4"
                     }
                 }
             }
@@ -42,7 +44,8 @@
     <canvas id="canvas-bg"></canvas>
 
     <!--TOAST-->
-    <div id="toast-notification" class="fixed bottom-4 right-4 z-[9999] hidden transition-all duration-300 transform translate-x-10 opacity-0">
+    <div id="toast-notification"
+        class="fixed bottom-4 right-4 z-[9999] hidden transition-all duration-300 transform translate-x-10 opacity-0">
         <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 border border-red-500/50">
             <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
                 <i class="fa-solid fa-lock text-red-500"></i>
@@ -55,72 +58,96 @@
     </div>
 
     <!--ANALİZ MODAL-->
-    <div id="analysis-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4" data-open="false">
-        <div class="glass-panel w-full h-full md:h-auto md:max-w-4xl md:rounded-3xl relative flex flex-col md:flex-row overflow-hidden">
+    <div id="analysis-modal"
+        class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm p-0 md:p-4"
+        data-open="false">
+        <div
+            class="glass-panel w-full h-full md:h-auto md:max-w-4xl md:rounded-3xl relative flex flex-col md:flex-row overflow-hidden">
 
-            <button onclick="toggleAnalysisModal(false)" class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-[var(--surface-glass)] text-[color:var(--txt-strong)] flex items-center justify-center backdrop-blur-md md:hidden">
+            <button onclick="toggleAnalysisModal(false)"
+                class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-[var(--surface-glass)] text-[color:var(--txt-strong)] flex items-center justify-center backdrop-blur-md md:hidden">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <div class="w-full md:w-5/12 bg-[var(--surface-glass)] border-b md:border-b-0 md:border-r border-[var(--surface-glass-bdr)] p-6 flex flex-col relative shrink-0">
-                <h3 class="text-xl font-bold text-[color:var(--txt-strong)] mb-1 flex items-center gap-2 relative z-10 mt-8 md:mt-0">
+            <div
+                class="w-full md:w-5/12 bg-[var(--surface-glass)] border-b md:border-b-0 md:border-r border-[var(--surface-glass-bdr)] p-6 flex flex-col relative shrink-0">
+                <h3
+                    class="text-xl font-bold text-[color:var(--txt-strong)] mb-1 flex items-center gap-2 relative z-10 mt-8 md:mt-0">
                     <i class="fa-solid fa-triangle-exclamation text-danger animate-pulse"></i>
                     <span id="analysis-panel-id">--</span>
                 </h3>
                 <p id="analysis-panel-sub" class="text-xs text-[color:var(--txt-muted)] mb-6 relative z-10">--</p>
 
-                <div class="relative w-full h-48 md:h-auto md:aspect-square rounded-xl overflow-hidden border border-[var(--surface-glass-bdr)] mb-6 group bg-[var(--surface-glass)] shrink-0">
+                <div
+                    class="relative w-full h-48 md:h-auto md:aspect-square rounded-xl overflow-hidden border border-[var(--surface-glass-bdr)] mb-6 group bg-[var(--surface-glass)] shrink-0">
                     <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=800&auto=format&fit=crop"
-                         class="absolute inset-0 w-full h-full object-cover opacity-70" alt="Termal">
-                    <div class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-mono text-[color:var(--txt-strong)] border border-[var(--surface-glass-bdr)] flex items-center gap-2">
+                        class="absolute inset-0 w-full h-full object-cover opacity-70" alt="Termal">
+                    <div
+                        class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-mono text-[color:var(--txt-strong)] border border-[var(--surface-glass-bdr)] flex items-center gap-2">
                         <i class="fa-solid fa-temperature-high text-red-500"></i>
                         <span id="analysis-temp" class="font-bold">--</span>
                     </div>
                 </div>
 
-                <div class="mt-auto relative z-10 p-3 bg-[var(--surface-soft)] rounded-xl border border-[var(--surface-soft-bdr)] hidden md:block">
+                <div
+                    class="mt-auto relative z-10 p-3 bg-[var(--surface-soft)] rounded-xl border border-[var(--surface-soft-bdr)] hidden md:block">
                     <div class="flex justify-between text-sm text-[color:var(--txt-muted)] mb-2">
                         <span data-key="analysis_eff_loss">Verimlilik Kaybı</span>
                         <span id="analysis-eff-loss" class="text-red-400 font-bold text-base">--</span>
                     </div>
                     <div class="w-full bg-[var(--surface-soft)] rounded-full h-2 overflow-hidden">
-                        <div id="analysis-eff-bar" class="bg-gradient-to-r from-red-600 to-red-400 h-full rounded-full" style="width:0%"></div>
+                        <div id="analysis-eff-bar" class="bg-gradient-to-r from-red-600 to-red-400 h-full rounded-full"
+                            style="width:0%"></div>
                     </div>
                 </div>
             </div>
             <div class="flex-1 flex flex-col relative bg-[var(--surface-glass)] overflow-hidden">
-                <button onclick="toggleAnalysisModal(false)" class="absolute top-6 right-6 text-[color:var(--txt-faint)] hover:text-[color:var(--txt-strong)] transition z-20 p-2 hidden md:block">
+                <button onclick="toggleAnalysisModal(false)"
+                    class="absolute top-6 right-6 text-[color:var(--txt-faint)] hover:text-[color:var(--txt-strong)] transition z-20 p-2 hidden md:block">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 pb-24 md:pb-8">
                     <div class="mb-8">
-                        <h4 class="text-xs font-bold text-solar uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                        <h4
+                            class="text-xs font-bold text-solar uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-wand-magic-sparkles"></i>
                             <span data-key="analysis_title">AI KÖK NEDEN ANALİZİ</span>
                         </h4>
-                        <p id="analysis-desc" class="text-sm md:text-lg text-[color:var(--txt-strong)] font-light leading-relaxed">--</p>
+                        <p id="analysis-desc"
+                            class="text-sm md:text-lg text-[color:var(--txt-strong)] font-light leading-relaxed">--</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 mb-8">
-                        <div class="bg-[var(--surface-soft)] p-3 md:p-4 rounded-2xl border border-[var(--surface-soft-bdr)]">
-                            <p class="text-[10px] text-[color:var(--txt-faint)] uppercase font-bold tracking-wider" data-key="analysis_est_time">--</p>
-                            <p id="analysis-est-time" class="text-lg md:text-xl text-[color:var(--txt-strong)] font-mono mt-1 font-medium">--</p>
+                        <div
+                            class="bg-[var(--surface-soft)] p-3 md:p-4 rounded-2xl border border-[var(--surface-soft-bdr)]">
+                            <p class="text-[10px] text-[color:var(--txt-faint)] uppercase font-bold tracking-wider"
+                                data-key="analysis_est_time">--</p>
+                            <p id="analysis-est-time"
+                                class="text-lg md:text-xl text-[color:var(--txt-strong)] font-mono mt-1 font-medium">--
+                            </p>
                         </div>
-                        <div class="bg-[var(--surface-soft)] p-3 md:p-4 rounded-2xl border border-[var(--surface-soft-bdr)]">
-                            <p class="text-[10px] text-[color:var(--txt-faint)] uppercase font-bold tracking-wider" data-key="analysis_part">--</p>
-                            <p id="analysis-part" class="text-lg md:text-xl text-[color:var(--txt-strong)] font-mono mt-1 font-medium">--</p>
+                        <div
+                            class="bg-[var(--surface-soft)] p-3 md:p-4 rounded-2xl border border-[var(--surface-soft-bdr)]">
+                            <p class="text-[10px] text-[color:var(--txt-faint)] uppercase font-bold tracking-wider"
+                                data-key="analysis_part">--</p>
+                            <p id="analysis-part"
+                                class="text-lg md:text-xl text-[color:var(--txt-strong)] font-mono mt-1 font-medium">--
+                            </p>
                         </div>
                     </div>
 
                     <div class="space-y-4">
-                        <h5 class="text-xs font-bold text-[color:var(--txt-faint)] uppercase tracking-wider mb-2" data-key="analysis_actions_title">--</h5>
+                        <h5 class="text-xs font-bold text-[color:var(--txt-faint)] uppercase tracking-wider mb-2"
+                            data-key="analysis_actions_title">--</h5>
                         <div id="analysis-actions-container" class="space-y-3"></div>
                     </div>
                 </div>
 
-                <div class="flex gap-3 p-4 md:p-6 border-t border-[var(--surface-glass-bdr)] bg-[var(--surface-glass)] z-10 shrink-0">
-                    <button onclick="showToast('msg_demo_feature')" class="w-full bg-solar text-black font-bold py-3 rounded-xl hover:bg-white transition text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-solar/20 group">
+                <div
+                    class="flex gap-3 p-4 md:p-6 border-t border-[var(--surface-glass-bdr)] bg-[var(--surface-glass)] z-10 shrink-0">
+                    <button onclick="showToast('msg_demo_feature')"
+                        class="w-full bg-solar text-black font-bold py-3 rounded-xl hover:bg-white transition text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-solar/20 group">
                         <i class="fa-solid fa-hammer group-hover:-rotate-12 transition-transform"></i>
                         <span data-key="btn_work_order">İş Emri Oluştur</span>
                     </button>
@@ -130,7 +157,8 @@
     </div>
 
     <!--GEÇMİŞ MODAL-->
-    <div id="history-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm" data-open="false">
+    <div id="history-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        data-open="false">
         <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 relative">
             <div class="flex justify-between items-center mb-6 border-b border-[var(--surface-glass-bdr)] pb-4">
                 <div>
@@ -140,14 +168,18 @@
                     </h3>
                     <p class="text-xs text-[color:var(--txt-muted)] mt-1" data-key="modal_history_sub">--</p>
                 </div>
-                <button onclick="toggleHistoryModal(false)" class="w-8 h-8 rounded-full bg-[var(--surface-soft)] hover:bg-white/20 flex items-center justify-center text-[color:var(--txt-strong)] transition">
+                <button onclick="toggleHistoryModal(false)"
+                    class="w-8 h-8 rounded-full bg-[var(--surface-soft)] hover:bg-white/20 flex items-center justify-center text-[color:var(--txt-strong)] transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <div class="h-[400px] overflow-y-auto custom-scrollbar space-y-3 pr-2" id="history-list-container"></div>
-            <div class="mt-4 pt-4 border-t border-[var(--surface-glass-bdr)] flex justify-between items-center text-xs text-[color:var(--txt-faint)]">
-                <span data-key="modal_total_rec">Toplam: <b class="text-[color:var(--txt-strong)]" id="total-history-count">0</b></span>
-                <button onclick="event.stopPropagation(); showToast('msg_demo_feature')" class="text-blue-400 hover:text-[color:var(--txt-strong)] transition flex items-center gap-1">
+            <div
+                class="mt-4 pt-4 border-t border-[var(--surface-glass-bdr)] flex justify-between items-center text-xs text-[color:var(--txt-faint)]">
+                <span data-key="modal_total_rec">Toplam: <b class="text-[color:var(--txt-strong)]"
+                        id="total-history-count">0</b></span>
+                <button onclick="event.stopPropagation(); showToast('msg_demo_feature')"
+                    class="text-blue-400 hover:text-[color:var(--txt-strong)] transition flex items-center gap-1">
                     <i class="fa-solid fa-download"></i> <span data-key="btn_download_csv">--</span>
                 </button>
             </div>
@@ -157,25 +189,42 @@
     <!--LOGIN-->
     <div id="view-login" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
-                <div id="login-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
-                <div id="login-btn-en" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">EN</div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleLanguage()">
+                <div id="login-btn-tr"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    TR</div>
+                <div id="login-btn-en"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    EN</div>
             </div>
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleTheme()">
-                <div id="login-btn-light" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]"><i class="fa-solid fa-sun"></i></div>
-                <div id="login-btn-dark"  class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black"><i class="fa-solid fa-moon"></i></div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleTheme()">
+                <div id="login-btn-light"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <div id="login-btn-dark"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
             </div>
         </div>
-        <div class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
-            <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
+        <div
+            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            <div
+                class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş Geldiniz!</p>
+                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş
+                        Geldiniz!</p>
                     <h1 class="text-[1.6rem] font-medium leading-tight" data-key="login_heading">
-                        <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
+                        <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span>
+                        Kontrol
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="login_desc">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3"
+                        data-key="login_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
                     </p>
                 </div>
@@ -186,24 +235,33 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="email" id="login-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="E-Mail">
+                        <input type="email" id="login-email" data-ph-key="inp_email"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="login-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="Parola">
+                        <input type="password" id="login-pass" data-ph-key="inp_pass"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Parola">
                     </div>
                     <div class="flex justify-end px-1">
-                        <a href="javascript:void(0)" onclick="navToForgot()" class="text-xs text-slate-500 hover:text-[#000000] transition-colors" data-key="forgot_pass_link">Şifremi Unuttum</a>
+                        <a href="javascript:void(0)" onclick="navToForgot()"
+                            class="text-xs text-slate-500 hover:text-[#000000] transition-colors"
+                            data-key="forgot_pass_link">Şifremi Unuttum</a>
                     </div>
                     <div id="login-error" class="hidden text-center text-xs text-red-400"></div>
                     <div class="flex justify-center">
-                        <button id="btn-login" onclick="handleLogin()" class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
+                        <button id="btn-login" onclick="handleLogin()"
+                            class="px-12 py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
                             <span data-key="btn_login">GİRİŞ YAP</span>
                         </button>
                     </div>
                     <div class="text-center">
                         <p class="text-xs pt-5 text-slate-500">
                             <span data-key="has_no_account">Hesabınız yok mu?</span>
-                            <a href="javascript:void(0)" onclick="navToRegister()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_create_account">Yeni Hesap Oluştur</a>
+                            <a href="javascript:void(0)" onclick="navToRegister()"
+                                class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1"
+                                data-key="btn_create_account">Yeni Hesap Oluştur</a>
                         </p>
                     </div>
                 </div>
@@ -214,23 +272,39 @@
     <!-- REGISTER -->
     <div id="view-register" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
-                <div id="register-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
-                <div id="register-btn-en" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">EN</div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleLanguage()">
+                <div id="register-btn-tr"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    TR</div>
+                <div id="register-btn-en"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    EN</div>
             </div>
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleTheme()">
-                <div id="register-btn-light" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]"><i class="fa-solid fa-sun"></i></div>
-                <div id="register-btn-dark"  class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black"><i class="fa-solid fa-moon"></i></div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleTheme()">
+                <div id="register-btn-light"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <div id="register-btn-dark"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
             </div>
         </div>
-        <div class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
-            <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:150%] bg-center text-center">
+        <div
+            class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            <div
+                class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:150%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!</p>
+                    <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!
+                    </p>
                     <h1 class="text-[1.6rem] font-medium leading-tight" data-key="reg_heading">
-                        <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span> Kontrol
+                        <span class="text-[#D579EF]">Tek</span> Panel İle <span class="text-[#D579EF]">Tam</span>
+                        Kontrol
                     </h1>
                     <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="reg_desc">
                         Panel seviyesinde kontrol ile tesis genelinde maksimum verim sağla!
@@ -243,13 +317,19 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="text" id="reg-name" data-ph-key="inp_name" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="Ad Soyad">
+                        <input type="text" id="reg-name" data-ph-key="inp_name"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Ad Soyad">
                     </div>
                     <div class="relative group">
-                        <input type="email" id="reg-email" data-ph-key="inp_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="E-Mail">
+                        <input type="email" id="reg-email" data-ph-key="inp_email"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="E-Mail">
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Parola">
+                        <input type="password" id="reg-pass" data-ph-key="inp_pass"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
+                            placeholder="Parola">
                         <div id="register-password-tooltip" class="password-tooltip" aria-live="polite">
                             <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
                             <div class="password-tooltip-rule" data-password-rule="length">
@@ -271,18 +351,23 @@
                         </div>
                     </div>
                     <div class="relative group">
-                        <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="Parola (Tekrar)">
+                        <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Parola (Tekrar)">
                     </div>
                     <div id="register-error" class="hidden text-center text-xs text-red-400"></div>
                     <div id="register-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center">
-                        <button id="btn-register" onclick="handleRegister(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                        <button id="btn-register" onclick="handleRegister(this)"
+                            class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
                             <span data-key="btn_register">KAYIT OL</span>
                         </button>
                     </div>
                     <div class="text-center">
                         <p class="text-xs pt-5">Hesabınız var mı?
-                              <a href="javascript:void(0)" onclick="navToLogin()"  class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Giriş Yap</a>
+                            <a href="javascript:void(0)" onclick="navToLogin()"
+                                class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1">Giriş
+                                Yap</a>
                         </p>
                     </div>
                 </div>
@@ -293,25 +378,42 @@
     <!--SANTRAL SEÇİM-->
     <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
-                <div id="forgot-btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">TR</div>
-                <div id="forgot-btn-en" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">EN</div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleLanguage()">
+                <div id="forgot-btn-tr"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    TR</div>
+                <div id="forgot-btn-en"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    EN</div>
             </div>
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleTheme()">
-                <div id="forgot-btn-light" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]"><i class="fa-solid fa-sun"></i></div>
-                <div id="forgot-btn-dark"  class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black"><i class="fa-solid fa-moon"></i></div>
+            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
+                onclick="toggleTheme()">
+                <div id="forgot-btn-light"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <div id="forgot-btn-dark"
+                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
             </div>
         </div>
 
-        <div class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
-            <div class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
+        <div
+            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            <div
+                class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">Endişelenmeyin!</p>
+                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">
+                        Endişelenmeyin!</p>
                     <h1 class="text-[1.6rem] font-medium leading-tight" data-key="forgot_heading">
-                        <span class="text-[#D579EF]">Şifrenizi</span> Yeniden <span class="text-[#D579EF]">Belirleyin</span>
+                        <span class="text-[#D579EF]">Şifrenizi</span> Yeniden <span
+                            class="text-[#D579EF]">Belirleyin</span>
                     </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3" data-key="forgot_desc">
+                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3"
+                        data-key="forgot_desc">
                         Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
                     </p>
                 </div>
@@ -322,19 +424,24 @@
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
-                        <input type="email" id="forgot-email" data-ph-key="inp_forgot_email" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="E-Mail Adresiniz">
+                        <input type="email" id="forgot-email" data-ph-key="inp_forgot_email"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="E-Mail Adresiniz">
                     </div>
                     <div id="forgot-error" class="hidden text-center text-xs text-red-400"></div>
                     <div id="forgot-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center mt-6">
-                        <button id="btn-forgot" type="button" onclick="handleForgotPass(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
+                        <button id="btn-forgot" type="button" onclick="handleForgotPass(this)"
+                            class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
                             <span id="forgot-submit-label" data-key="btn_send_link">DOĞRULAMA KODU GÖNDER</span>
                         </button>
                     </div>
                     <div class="text-center">
                         <p class="text-xs pt-5 text-slate-500">
                             <span data-key="forgot_back">Hatırladınız mı?</span>
-                            <a href="javascript:void(0)" onclick="navToLogin()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_go_login">Giriş Yap</a>
+                            <a href="javascript:void(0)" onclick="navToLogin()"
+                                class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1"
+                                data-key="btn_go_login">Giriş Yap</a>
                         </p>
                     </div>
                 </div>
@@ -344,9 +451,11 @@
 
     <!--Doğrulama-->
     <div id="view-verify" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
-        <div class="register-modern flex w-[90%] max-w-[400px] min-h-[400px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)] bg-white relative">
+        <div
+            class="register-modern flex w-[90%] max-w-[400px] min-h-[400px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)] bg-white relative">
             <div class="absolute top-8 left-8 z-50">
-                <button onclick="navToRegister()" class="flex items-center justify-center w-10 h-10 rounded-full transition-all group text-[#2C2072] hover:bg-slate-50">
+                <button onclick="navToRegister()"
+                    class="flex items-center justify-center w-10 h-10 rounded-full transition-all group text-[#2C2072] hover:bg-slate-50">
                     <i class="fa-solid fa-arrow-left text-lg transition-transform group-hover:-translate-x-1"></i>
                 </button>
             </div>
@@ -355,16 +464,23 @@
                     <img src="logo1.png" class="w-[120px] h-auto object-contain opacity-90" alt="logo">
                 </div>
                 <div class="text-center mb-6">
-                    <h2 class="text-[1.6rem] font-bold text-[#2C2072] leading-tight" data-key="verify_title">Kodu Doğrula</h2>
-                    <p class="text-xs px-4 mt-2 text-slate-500" data-key="verify_desc">Lütfen e-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.</p>
+                    <h2 class="text-[1.6rem] font-bold text-[#2C2072] leading-tight" data-key="verify_title">Kodu
+                        Doğrula</h2>
+                    <p class="text-xs px-4 mt-2 text-slate-500" data-key="verify_desc">Lütfen e-posta adresinize
+                        gönderilen 6 haneli doğrulama kodunu giriniz.</p>
                 </div>
                 <div class="w-full max-w-[250px] space-y-4">
                     <div id="verify-code-group" class="relative group">
-                        <input type="text" id="inp-verify-code" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black" placeholder="******" maxlength="6">
+                        <input type="text" id="inp-verify-code" inputmode="numeric" pattern="[0-9]*"
+                            autocomplete="one-time-code"
+                            class="input-modern w-full rounded-xl py-3.5 text-center text-lg font-bold tracking-[1rem] outline-none border border-gray-200 focus:border-[#D579EF] text-black"
+                            placeholder="******" maxlength="6">
                     </div>
                     <div id="verify-reset-fields" class="hidden space-y-4">
                         <div class="relative group">
-                            <input type="password" id="verify-new-pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Yeni Parola">
+                            <input type="password" id="verify-new-pass"
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
+                                placeholder="Yeni Parola">
                             <div id="reset-password-tooltip" class="password-tooltip" aria-live="polite">
                                 <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
                                 <div class="password-tooltip-rule" data-password-rule="length">
@@ -386,7 +502,9 @@
                             </div>
                         </div>
                         <div class="relative group">
-                            <input type="password" id="verify-new-pass-confirm" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none" placeholder="Yeni Parola (tekrar)">
+                            <input type="password" id="verify-new-pass-confirm"
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
+                                placeholder="Yeni Parola (tekrar)">
                         </div>
                     </div>
                     <div id="verify-error" class="hidden text-center text-xs text-red-400"></div>
@@ -395,7 +513,8 @@
                         <p id="verify-cooldown" class="hidden text-[11px] text-slate-400"></p>
                     </div>
                     <div class="flex justify-center">
-                        <button id="btn-verify" onclick="handleVerify(this)" class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
+                        <button id="btn-verify" onclick="handleVerify(this)"
+                            class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border-none">
                             <span id="verify-submit-label" data-key="btn_verify">ONAYLA</span>
                         </button>
                     </div>
@@ -403,7 +522,9 @@
                     <div id="verify-resend-group" class="text-center mt-4">
                         <p class="text-xs text-slate-500">
                             <span data-key="verify_no_code">Kod gelmedi mi?</span>
-                            <a href="javascript:void(0)" onclick="resendCode()" class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1" data-key="btn_resend">Tekrar Gönder</a>
+                            <a href="javascript:void(0)" onclick="resendCode()"
+                                class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1"
+                                data-key="btn_resend">Tekrar Gönder</a>
                         </p>
                     </div>
                 </div>
@@ -412,11 +533,13 @@
     </div>
 
     <div id="view-selection" class="view-section view-hidden fixed inset-0 z-[190] flex flex-col md:flex-row">
-        <div class="w-full md:w-[420px] p-8 flex flex-col relative z-20 border-r border-[var(--surface-soft-bdr)] shadow-2xl transition-colors duration-300 selection-sidebar">
+        <div
+            class="w-full md:w-[420px] p-8 flex flex-col relative z-20 border-r border-[var(--surface-soft-bdr)] shadow-2xl transition-colors duration-300 selection-sidebar">
             <div class="glass-panel absolute inset-0 -z-10 !border-0 !bg-opacity-95"></div>
 
             <div class="mb-8 mt-4">
-                <h1 class="text-3xl font-extralight text-[color:var(--txt-strong)] tracking-tight" data-key="title_plant_selection">
+                <h1 class="text-3xl font-extralight text-[color:var(--txt-strong)] tracking-tight"
+                    data-key="title_plant_selection">
                     Santral <span class="font-bold text-solar">Listesi</span>
                 </h1>
                 <p class="text-xs text-[color:var(--txt-faint)] mt-2 font-light" data-key="sub_plant_selection">--</p>
@@ -430,7 +553,8 @@
             </div>
 
             <div class="mt-4 border-t border-[var(--surface-glass-bdr)] pt-4 text-center">
-                <button onclick="handleLogout()" class="text-[10px] text-[color:var(--txt-faint)] hover:text-red-400 transition tracking-widest uppercase flex items-center justify-center gap-2 w-full">
+                <button onclick="handleLogout()"
+                    class="text-[10px] text-[color:var(--txt-faint)] hover:text-red-400 transition tracking-widest uppercase flex items-center justify-center gap-2 w-full">
                     <i class="fa-solid fa-power-off"></i> <span data-key="btn_logout">GÜVENLİ ÇIKIŞ</span>
                 </button>
             </div>
@@ -438,206 +562,244 @@
 
         <div class="flex-1 relative w-full h-full">
             <div id="map-container"></div>
-            <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/80 to-transparent pointer-events-none z-[400]" style="mix-blend-mode:multiply;"></div>
+            <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/80 to-transparent pointer-events-none z-[400]"
+                style="mix-blend-mode:multiply;"></div>
             <div class="absolute top-8 right-8 z-[500] pointer-events-none drop-shadow-2xl hidden md:block">
-                <img src="logo.png?v=3" class="w-[137px] h-[40px] object-contain opacity-90 dark-logo"  alt="Solar8">
-                <img src="logo1.png"    class="w-[137px] h-[40px] object-contain opacity-90 light-logo" alt="Solar8">
+                <img src="logo.png?v=3" class="w-[137px] h-[40px] object-contain opacity-90 dark-logo" alt="Solar8">
+                <img src="logo1.png" class="w-[137px] h-[40px] object-contain opacity-90 light-logo" alt="Solar8">
             </div>
         </div>
     </div>
 
     <!--DASHBOARD-->
-    <div id="dashboard-container" class="view-section view-hidden flex w-full h-full">
-
-        <!-- Sidebar -->
-        <aside class="w-20 xl:w-72 hidden md:flex flex-col justify-between border-r border-[var(--surface-soft-bdr)] bg-[var(--surface-glass)] backdrop-blur-xl z-50">
+    <div id="dashboard-container" class="view-section view-hidden flex w-full h-full relative overflow-hidden">
+        <div id="sidebar-overlay" onclick="toggleMobileMenu()"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] hidden md:hidden"></div>
+        <aside id="main-sidebar"
+            class="fixed inset-y-0 left-0 w-72 -translate-x-full md:translate-x-0 md:static md:flex flex-col justify-between border-r border-[var(--surface-soft-bdr)] bg-[var(--surface-glass)] backdrop-blur-xl z-[60] transition-transform duration-300 ease-in-out">
             <div>
-                <div class="h-24 flex items-center justify-center xl:justify-start xl:pl-6 border-b border-[var(--surface-soft-bdr)]">
-                    <a href="index.html" class="grid grid-cols-1 grid-rows-1 h-10 w-auto hover:opacity-80 transition-opacity">
-                        <img src="logo.png?v=3" alt="Solar8" class="col-start-1 row-start-1 h-full w-auto object-contain dark-logo">
-                        <img src="logo1.png" alt="Solar8" class="col-start-1 row-start-1 h-full w-auto object-contain light-logo">
+                <div class="h-24 flex items-center justify-between px-6 border-b border-[var(--surface-soft-bdr)]">
+                    <a href="index.html"
+                        class="grid grid-cols-1 grid-rows-1 h-8 w-auto hover:opacity-80 transition-opacity">
+                        <img src="logo.png?v=3" alt="Solar8"
+                            class="col-start-1 row-start-1 h-full w-auto object-contain dark-logo">
+                        <img src="logo1.png" alt="Solar8"
+                            class="col-start-1 row-start-1 h-full w-auto object-contain light-logo">
                     </a>
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-[color:var(--txt-muted)]">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
                 </div>
+
                 <nav class="mt-8 px-4 space-y-2">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center justify-center xl:justify-start p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
+                    <button onclick="switchTab('dashboard'); closeMobileMenu()" id="nav-dashboard"
+                        class="nav-item active w-full flex items-center p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
                         <i class="fa-solid fa-border-all w-6 text-center text-solar"></i>
-                        <span data-key="nav_dashboard" class="hidden xl:block ml-3 font-medium text-sm">Dashboard</span>
+                        <span data-key="nav_dashboard" class="ml-3 font-medium text-sm">Dashboard</span>
                     </button>
-                    <button onclick="switchTab('twin')" id="nav-twin" class="nav-item w-full flex items-center justify-center xl:justify-start p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
+                    <button onclick="switchTab('twin'); closeMobileMenu()" id="nav-twin"
+                        class="nav-item w-full flex items-center p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
                         <i class="fa-solid fa-wand-magic-sparkles w-6 text-center text-blue-400"></i>
-                        <span data-key="nav_twin" class="hidden xl:block ml-3 font-medium text-sm">--</span>
+                        <span data-key="nav_twin" class="ml-3 font-medium text-sm">--</span>
                     </button>
-                    <button onclick="switchTab('reports')" id="nav-reports" class="nav-item w-full flex items-center justify-center xl:justify-start p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
+                    <button onclick="switchTab('reports'); closeMobileMenu()" id="nav-reports"
+                        class="nav-item w-full flex items-center p-4 rounded-2xl text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] hover:bg-white/5 transition-all border border-transparent">
                         <i class="fa-solid fa-chart-pie w-6 text-center text-purple-400"></i>
-                        <span data-key="nav_reports" class="hidden xl:block ml-3 font-medium text-sm">--</span>
+                        <span data-key="nav_reports" class="ml-3 font-medium text-sm">--</span>
                     </button>
                 </nav>
             </div>
 
             <div class="mt-auto">
                 <div class="px-6 pb-4">
-                    <button onclick="navToSelection()" class="w-full flex items-center justify-center xl:justify-start p-3 rounded-xl bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] transition-all text-xs text-[color:var(--txt-secondary)] hover:text-[color:var(--txt-strong)] group shadow-sm">
-                        <div class="w-6 text-center"><i class="fa-solid fa-map-location-dot text-[color:var(--txt-faint)] group-hover:text-solar transition-colors"></i></div>
-                        <span data-key="nav_switch_plant" class="hidden xl:block ml-2 font-medium">--</span>
+                    <button onclick="navToSelection()"
+                        class="w-full flex items-center p-3 rounded-xl bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] transition-all text-xs text-[color:var(--txt-secondary)] hover:text-[color:var(--txt-strong)] group shadow-sm">
+                        <div class="w-6 text-center"><i
+                                class="fa-solid fa-map-location-dot text-[color:var(--txt-faint)] group-hover:text-solar transition-colors"></i>
+                        </div>
+                        <span data-key="nav_switch_plant" class="ml-2 font-medium">--</span>
                     </button>
                 </div>
                 <div class="p-6 border-t border-[var(--surface-soft-bdr)]">
                     <div class="flex items-center justify-between group/profile">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-[var(--surface-soft)] flex items-center justify-center border border-[var(--surface-glass-bdr)] shrink-0">
+                            <div
+                                class="w-10 h-10 rounded-full bg-[var(--surface-soft)] flex items-center justify-center border border-[var(--surface-glass-bdr)] shrink-0">
                                 <i class="fa-solid fa-user text-[color:var(--txt-muted)] text-sm"></i>
                             </div>
-                            <div class="hidden xl:block">
+                            <div>
                                 <p class="text-sm font-semibold text-[color:var(--txt-strong)]" id="user-name">--</p>
                                 <p class="text-xs text-green-400" id="user-status">--</p>
                             </div>
                         </div>
                         <button onclick="handleLogout()"
-                                class="hidden xl:flex w-8 h-8 items-center justify-center rounded-lg
-                                    bg-transparent hover:bg-red-500/10 border border-transparent hover:border-red-500/30
-                                    text-[color:var(--txt-faint)] hover:text-red-500 transition-all duration-300 group/btn"
-                                title="Güvenli Çıkış">
-                            <i class="fa-solid fa-power-off text-sm group-hover/btn:scale-110 transition-transform duration-300"></i>
+                            class="flex w-8 h-8 items-center justify-center rounded-lg hover:bg-red-500/10 text-[color:var(--txt-faint)] hover:text-red-500 transition-all">
+                            <i class="fa-solid fa-power-off text-sm"></i>
                         </button>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Mobil nav -->
-        <nav class="md:hidden fixed bottom-0 left-0 w-full z-[90] glass-panel border-t border-[var(--surface-glass-bdr)] pb-safe">
-            <div class="flex justify-around items-center p-2">
-                <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center justify-center p-2 text-[color:var(--txt-muted)] transition group w-1/4">
-                    <div class="w-10 h-10 rounded-xl group-[.active]:bg-[var(--surface-soft)] flex items-center justify-center mb-1 transition">
-                        <i class="fa-solid fa-border-all text-xl"></i>
+        <main class="flex-1 overflow-y-auto relative h-full flex flex-col">
+            <div class="absolute top-7 right-6 md:top-13 md:right-12 z-[50] flex flex-col items-end gap-2">
+                <div class="flex gap-2">
+                    <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)] backdrop-blur-md"
+                        onclick="toggleLanguage()">
+                        <div id="btn-tr"
+                            class="w-7 md:w-8 text-center py-0.5 rounded-full text-[8px] md:text-[9px] font-bold transition-all bg-white text-black shadow-sm">
+                            TR</div>
+                        <div id="btn-en"
+                            class="w-7 md:w-8 text-center py-0.5 rounded-full text-[8px] md:text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                            EN</div>
                     </div>
-                    <span class="text-[10px] font-medium" data-key="nav_dashboard">--</span>
-                </button>
-                <button onclick="switchTab('twin')" id="mob-nav-twin" class="flex flex-col items-center justify-center p-2 text-[color:var(--txt-muted)] transition group w-1/4">
-                    <div class="w-10 h-10 rounded-xl group-[.active]:bg-[var(--surface-soft)] flex items-center justify-center mb-1 transition">
-                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                    <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)] backdrop-blur-md"
+                        onclick="toggleTheme()">
+                        <div id="btn-light"
+                            class="w-7 md:w-8 text-center py-0.5 rounded-full text-[8px] md:text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
+                            <i class="fa-solid fa-sun"></i>
+                        </div>
+                        <div id="btn-dark"
+                            class="w-7 md:w-8 text-center py-0.5 rounded-full text-[8px] md:text-[9px] font-bold transition-all bg-white text-black shadow-sm">
+                            <i class="fa-solid fa-moon"></i>
+                        </div>
                     </div>
-                    <span class="text-[10px] font-medium" data-key="nav_twin">--</span>
-                </button>
-                <button onclick="switchTab('reports')" id="mob-nav-reports" class="flex flex-col items-center justify-center p-2 text-[color:var(--txt-muted)] transition group w-1/4">
-                    <div class="w-10 h-10 rounded-xl group-[.active]:bg-[var(--surface-soft)] flex items-center justify-center mb-1 transition">
-                        <i class="fa-solid fa-chart-pie text-xl"></i>
-                    </div>
-                    <span class="text-[10px] font-medium" data-key="nav_reports">--</span>
-                </button>
-                <button onclick="navToSelection()" class="flex flex-col items-center justify-center p-2 text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] transition w-1/4">
-                    <div class="w-10 h-10 rounded-xl bg-[var(--surface-soft)] flex items-center justify-center mb-1">
-                        <i class="fa-solid fa-map-location-dot text-xl"></i>
-                    </div>
-                    <span class="text-[10px] font-medium" data-key="nav_switch_plant">--</span>
-                </button>
+                </div>
+                <!-- SAAT TOGGLE
+                <div
+                    class="hidden md:flex glass-panel px-4 py-2 rounded-full text-xs font-mono text-[color:var(--txt-secondary)] backdrop-blur-md border border-[var(--surface-glass-bdr)] items-center">
+                    <i class="fa-regular fa-clock mr-2"></i><span id="clock">--:--</span>
+                </div> -->
+                <div
+                    class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 backdrop-blur-md border border-[var(--surface-glass-bdr)] shadow-sm">
+                    <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></span>
+                    <span data-key="system_active"
+                        class="text-[9px] md:text-[10px] font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
+                </div>
             </div>
-        </nav>
 
-        <main class="flex-1 overflow-y-auto relative">
-            <div class="p-6 lg:p-12 max-w-[1600px] mx-auto">
-
-                <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
-                    <div>
-                        <h2 data-key="page_overview" class="text-3xl font-light text-[color:var(--txt-strong)] mb-1" id="page-title">--</h2>
-                        <p class="text-[color:var(--txt-muted)] text-sm font-light" id="plant-title">--</p>
-                    </div>
+            <div class="p-6 lg:p-12 max-w-[1600px] w-full mx-auto flex-1">
+                <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="hidden lg:flex glass-panel px-4 py-2 rounded-full items-center gap-3 h-12">
-                            <span class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></span>
-                            <span data-key="system_active" class="text-xs font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
-                        </div>
-                        <div class="hidden md:flex glass-panel px-4 py-2 rounded-full text-xs font-mono text-[color:var(--txt-secondary)] h-12 items-center">
-                            <i class="fa-regular fa-clock mr-2"></i><span id="clock">--:--</span>
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleLanguage()">
-                                <div id="btn-tr" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all duration-300 bg-white text-black shadow-lg">TR</div>
-                                <div id="btn-en" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all duration-300 text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)]">EN</div>
-                            </div>
-                            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]" onclick="toggleTheme()">
-                                <div id="btn-light" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all duration-300 text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)]"><i class="fa-solid fa-sun"></i></div>
-                                <div id="btn-dark" class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all duration-300 bg-white text-black shadow-lg"><i class="fa-solid fa-moon"></i></div>
-                            </div>
+                        <button onclick="toggleMobileMenu()"
+                            class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--surface-soft)] border border-[var(--surface-soft-bdr)]">
+                            <i class="fa-solid fa-bars-staggered text-[color:var(--txt-strong)]"></i>
+                        </button>
+                        <div>
+                            <h2 data-key="page_overview"
+                                class="text-s md:text-3xl font-light text-[color:var(--txt-strong)] mb-1"
+                                id="page-title">--</h2>
+                            <p class="text-[color:var(--txt-muted)] text-xs md:text-sm font-light" id="plant-title">--
+                            </p>
                         </div>
                     </div>
                 </header>
 
-                <!--Overview-->
-                <div id="view-overview">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <div class="glass-hero hero-energy rounded-3xl p-8 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-bolt text-3xl text-solar"></i>
+                <!--OVERVIEW-->
+                <div id="view-overview" class="pb-6">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
+                        <div
+                            class="glass-hero hero-energy rounded-2xl md:rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-6 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-bolt text-xl md:text-3xl text-solar"></i>
                             </div>
-                            <p data-key="card_instant_power" class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2">--</p>
-                            <h3 class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
-                                <span id="val-power" class="inline-block min-w-[80px]">--</span><span class="text-lg text-[color:var(--txt-faint)] font-normal"> MW</span>
+                            <p data-key="card_instant_power"
+                                class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                                <span id="val-power" class="inline-block min-w-[40px] md:min-w-[80px]">--</span><span
+                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal"> MW</span>
                             </h3>
-                            <div id="power-loading" class="mt-2 h-3 w-24 bg-[var(--surface-soft)] rounded animate-pulse skeleton-loader"></div>
-                            <div class="mt-4 flex items-center gap-2">
-                                <span class="bg-green-500/10 text-green-400 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                            <div id="power-loading"
+                                class="mt-2 h-1.5 md:h-3 w-16 md:w-24 bg-[var(--surface-soft)] rounded animate-pulse skeleton-loader">
+                            </div>
+                            <div class="mt-2 md:mt-4 flex items-center gap-1 md:gap-2">
+                                <span
+                                    class="bg-green-500/10 text-green-400 text-[8px] md:text-xs px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-arrow-trend-up"></i>
                                     <span id="val-power-delta">--</span>
                                 </span>
-                                <span data-key="card_compare_yest" class="text-xs text-[color:var(--txt-faint)]">--</span>
+                                <span data-key="card_compare_yest"
+                                    class="text-[8px] md:text-xs text-[color:var(--txt-faint)]">--</span>
                             </div>
                         </div>
 
-                        <div class="glass-soft rounded-3xl p-6 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-server text-2xl text-blue-400"></i>
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-server text-xl md:text-2xl text-blue-400"></i>
                             </div>
-                            <p data-key="card_daily_prod" class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2">--</p>
-                            <h3 class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
-                                <span id="val-daily">--</span> <span class="text-lg text-[color:var(--txt-faint)] font-normal">MWh</span>
+                            <p data-key="card_daily_prod"
+                                class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                                <span id="val-daily">--</span> <span
+                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal">MWh</span>
                             </h3>
-                            <div class="mt-4 w-full bg-slate-200 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden">
+                            <div
+                                class="mt-3 md:mt-4 w-full bg-slate-200 dark:bg-slate-800/50 rounded-full h-1 md:h-1.5 overflow-hidden">
                                 <div id="daily-bar" class="bg-blue-500 h-full rounded-full" style="width:65%"></div>
                             </div>
                         </div>
 
-                        <div class="glass-soft rounded-3xl p-6 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-wallet text-2xl text-emerald-400"></i>
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-wallet text-xl md:text-2xl text-emerald-400"></i>
                             </div>
-                            <p data-key="card_daily_rev" class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2">--</p>
-                            <h3 class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                            <p data-key="card_daily_rev"
+                                class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
                                 $<span id="val-revenue">--</span>
                             </h3>
-                            <p data-key="card_base_price" class="text-xs text-[color:var(--txt-faint)] mt-4">--</p>
+                            <p data-key="card_base_price"
+                                class="text-[8px] md:text-xs text-[color:var(--txt-faint)] mt-2 md:mt-4">--</p>
                         </div>
 
-                        <div class="glass-soft rounded-3xl p-6 card-hover relative overflow-hidden border-danger/20 shadow-[0_0_30px_-10px_rgba(239,68,68,0.2)]">
-                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-danger/20 rounded-full blur-2xl"></div>
-                            <div class="absolute top-0 right-0 p-6 opacity-50">
-                                <i class="fa-solid fa-triangle-exclamation text-2xl text-danger animate-pulse"></i>
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden border-danger/20 shadow-[0_0_30px_-10px_rgba(239,68,68,0.2)]">
+                            <div
+                                class="absolute -right-6 -top-6 w-16 md:w-24 h-16 md:h-24 bg-danger/20 rounded-full blur-2xl">
                             </div>
-
-                            <h3 class="text-2xl font-semibold text-[color:var(--txt-primary)] mt-1 relative z-10" id="val-risk-title">--</h3>
-
-                            <p class="text-sm text-[color:var(--txt-secondary)] mt-3 relative z-10 font-light" id="val-risk-desc">--</p>
-
-                            <div class="mt-4 h-1.5 w-full bg-danger/10 rounded-full overflow-hidden relative z-10">
-                                <div id="risk-bar" class="h-full bg-danger rounded-full transition-all" style="width:0%"></div>
+                            <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-6 opacity-50">
+                                <i
+                                    class="fa-solid fa-triangle-exclamation text-xl md:text-2xl text-danger animate-pulse"></i>
+                            </div>
+                            <h3 class="text-sm md:text-2xl font-semibold text-[color:var(--txt-primary)] mt-1 relative z-10"
+                                id="val-risk-title">--</h3>
+                            <p class="text-[9px] md:text-sm text-[color:var(--txt-secondary)] mt-1 md:mt-3 relative z-10 font-light leading-tight"
+                                id="val-risk-desc">--</p>
+                            <div
+                                class="mt-3 md:mt-4 h-1 md:h-1.5 w-full bg-danger/10 rounded-full overflow-hidden relative z-10">
+                                <div id="risk-bar" class="h-full bg-danger rounded-full transition-all"
+                                    style="width:0%"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
-                        <div class="lg:col-span-2 glass-panel rounded-3xl p-8 flex flex-col h-full">
-                            <div class="flex justify-between items-center mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div
+                            class="lg:col-span-2 glass-panel rounded-3xl p-4 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-[500px]">
+                            <div class="flex justify-between items-center mb-4 md:mb-6">
                                 <div>
-                                    <h3 data-key="chart_daily_analysis" class="text-xl font-medium text-[color:var(--txt-strong)]">--</h3>
-                                    <p data-key="chart_daily_sub" class="text-sm text-[color:var(--txt-faint)]">--</p>
+                                    <h3 data-key="chart_daily_analysis"
+                                        class="text-lg md:text-xl font-medium text-[color:var(--txt-strong)]">--</h3>
+                                    <p data-key="chart_daily_sub"
+                                        class="text-[10px] md:text-sm text-[color:var(--txt-faint)]">--</p>
                                 </div>
-                                <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-2 md:gap-4">
                                     <div class="flex items-center gap-2">
-                                        <span class="w-3 h-3 rounded-full bg-solar"></span>
-                                        <span class="text-xs text-[color:var(--txt-muted)]"><span data-key="legend_prod">--</span> (MWh)</span>
+                                        <span class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-solar"></span>
+                                        <span class="text-[10px] md:text-xs text-[color:var(--txt-muted)]"><span
+                                                data-key="legend_prod">--</span> (MWh)</span>
                                     </div>
-                                    <button id="refresh-hourly" class="text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] transition" title="Yenile">
-                                        <i class="fa-solid fa-rotate-right"></i>
+                                    <button id="refresh-hourly"
+                                        class="text-[color:var(--txt-muted)] hover:text-[color:var(--txt-strong)] transition">
+                                        <i class="fa-solid fa-rotate-right text-xs md:text-base"></i>
                                     </button>
                                 </div>
                             </div>
@@ -646,117 +808,157 @@
                                 <canvas id="mainChart"></canvas>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-6 h-full">
-                            <div class="glass-panel rounded-3xl p-8 flex-1 flex flex-col justify-center relative overflow-hidden">
-                                <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent"></div>
-                                <div class="relative z-10">
+
+                        <div class="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
+                            <div
+                                class="glass-panel rounded-3xl p-4 lg:p-6 flex flex-col relative overflow-hidden h-[180px] lg:h-full lg:min-h-[260px]">
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none">
+                                </div>
+
+                                <div class="relative z-10 flex flex-col h-full">
                                     <div class="flex justify-between items-start">
-                                        <div>
-                                            <p class="text-[color:var(--txt-muted)] text-sm uppercase tracking-wider font-semibold" id="w-city">--</p>
-                                            <h2 class="text-5xl font-light text-[color:var(--txt-strong)] mt-2" id="w-temp">--°C</h2>
-                                            <p class="text-blue-400 mt-1 font-medium" id="w-desc">--</p>
-                                            <span id="w-impact" class="inline-block mt-2 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-green-500/10 text-green-400">--</span>
+                                        <div class="flex-1">
+                                            <p class="text-[color:var(--txt-muted)] text-[9px] lg:text-lg uppercase tracking-wider font-semibold truncate"
+                                                id="w-city">--</p>
+                                            <div class="flex items-baseline gap-1 mt-0.5">
+                                                <h2 class="text-xl lg:text-3xl font-light text-[color:var(--txt-strong)]"
+                                                    id="w-temp">--°C</h2>
+                                                <p class="text-blue-400 text-[10px] lg:text-sm font-medium truncate"
+                                                    id="w-desc">--</p>
+                                            </div>
+                                            <span id="w-impact"
+                                                class="inline-block mt-1.5 text-[8px] lg:text-[2px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/5">--</span>
                                         </div>
-                                        <i class="fa-solid fa-cloud-sun text-4xl text-[color:var(--txt-secondary)]"></i>
+                                        <i
+                                            class="fa-solid fa-cloud-sun text-xl lg:text-4xl text-[color:var(--txt-secondary)] ml-2 shadow-sm"></i>
                                     </div>
-                                    <div class="mt-8 space-y-4">
-                                        <div class="flex justify-between items-center py-2 border-b border-[var(--surface-soft-bdr)]">
-                                            <span class="text-[color:var(--txt-muted)] text-sm"><i class="fa-solid fa-wind w-5"></i> <span data-key="weather_wind">--</span></span>
-                                            <span class="text-[color:var(--txt-strong)] text-sm" id="w-wind">--</span>
+                                    <div class="mt-auto space-y-1.5 lg:space-y-2">
+                                        <div
+                                            class="flex justify-between items-center py-1 lg:py-1.5 border-b border-[var(--surface-soft-bdr)]">
+                                            <span
+                                                class="text-[color:var(--txt-muted)] text-[9px] lg:text-xs flex items-center">
+                                                <i class="fa-solid fa-wind w-4 lg:w-5"></i>
+                                                <span data-key="weather_wind">--</span>
+                                            </span>
+                                            <span
+                                                class="text-[color:var(--txt-strong)] text-[9px] lg:text-xs font-medium"
+                                                id="w-wind">--</span>
                                         </div>
-                                        <div class="flex justify-between items-center py-2 border-b border-[var(--surface-soft-bdr)]">
-                                            <span class="text-[color:var(--txt-muted)] text-sm"><i class="fa-solid fa-droplet w-5"></i> <span data-key="weather_hum">--</span></span>
-                                            <span class="text-[color:var(--txt-strong)] text-sm" id="w-hum">--</span>
+                                        <div
+                                            class="flex justify-between items-center py-1 lg:py-1.5 border-b border-[var(--surface-soft-bdr)] last:border-0">
+                                            <span
+                                                class="text-[color:var(--txt-muted)] text-[9px] lg:text-xs flex items-center">
+                                                <i class="fa-solid fa-droplet w-4 lg:w-5"></i>
+                                                <span data-key="weather_hum">--</span>
+                                            </span>
+                                            <span
+                                                class="text-[color:var(--txt-strong)] text-[9px] lg:text-xs font-medium"
+                                                id="w-hum">--</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="glass-panel rounded-3xl p-8 flex-none border-l border-danger bg-gradient-to-r from-danger/5 to-transparent">
-                                <h4 class="text-[color:var(--txt-strong)] font-medium mb-2 flex items-center gap-2">
+
+                            <div
+                                class="glass-panel rounded-3xl p-4 lg:p-8 flex flex-col justify-center border-l border-danger bg-gradient-to-r from-danger/5 to-transparent h-[180px] lg:h-auto">
+                                <h4
+                                    class="text-[color:var(--txt-strong)] text-xs lg:text-base font-medium mb-1 lg:mb-2 flex items-center gap-2">
                                     <i class="fa-solid fa-circle-exclamation text-danger"></i>
                                     <span data-key="card_critical_alert">--</span>
                                 </h4>
-                                <p class="text-sm text-[color:var(--txt-muted)] leading-relaxed font-light" id="alert-msg">--</p>
+                                <p class="text-[10px] lg:text-sm text-[color:var(--txt-muted)] leading-tight lg:leading-relaxed font-light"
+                                    id="alert-msg">--</p>
                                 <button onclick="toggleAnalysisModal(true)"
-                                        class="mt-4 text-xs font-bold text-danger uppercase tracking-wider hover:text-[color:var(--txt-strong)] transition-colors flex items-center gap-2 group">
+                                    class="mt-3 lg:mt-4 text-[9px] lg:text-xs font-bold text-danger uppercase tracking-wider hover:text-[color:var(--txt-strong)] transition-colors flex items-center gap-2 group">
                                     <span data-key="btn_open_analysis">--</span>
-                                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                    <i
+                                        class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!--Kestirimci Bakım-->
-                <div id="view-twin" class="view-hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="glass-soft rounded-2xl p-4 flex items-center justify-between card-hover transition">
-                            <div>
-                                <p data-key="twin_eff_score" class="text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider">--</p>
-                                <h3 class="text-2xl font-bold text-[color:var(--txt-strong)] mt-1" id="t-eff">--</h3>
+                <!--KESTİRİMCİ BAKIM-->
+                <div id="view-twin" class="view-hidden pb-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                            <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
+                                <i class="fa-solid fa-circle-check text-lg md:text-2xl text-green-400"></i>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-                                <i class="fa-solid fa-circle-check text-green-400"></i>
+                            <p data-key="twin_eff_score"
+                                class="text-[9px] md:text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-[color:var(--txt-strong)]" id="t-eff">--</h3>
+                        </div>
+
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                            <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
+                                <i class="fa-solid fa-triangle-exclamation text-lg md:text-2xl text-orange-400"></i>
+                            </div>
+                            <p data-key="twin_risk_hw"
+                                class="text-[9px] md:text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <div class="flex items-end gap-2">
+                                <h3 class="text-xl md:text-2xl font-bold text-[color:var(--txt-strong)]"
+                                    id="t-risk-dev">--</h3>
+                                <span data-key="twin_device"
+                                    class="text-[8px] md:text-[10px] text-orange-400 mb-0.5 md:mb-1">--</span>
                             </div>
                         </div>
-                        <div class="glass-soft rounded-2xl p-4 flex items-center justify-between card-hover transition">
-                            <div>
-                                <p data-key="twin_risk_hw" class="text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider">--</p>
-                                <div class="flex items-end gap-2">
-                                    <h3 class="text-2xl font-bold text-[color:var(--txt-strong)] mt-1" id="t-risk-dev">--</h3>
-                                    <span data-key="twin_device" class="text-[10px] text-orange-400 mb-1">--</span>
-                                </div>
+
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden border border-danger/20">
+                            <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50 animate-pulse">
+                                <i class="fa-solid fa-triangle-exclamation text-lg md:text-2xl text-danger"></i>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                                <i class="fa-solid fa-triangle-exclamation text-orange-400"></i>
-                            </div>
+                            <p data-key="twin_fault_panel"
+                                class="text-[9px] md:text-[10px] text-red-300 font-bold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-[color:var(--txt-strong)]">
+                                <span id="t-fault-panel">--</span>
+                                <span id="t-total-panels"
+                                    class="text-[10px] md:text-xs font-normal text-[color:var(--txt-muted)]">--</span>
+                            </h3>
                         </div>
-                        <div class="glass-soft rounded-2xl p-4 flex items-center justify-between border border-danger/20 card-hover transition">
-                            <div>
-                                <p data-key="twin_fault_panel" class="text-[10px] text-red-300 font-bold uppercase tracking-wider">--</p>
-                                <h3 class="text-2xl font-bold text-[color:var(--txt-strong)] mt-1">
-                                    <span id="t-fault-panel">--</span>
-                                    <span id="t-total-panels" class="text-xs font-normal text-[color:var(--txt-muted)]">--</span>
-                                </h3>
+
+                        <div
+                            class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                            <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
+                                <i class="fa-regular fa-calendar-check text-lg md:text-2xl text-blue-400"></i>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-danger/20 flex items-center justify-center animate-pulse">
-                                <i class="fa-solid fa-triangle-exclamation text-danger"></i>
-                            </div>
-                        </div>
-                        <div class="glass-soft rounded-2xl p-4 flex items-center justify-between card-hover transition">
-                            <div>
-                                <p data-key="twin_avg_detect" class="text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider">--</p>
-                                <h3 class="text-2xl font-bold text-[color:var(--txt-strong)] mt-1" id="t-detect">--</h3>
-                            </div>
-                            <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                <i class="fa-regular fa-calendar-check text-blue-400"></i>
-                            </div>
+                            <p data-key="twin_avg_detect"
+                                class="text-[9px] md:text-[10px] text-[color:var(--txt-muted)] font-bold uppercase tracking-wider mb-1 md:mb-2">
+                                --</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-[color:var(--txt-strong)]" id="t-detect">--
+                            </h3>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
-                        <div class="glass-panel rounded-3xl p-6 flex flex-col h-full">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-                                    <span data-key="sec_fault_predict">--</span>
-                                </h3>
-                            </div>
-                            <div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1" id="predictive-list-container"></div>
-                        </div>
-                        <div class="lg:col-span-2 glass-panel rounded-3xl p-8 flex flex-col h-full">
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Grafik Card -->
+                        <div
+                            class="glass-panel rounded-3xl p-5 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-[540px]">
                             <div class="flex justify-between items-center mb-6">
                                 <div>
-                                    <h3 data-key="chart_projection" class="text-xl font-medium text-[color:var(--txt-strong)]">--</h3>
-                                    <p data-key="chart_proj_sub" class="text-sm text-[color:var(--txt-faint)]">--</p>
+                                    <h3 data-key="chart_projection"
+                                        class="text-lg md:text-xl font-medium text-[color:var(--txt-strong)]">--</h3>
+                                    <p data-key="chart_proj_sub"
+                                        class="text-[10px] md:text-sm text-[color:var(--txt-faint)]">--</p>
                                 </div>
-                                <div class="flex gap-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-3 h-3 rounded-full bg-solar"></span>
-                                        <span class="text-xs text-[color:var(--txt-muted)]" data-key="data_p50">--</span>
+                                <div class="flex gap-2 md:gap-4">
+                                    <div class="flex items-center gap-1.5 md:gap-2">
+                                        <span class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-solar"></span>
+                                        <span class="text-[9px] md:text-xs text-[color:var(--txt-muted)]"
+                                            data-key="data_p50">--</span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-3 h-3 rounded-full bg-danger"></span>
-                                        <span class="text-xs text-[color:var(--txt-muted)]" data-key="data_p10">--</span>
+                                    <div class="flex items-center gap-1.5 md:gap-2">
+                                        <span class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-danger"></span>
+                                        <span class="text-[9px] md:text-xs text-[color:var(--txt-muted)]"
+                                            data-key="data_p10">--</span>
                                     </div>
                                 </div>
                             </div>
@@ -764,173 +966,241 @@
                                 <canvas id="projectionChart"></canvas>
                             </div>
                         </div>
-                        <div class="glass-panel rounded-3xl p-6 flex flex-col h-full">
-                            <h3 class="text-[color:var(--txt-strong)] font-medium mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-triangle-exclamation text-danger"></i>
-                                <span data-key="sec_active_faults">--</span>
-                            </h3>
-                            <button onclick="toggleHistoryModal(true)" class="w-full py-2 mb-4 bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] hover:border-white/10 text-[color:var(--txt-secondary)] text-xs font-medium rounded-xl transition flex items-center justify-center gap-2 group">
-                                <i class="fa-solid fa-clock-rotate-left text-[color:var(--txt-faint)] group-hover:text-blue-400 transition"></i>
-                                <span data-key="btn_view_history">--</span>
-                            </button>
-                            <div class="flex-1 space-y-3 custom-scrollbar pr-1 touch-scroll" id="fault-list-container"></div>
+                        <div class="grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:gap-6">
+                            <div
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-[258px]">
+                                <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2 mb-4">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-xs md:text-base"></i>
+                                    <span data-key="sec_fault_predict"
+                                        class="text-[10px] md:text-base truncate">--</span>
+                                </h3>
+                                <div class="flex-1 overflow-visible lg:overflow-y-auto custom-scrollbar pr-1">
+                                    <div id="predictive-list-container" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-[258px]">
+                                <div class="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-2 mb-3">
+                                    <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
+                                        <i
+                                            class="fa-solid fa-triangle-exclamation text-danger text-xs md:text-base"></i>
+                                        <span data-key="sec_active_faults"
+                                            class="text-[10px] md:text-base truncate">--</span>
+                                    </h3>
+                                    <button onclick="toggleHistoryModal(true)"
+                                        class="py-1 px-2 bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] text-[8px] md:text-xs font-medium rounded-lg transition flex items-center justify-center gap-1.5 group whitespace-nowrap">
+                                        <i
+                                            class="fa-solid fa-clock-rotate-left text-[color:var(--txt-faint)] group-hover:text-blue-400 transition"></i>
+                                        <span data-key="btn_view_history">--</span>
+                                    </button>
+                                </div>
+                                <div
+                                    class="flex-1 overflow-visible lg:overflow-y-auto custom-scrollbar pr-1 touch-scroll">
+                                    <div id="fault-list-container" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!--Raporlar-->
-                <div id="view-reports" class="view-hidden w-full h-full flex flex-col">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 flex-none">
-                        <div class="glass-hero rounded-3xl p-8 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-40 group-hover:opacity-80 transition-opacity">
+                <!--RAPORLAR-->
+                <div id="view-reports" class="view-hidden w-full h-full flex flex-col pb-10">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-4 lg:mb-8 flex-none">
+                        <div class="glass-hero rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
                                 <i class="fa-solid fa-bolt text-3xl text-solar"></i>
                             </div>
-                            <p class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2" data-key="rep_card_prod">--</p>
-                            <h3 id="val-rep-prod" class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">--</h3>
-                            <div class="mt-4 flex items-center gap-2">
-                                <span id="val-rep-prod-delta" class="bg-green-500/10 text-green-400 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                                    <i class="fa-solid fa-arrow-trend-up"></i> --
+                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
+                                data-key="rep_card_prod">--</p>
+                            <h3 id="val-rep-prod"
+                                class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                                --</h3>
+                            <div class="mt-2 md:mt-4 flex items-center gap-2">
+                                <span id="val-rep-prod-delta"
+                                    class="bg-green-500/10 text-green-400 text-[8px] md:text-xs px-2 py-0.5 md:py-1 rounded-full font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-trend-up text-[8px] md:text-xs"></i> --
                                 </span>
-                                <span class="text-xs text-[color:var(--txt-faint)]" data-key="rep_compare_prev">--</span>
+                                <span class="text-[8px] md:text-xs text-[color:var(--txt-faint)] hidden md:inline"
+                                    data-key="rep_compare_prev">--</span>
                             </div>
                         </div>
-
-                        <div class="glass-soft rounded-3xl p-8 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-40 group-hover:opacity-80 transition-opacity">
+                        <div class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
                                 <i class="fa-solid fa-sack-dollar text-3xl text-blue-400"></i>
                             </div>
-                            <p class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2" data-key="rep_card_income">--</p>
-                            <h3 class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight" id="val-rep-income">--</h3>
-                            <div class="mt-4 w-full bg-[var(--surface-soft)] rounded-full h-1.5 overflow-hidden">
-                                <div id="rep-collection-bar" class="bg-blue-500 h-full rounded-full" style="width:0%"></div>
+                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
+                                data-key="rep_card_income">--</p>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight"
+                                id="val-rep-income">--</h3>
+                            <div
+                                class="mt-2 md:mt-4 w-full bg-[var(--surface-soft)] rounded-full h-1 md:h-1.5 overflow-hidden">
+                                <div id="rep-collection-bar" class="bg-blue-500 h-full rounded-full" style="width:0%">
+                                </div>
                             </div>
-                            <p class="text-[10px] text-[color:var(--txt-faint)] mt-2 text-right">
+                            <p
+                                class="text-[8px] md:text-[10px] text-[color:var(--txt-faint)] mt-1.5 md:mt-2 text-right">
                                 <span data-key="rep_collection">--</span> <span id="rep-collection-pct">--</span>
                             </p>
                         </div>
-
-                        <div class="glass-soft rounded-3xl p-8 card-hover relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-6 opacity-40 group-hover:opacity-80 transition-opacity">
+                        <div class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
                                 <i class="fa-solid fa-tree text-3xl text-emerald-400"></i>
                             </div>
-                            <p class="text-[color:var(--txt-faint)] text-xs font-semibold uppercase tracking-wider mb-2" data-key="rep_card_carbon">--</p>
-                            <h3 class="text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight" id="val-rep-carbon">--</h3>
-                            <div class="mt-4 flex items-center gap-2">
-                                <div class="flex -space-x-2">
-                                    <div class="w-6 h-6 rounded-full bg-[var(--surface-soft)] border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[8px] text-[color:var(--txt-strong)]">CO2</div>
-                                    <div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[9px] text-emerald-400"><i class="fa-solid fa-leaf"></i></div>
+                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
+                                data-key="rep_card_carbon">--</p>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight"
+                                id="val-rep-carbon">--</h3>
+                            <div class="mt-2 md:mt-4 flex items-center gap-2">
+                                <div class="flex -space-x-1.5 md:-space-x-2">
+                                    <div
+                                        class="w-4 h-4 md:w-6 md:h-6 rounded-full bg-[var(--surface-soft)] border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[6px] md:text-[8px] text-[color:var(--txt-strong)]">
+                                        CO2</div>
+                                    <div
+                                        class="w-4 h-4 md:w-6 md:h-6 rounded-full bg-emerald-500/20 border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[7px] md:text-[9px] text-emerald-400">
+                                        <i class="fa-solid fa-leaf"></i>
+                                    </div>
                                 </div>
-                                <span class="text-xs text-[color:var(--txt-faint)]">
+                                <span class="text-[7px] md:text-xs text-[color:var(--txt-faint)] truncate">
                                     <span id="val-rep-trees">--</span> <span data-key="rep_trees">--</span>
                                 </span>
                             </div>
                         </div>
+                        <div
+                            class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group lg:hidden flex flex-col justify-center items-center border border-dashed border-[var(--surface-soft-bdr)]">
+                            <i class="fa-solid fa-plus text-[color:var(--txt-faint)] text-xs mb-1"></i>
+                            <p class="text-[8px] text-[color:var(--txt-faint)] uppercase font-bold">Yeni Veri Eklenecek!
+                            </p>
+                        </div>
                     </div>
-                    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
-                        <div class="lg:col-span-4 glass-panel rounded-3xl p-0 flex flex-col h-full overflow-hidden border border-[var(--surface-soft-bdr)]">
-                            <div class="p-6 border-b border-[var(--surface-soft-bdr)]">
-                                <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-solar"></i>
+                    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-0">
+                        <div
+                            class="lg:col-span-4 glass-panel rounded-3xl p-0 flex flex-col h-[250px] lg:h-full overflow-hidden border border-[var(--surface-soft-bdr)]">
+                            <div class="p-4 md:p-6 border-b border-[var(--surface-soft-bdr)]">
+                                <h3
+                                    class="text-sm md:text-base text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
+                                    <i class="fa-solid fa-folder-tree text-solar text-xs md:text-base"></i>
                                     <span data-key="rep_archive">--</span>
                                 </h3>
                             </div>
                             <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1" id="report-list">
-                                <div onclick="loadReport('monthly')" id="rep-btn-monthly" class="report-item active p-3 rounded-xl cursor-pointer">
+                                <div onclick="loadReport('monthly')" id="rep-btn-monthly"
+                                    class="report-item active p-3 rounded-xl cursor-pointer">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400"><i class="fa-solid fa-file-pdf"></i></div>
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+                                            <i class="fa-solid fa-file-pdf"></i>
+                                        </div>
                                         <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-strong)]" id="rep-list-title-monthly">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-muted)]" data-key="rep_sub_monthly">--</p>
+                                            <h4 class="text-sm font-medium text-[color:var(--txt-strong)]"
+                                                id="rep-list-title-monthly">--</h4>
+                                            <p class="text-[10px] text-[color:var(--txt-muted)]"
+                                                data-key="rep_sub_monthly">--</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div onclick="loadReport('yearly')" id="rep-btn-yearly" class="report-item p-3 rounded-xl cursor-pointer">
+                                <div onclick="loadReport('yearly')" id="rep-btn-yearly"
+                                    class="report-item p-3 rounded-xl cursor-pointer">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400"><i class="fa-solid fa-chart-pie"></i></div>
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                            <i class="fa-solid fa-chart-pie"></i>
+                                        </div>
                                         <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]" id="rep-list-title-yearly">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]" data-key="rep_sub_yearly">--</p>
+                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
+                                                id="rep-list-title-yearly">--</h4>
+                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
+                                                data-key="rep_sub_yearly">--</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div onclick="loadReport('financial')" id="rep-btn-financial" class="report-item p-3 rounded-xl cursor-pointer">
+                                <div onclick="loadReport('financial')" id="rep-btn-financial"
+                                    class="report-item p-3 rounded-xl cursor-pointer">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                                        </div>
                                         <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]" id="rep-list-title-financial">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]" data-key="rep_sub_financial">--</p>
+                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
+                                                id="rep-list-title-financial">--</h4>
+                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
+                                                data-key="rep_sub_financial">--</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div onclick="loadReport('technical')" id="rep-btn-technical" class="report-item p-3 rounded-xl cursor-pointer">
+                                <div onclick="loadReport('technical')" id="rep-btn-technical"
+                                    class="report-item p-3 rounded-xl cursor-pointer">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400"><i class="fa-solid fa-microchip"></i></div>
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+                                            <i class="fa-solid fa-microchip"></i>
+                                        </div>
                                         <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]" id="rep-list-title-technical">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]" data-key="rep_sub_technical">--</p>
+                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
+                                                id="rep-list-title-technical">--</h4>
+                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
+                                                data-key="rep_sub_technical">--</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="p-4 border-t border-[var(--surface-soft-bdr)]">
-                                <button onclick="showToast('msg_demo_feature')" class="w-full py-3 bg-[var(--surface-soft)] border border-[var(--surface-glass-bdr)] hover:bg-solar hover:border-solar hover:text-black text-[color:var(--txt-secondary)] font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 group">
-                                    <i class="fa-solid fa-plus group-hover:rotate-90 transition-transform"></i>
-                                    <span data-key="rep_create_new">--</span>
-                                </button>
                             </div>
                         </div>
-                        <div class="lg:col-span-8 glass-panel rounded-3xl p-8 flex flex-col relative overflow-hidden h-full border border-[var(--surface-soft-bdr)]">
-                            <div class="flex justify-between items-start mb-6">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-1">
-                                        <h2 id="rep-detail-title" class="text-2xl font-light text-[color:var(--txt-strong)]">--</h2>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/20" data-key="rep_status_ready">--</span>
-                                    </div>
-                                    <p id="rep-detail-desc" class="text-xs text-[color:var(--txt-muted)]">--</p>
-                                </div>
-                                <button onclick="showToast('msg_demo_feature')" class="w-10 h-10 rounded-xl bg-solar text-black hover:bg-white transition flex items-center justify-center shadow-lg shadow-solar/20" title="İndir">
-                                    <i class="fa-solid fa-download"></i>
+                        <div
+                            class="lg:col-span-8 glass-panel rounded-3xl p-5 md:p-8 flex flex-col relative overflow-hidden h-auto lg:h-full border border-[var(--surface-soft-bdr)]">
+                            <div class="flex justify-between items-start mb-4">
+                                <h2 id="rep-detail-title"
+                                    class="text-lg md:text-2xl font-light text-[color:var(--txt-strong)]">--</h2>
+                                <button
+                                    class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-solar text-black flex items-center justify-center shadow-lg">
+                                    <i class="fa-solid fa-download text-xs"></i>
                                 </button>
                             </div>
-
-                            <div class="ai-insight-box p-5 rounded-2xl mb-6 flex gap-5 items-start relative overflow-hidden transition-all duration-500" id="rep-ai-box">
-                                <div class="absolute -left-10 -top-10 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full pointer-events-none"></div>
-                                <div class="z-10 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex-none flex items-center justify-center text-[color:var(--txt-strong)] shadow-lg shadow-blue-500/30">
-                                    <i class="fa-solid fa-robot text-sm"></i>
+                            <div class="ai-insight-box p-4 rounded-2xl mb-4 flex gap-3 items-start relative overflow-hidden"
+                                id="rep-ai-box">
+                                <div
+                                    class="w-7 h-7 md:w-10 md:h-10 rounded-lg bg-blue-600 flex-none flex items-center justify-center text-white">
+                                    <i class="fa-solid fa-robot text-[10px] md:text-sm"></i>
                                 </div>
-                                <div class="z-10 flex-1">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h5 class="text-sm font-bold text-[color:var(--txt-strong)] tracking-wide" data-key="rep_ai_title">--</h5>
-                                        <span class="text-[9px] text-blue-300 flex items-center gap-1">
-                                            <i class="fa-solid fa-check-double"></i>
-                                            <span data-key="rep_verified">--</span>
-                                        </span>
-                                    </div>
-                                    <p id="rep-ai-text" class="text-xs text-[color:var(--txt-secondary)] leading-relaxed font-light">--</p>
-                                </div>
+                                <p id="rep-ai-text"
+                                    class="text-[10px] md:text-xs text-[color:var(--txt-secondary)] leading-snug">--</p>
                             </div>
-
-                            <div class="flex-1 relative mb-6 min-h-[250px] flex items-center">
-                                <canvas id="reportChart" class="w-full h-full"></canvas>
+                            <div class="flex-1 relative mb-4 min-h-[180px] lg:min-h-[250px]">
+                                <canvas id="reportChart"></canvas>
                             </div>
-
-                            <div class="grid grid-cols-3 gap-3 h-24">
-                                <div class="glass-soft rounded-xl p-2 flex flex-col items-center justify-center text-center border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)] hover:bg-white/10 transition group">
-                                    <p id="rep-m1-label" class="text-[9px] md:text-[10px] text-[color:var(--txt-faint)] uppercase tracking-wider font-bold mb-1 leading-3 group-hover:text-solar transition-colors">--</p>
-                                    <p id="rep-m1-val"   class="text-sm md:text-2xl font-light text-[color:var(--txt-strong)] font-mono">--</p>
+                            <div class="grid grid-cols-3 gap-2 h-16 md:h-24">
+                                <div
+                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
+                                    <p
+                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
+                                        --</p>
+                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
                                 </div>
-                                <div class="glass-soft rounded-xl p-2 flex flex-col items-center justify-center text-center border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)] hover:bg-white/10 transition group">
-                                    <p id="rep-m2-label" class="text-[9px] md:text-[10px] text-[color:var(--txt-faint)] uppercase tracking-wider font-bold mb-1 leading-3 group-hover:text-blue-400 transition-colors">--</p>
-                                    <p id="rep-m2-val"   class="text-sm md:text-2xl font-light text-[color:var(--txt-strong)] font-mono">--</p>
+                                <div
+                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
+                                    <p
+                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
+                                        --</p>
+                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
                                 </div>
-                                <div class="glass-soft rounded-xl p-2 flex flex-col items-center justify-center text-center border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)] hover:bg-white/10 transition group">
-                                    <p id="rep-m3-label" class="text-[9px] md:text-[10px] text-[color:var(--txt-faint)] uppercase tracking-wider font-bold mb-1 leading-3 group-hover:text-emerald-400 transition-colors">--</p>
-                                    <p id="rep-m3-val"   class="text-sm md:text-2xl font-light text-[color:var(--txt-strong)] font-mono">--</p>
+                                <div
+                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
+                                    <p
+                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
+                                        --</p>
+                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </main>
+    </div>
 
     <!--SCRIPTS yükleme sırasına mümkün olduğunca dokunmayın 08.04.2026-->
     <!--Core-->
@@ -965,4 +1235,5 @@
     <script src="main.js?v=4"></script>
 
 </body>
+
 </html>
