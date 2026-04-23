@@ -9,9 +9,7 @@
 
     /* Arka plan */
     --bg-body      : #141414;
-    --bg-body-grad :
-        radial-gradient(at 15% 50%, rgba(245,158,11,0.08) 0px, transparent 25%),
-        radial-gradient(at 85% 30%, rgba(59,130,246,0.08) 0px, transparent 25%);
+    --bg-body-grad : none;
 
     /* Yüzey */
     --surface-glass      : rgba(20,20,23,0.60);
@@ -203,6 +201,13 @@ aside {
     z-index       : 0;
     pointer-events: none;
     filter        : var(--canvas-filter);
+}
+
+html:not([data-theme="light"]) .grid-bg,
+html:not([data-theme="light"]) #canvas-bg,
+[data-theme="dark"] .grid-bg,
+[data-theme="dark"] #canvas-bg {
+    display: none;
 }
 
 /*GLASSMORPHISM YÜZEYLERİ*/
