@@ -9,9 +9,7 @@
 
     /* Arka plan */
     --bg-body      : #141414;
-    --bg-body-grad :
-        radial-gradient(at 15% 50%, rgba(245,158,11,0.08) 0px, transparent 25%),
-        radial-gradient(at 85% 30%, rgba(59,130,246,0.08) 0px, transparent 25%);
+    --bg-body-grad : none;
 
     /* Yüzey */
     --surface-glass      : rgba(20,20,23,0.60);
@@ -194,6 +192,13 @@ aside {
     z-index       : 0;
     pointer-events: none;
     filter        : var(--canvas-filter);
+}
+
+html:not([data-theme="light"]) .grid-bg,
+html:not([data-theme="light"]) #canvas-bg,
+[data-theme="dark"] .grid-bg,
+[data-theme="dark"] #canvas-bg {
+    display: none;
 }
 
 /*GLASSMORPHISM YÜZEYLERİ*/
@@ -502,7 +507,7 @@ body.light-mode .from-black\/80 {
     border    : 1px solid var(--toast-bdr);
     box-shadow: var(--toast-shd);
 }
-#toast-notification h4 { color: var(--clr-risk); }
+#toast-notification h4 { transition: color 0.2s ease; }
 
 /*Login*/
 .login-modern {
@@ -527,6 +532,10 @@ body.light-mode .from-black\/80 {
     background-color: #ffffff;
     border-color    : #D579EF;
     outline         : none;
+}
+
+.register-modern .text-center > p.text-xs.pt-5 {
+    color: #64748b;
 }
 
 .password-tooltip {
@@ -611,15 +620,21 @@ body.light-mode .from-black\/80 {
 }
 
 [data-theme="light"] .password-tooltip-rule {
-    color: #64748b;
+    color: #475569;
 }
 
 [data-theme="light"] .password-tooltip-rule i {
-    color: #94a3b8;
+    color: #64748b;
 }
 
 [data-theme="light"] .password-tooltip-rule.is-valid {
     color: #166534;
+    font-weight: 600;
+}
+
+[data-theme="light"] .password-tooltip-rule.is-valid i {
+    color: #16a34a;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 @media (max-width: 767px) {

@@ -7,6 +7,7 @@
     const PENDING_SIGNUP_KEY = "solar8.auth.pendingSignup";
     const PENDING_RESET_KEY = "solar8.auth.pendingReset";
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
+    const REGISTER_PROFILE_ENDPOINT = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod/register-profile";
 
     const defaultConfig = {
         region: "eu-central-1",
@@ -42,6 +43,7 @@
             verifySignupFirst: "Doğrulama için önce kayıt olmanız gerekiyor.",
             verifyCodeRequired: "Lütfen doğrulama kodunu girin.",
             verifySuccess: "Hesabınız doğrulandı. Şimdi giriş yapabilirsiniz.",
+            verifyProfileSyncFailed: "Hesap doğrulandı ancak profil verisi kaydedilemedi. Lütfen tekrar deneyin.",
             resendSignupFirst: "Kodu tekrar göndermek için önce kayıt olmanız gerekiyor.",
             resendSuccess: "Doğrulama kodu tekrar gönderildi.",
             forgotEmailRequired: "Lütfen kayıtlı e-posta adresinizi girin.",
@@ -85,6 +87,7 @@
             verifySignupFirst: "You need to sign up before completing verification.",
             verifyCodeRequired: "Please enter the verification code.",
             verifySuccess: "Your account has been verified. You can now sign in.",
+            verifyProfileSyncFailed: "Your account was verified, but the profile record could not be saved. Please try again.",
             resendSignupFirst: "You need to sign up before requesting another code.",
             resendSuccess: "The verification code has been sent again.",
             forgotEmailRequired: "Please enter your registered email address.",
@@ -251,7 +254,8 @@
     }
 
     function showLoginError(message) {
-        showMessage(getLoginElements().errorBox, message);
+        hideMessage(getLoginElements().errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Giriş Hatası" : "Login Error", variant: "error" });
     }
 
     function clearLoginError() {
@@ -265,13 +269,19 @@
     function showRegisterError(message) {
         const { errorBox, successBox } = getRegisterElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Kayıt Hatası" : "Registration Error", variant: "error" });
     }
 
     function showRegisterSuccess(message) {
         const { errorBox, successBox } = getRegisterElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Doğrulama Kodu Gönderildi" : "Verification Code Sent",
+            variant: "info",
+            iconClass: "fa-solid fa-paper-plane text-sky-400"
+        });
     }
 
     function clearRegisterMessages() {
@@ -283,13 +293,19 @@
     function showVerifyError(message) {
         const { errorBox, successBox } = getVerifyElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Doğrulama Hatası" : "Verification Error", variant: "error" });
     }
 
     function showVerifySuccess(message) {
         const { errorBox, successBox } = getVerifyElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Doğrulama Başarılı" : "Verification Successful",
+            variant: "success",
+            iconClass: "fa-solid fa-circle-check text-emerald-400"
+        });
     }
 
     function clearVerifyMessages() {
@@ -301,13 +317,19 @@
     function showForgotError(message) {
         const { errorBox, successBox } = getForgotElements();
         hideMessage(successBox);
-        showMessage(errorBox, message);
+        hideMessage(errorBox);
+        window.showToast?.(message, { title: window.App?.lang === "tr" ? "Sıfırlama Hatası" : "Reset Error", variant: "error" });
     }
 
     function showForgotSuccess(message) {
         const { errorBox, successBox } = getForgotElements();
         hideMessage(errorBox);
-        showMessage(successBox, message);
+        hideMessage(successBox);
+        window.showToast?.(message, {
+            title: window.App?.lang === "tr" ? "Şifre Sıfırlama" : "Password Reset",
+            variant: "info",
+            iconClass: "fa-solid fa-key text-sky-400"
+        });
     }
 
     function clearForgotMessages() {
@@ -315,6 +337,46 @@
         hideMessage(errorBox);
         hideMessage(successBox);
     }
+
+    function clearInputValue(input) {
+        if (!input) return;
+        input.value = "";
+    }
+
+    window.resetRegisterForm = function resetRegisterForm() {
+        const { nameInput, emailInput, passwordInput, confirmInput, tooltipEl } = getRegisterElements();
+        clearInputValue(nameInput);
+        clearInputValue(emailInput);
+        clearInputValue(passwordInput);
+        clearInputValue(confirmInput);
+        clearRegisterMessages();
+        updatePasswordTooltip(tooltipEl, "", false);
+    };
+
+    window.resetLoginForm = function resetLoginForm(options = {}) {
+        const { usernameInput, passwordInput } = getLoginElements();
+        if (!options.keepUsername) clearInputValue(usernameInput);
+        clearInputValue(passwordInput);
+        clearLoginError();
+    };
+
+    window.resetForgotForm = function resetForgotForm() {
+        const { emailInput, submitLabel } = getForgotElements();
+        clearInputValue(emailInput);
+        clearForgotMessages();
+        if (submitLabel) submitLabel.textContent = t("forgotSubmitRequest");
+    };
+
+    window.resetVerifyForm = function resetVerifyForm() {
+        const verifyElements = getVerifyElements();
+        const verifyFlowElements = getVerifyFlowElements();
+
+        clearInputValue(verifyElements.codeInput);
+        clearInputValue(verifyFlowElements.passwordInput);
+        clearInputValue(verifyFlowElements.confirmInput);
+        clearVerifyMessages();
+        updatePasswordTooltip(verifyFlowElements.tooltipEl, "", false);
+    };
 
     function getPasswordRuleState(password) {
         return {
@@ -677,6 +739,24 @@
         return json;
     }
 
+    async function syncRegisterProfile(payload) {
+        const response = await fetch(REGISTER_PROFILE_ENDPOINT, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json?.ok === false) {
+            const detail = json?.error || json?.message || response.statusText;
+            throw new Error(detail || "Register profile sync failed");
+        }
+
+        return json;
+    }
+
     function decodeJwtPayload(token) {
         if (!token) return null;
 
@@ -703,6 +783,7 @@
         const username = payload["cognito:username"] || payload.username || usernameFallback || "unknown";
 
         return {
+            cognitoSub: payload.sub || null,
             username,
             name: payload.name || payload.email || username,
             email: payload.email || null,
@@ -1087,7 +1168,12 @@
         try {
             const result = await signUpUser(name, email, password);
             clearPendingReset();
-            persistPendingSignup(withCodeTiming({ name, email, sourceView: "register" }));
+            persistPendingSignup(withCodeTiming({
+                name,
+                email,
+                sourceView: "register",
+                cognitoSub: result?.UserSub || null
+            }));
             showRegisterSuccess(t("registerVerifySent"));
 
             if (result?.UserSub) {
@@ -1190,6 +1276,13 @@
 
         try {
             const result = await confirmUserSignUp(pendingSignup.email, code);
+            if (pendingSignup.cognitoSub) {
+                await syncRegisterProfile({
+                    cognito_sub: pendingSignup.cognitoSub,
+                    email: pendingSignup.email,
+                    full_name: pendingSignup.name || ""
+                });
+            }
             clearPendingSignup();
             showVerifySuccess(t("verifySuccess"));
 
@@ -1202,7 +1295,10 @@
 
             return result;
         } catch (error) {
-            showVerifyError(getAuthErrorMessage(error));
+            const message = /Register profile sync failed|cognito_sub is required|email is required/i.test(error?.message || "")
+                ? `${t("verifyProfileSyncFailed")} (${error.message})`
+                : getAuthErrorMessage(error);
+            showVerifyError(message);
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
@@ -1297,3 +1393,6 @@
     setupEnterKeyHandlers();
     setupPasswordTooltips();
 })();
+
+
+

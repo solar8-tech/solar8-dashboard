@@ -1,8 +1,8 @@
 // core/state.js
 
 window.App = {
-    lang              : localStorage.getItem('appLang') || 'tr',
-    theme             : localStorage.getItem('theme')   || 'dark',
+    lang              : localStorage.getItem("appLang") || "tr",
+    theme             : localStorage.getItem("theme") || "dark",
     isRefreshing      : false,
     dashboardIntervalId: null,
     weatherStarted    : false,
@@ -30,24 +30,24 @@ window.App = {
 };
 
 Object.defineProperties(window, {
-    currentLang            : { get: () => window.App.lang,              set: v => { window.App.lang = v; },              configurable: true },
-    mainChartInstance      : { get: () => window.App.charts.main,       set: v => { window.App.charts.main = v; },       configurable: true },
+    currentLang            : { get: () => window.App.lang, set: v => { window.App.lang = v; }, configurable: true },
+    mainChartInstance      : { get: () => window.App.charts.main, set: v => { window.App.charts.main = v; }, configurable: true },
     projectionChartInstance: { get: () => window.App.charts.projection, set: v => { window.App.charts.projection = v; }, configurable: true },
-    reportChartInstance    : { get: () => window.App.charts.report,     set: v => { window.App.charts.report = v; },     configurable: true },
-    mapInstance            : { get: () => window.App.map.instance,      set: v => { window.App.map.instance = v; },      configurable: true },
-    tileLayerInstance      : { get: () => window.App.map.tileLayer,     set: v => { window.App.map.tileLayer = v; },     configurable: true },
-    SYSTEM_DATA            : { get: () => window.App.data,              set: v => { window.App.data = v; },              configurable: true }
+    reportChartInstance    : { get: () => window.App.charts.report, set: v => { window.App.charts.report = v; }, configurable: true },
+    mapInstance            : { get: () => window.App.map.instance, set: v => { window.App.map.instance = v; }, configurable: true },
+    tileLayerInstance      : { get: () => window.App.map.tileLayer, set: v => { window.App.map.tileLayer = v; }, configurable: true },
+    SYSTEM_DATA            : { get: () => window.App.data, set: v => { window.App.data = v; }, configurable: true }
 });
 
 window.COLOR_CLASS_MAP = {
     orange : { border: "border-orange-500", text: "text-orange-400" },
-    red    : { border: "border-red-500",    text: "text-red-400"    },
+    red    : { border: "border-red-500", text: "text-red-400" },
     purple : { border: "border-purple-500", text: "text-purple-400" },
-    blue   : { border: "border-blue-500",   text: "text-blue-400"   }
+    blue   : { border: "border-blue-500", text: "text-blue-400" }
 };
 
 window.FAULT_COLOR_MAP = {
-    red    : { bg: "bg-danger/10 border-danger/20",         text: "text-red-300",    tagBg: "bg-red-500/20"    },
+    red    : { bg: "bg-danger/10 border-danger/20", text: "text-red-300", tagBg: "bg-red-500/20" },
     orange : { bg: "bg-orange-500/10 border-orange-500/20", text: "text-orange-300", tagBg: "bg-orange-500/20" }
 };
 
@@ -65,27 +65,80 @@ window.localise = function localise(val) {
     return val ?? "";
 };
 
-window.showToast = function showToast(messageKey) {
+window.showToast = function showToast(messageKey, options = {}) {
     const toast = document.getElementById("toast-notification");
+    const panel = document.getElementById("toast-panel");
     const msgEl = document.getElementById("toast-message");
-    if (!toast || !msgEl) return;
+    const iconWrap = document.getElementById("toast-icon-wrap");
+    const iconEl = document.getElementById("toast-icon");
+    if (!toast || !panel || !msgEl || !iconWrap || !iconEl) return;
 
-    const t   = window.TRANSLATIONS?.[window.App.lang] ?? {};
+    const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
     const msg = t[messageKey] ?? messageKey;
     msgEl.innerText = msg;
 
     const titleEl = toast.querySelector("h4");
-    if (titleEl) titleEl.innerText = window.App.lang === "tr" ? "Erişim Kısıtlı" : "Access Denied";
+    const defaultToastTitle = messageKey === "msg_demo_feature"
+        ? (window.App.lang === "tr" ? "Erişim Kısıtlı" : "Access Denied")
+        : (window.App.lang === "tr" ? "Uyarı" : "Warning");
+
+    if (titleEl) {
+        titleEl.innerText = options.title ?? defaultToastTitle;
+    }
+
+    const toastPresets = {
+        error: {
+            panelBorder: "border-red-500/50",
+            iconWrapBg: "bg-red-500/20",
+            iconClass: "fa-solid fa-circle-exclamation text-red-500",
+            titleClass: "text-red-400"
+        },
+        success: {
+            panelBorder: "border-emerald-500/40",
+            iconWrapBg: "bg-emerald-500/20",
+            iconClass: "fa-solid fa-circle-check text-emerald-400",
+            titleClass: "text-emerald-400"
+        },
+        info: {
+            panelBorder: "border-sky-500/40",
+            iconWrapBg: "bg-sky-500/20",
+            iconClass: "fa-solid fa-paper-plane text-sky-400",
+            titleClass: "text-sky-400"
+        },
+        warning: {
+            panelBorder: "border-amber-500/45",
+            iconWrapBg: "bg-amber-500/20",
+            iconClass: "fa-solid fa-lock text-amber-400",
+            titleClass: "text-amber-300"
+        }
+    };
+
+    const variant = toastPresets[options.variant] ? options.variant : (messageKey === "msg_demo_feature" ? "warning" : "error");
+    const preset = toastPresets[variant];
+    const panelBorders = Object.values(toastPresets).map(item => item.panelBorder);
+    const iconWrapBgs = Object.values(toastPresets).map(item => item.iconWrapBg);
+    const titleClasses = Object.values(toastPresets).map(item => item.titleClass);
+
+    panel.classList.remove(...panelBorders);
+    panel.classList.add(preset.panelBorder);
+    iconWrap.classList.remove(...iconWrapBgs);
+    iconWrap.classList.add(preset.iconWrapBg);
+    iconEl.className = options.iconClass ?? preset.iconClass;
+
+    if (titleEl) {
+        titleEl.classList.remove(...titleClasses);
+        titleEl.classList.add(preset.titleClass);
+    }
 
     if (window.App.toastTimeout !== null) {
         clearTimeout(window.App.toastTimeout);
         window.App.toastTimeout = null;
     }
 
-    toast.classList.remove("hidden", "translate-x-10", "opacity-0");
+    toast.classList.remove("hidden", "-translate-y-6", "opacity-0");
 
     window.App.toastTimeout = setTimeout(() => {
-        toast.classList.add("translate-x-10", "opacity-0");
+        toast.classList.add("-translate-y-6", "opacity-0");
         setTimeout(() => {
             toast.classList.add("hidden");
             window.App.toastTimeout = null;
@@ -104,6 +157,7 @@ window.handleApiError = function handleApiError(context, error) {
     const msgEl = document.getElementById("alert-msg");
     if (msgEl) {
         const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
-        msgEl.innerText = t.error_data_source ?? "Veri kaynağına ulaşılamıyor";
+        msgEl.innerText = t.error_data_source ?? "Veri kaynagina ulasilamiyor";
     }
 };
+
