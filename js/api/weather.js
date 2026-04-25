@@ -84,8 +84,8 @@ function _setImpactState(isLowImpact, cloudiness) {
         : (isLowImpact ? "Impact: Low" : "Impact: Normal");
 
     impactEl.className = isLowImpact
-        ? "inline-flex items-center gap-1 max-w-full text-[7px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.16em] px-1.5 sm:px-2 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/20 whitespace-nowrap transition-colors"
-        : "inline-flex items-center gap-1 max-w-full text-[7px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.16em] px-1.5 sm:px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 whitespace-nowrap transition-colors";
+        ? "inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.16em] px-1 sm:px-2 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/20 whitespace-nowrap transition-colors"
+        : "inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.16em] px-1 sm:px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 whitespace-nowrap transition-colors";
 
     if (impactTooltipEl) {
         impactTooltipEl.innerText = window.App.lang === "tr"

@@ -651,6 +651,14 @@ body.light-mode .from-black\/80 {
 }
 
 @media (max-width: 767px) {
+    .weather-impact-tooltip {
+        width: 145px;
+        max-width: 145px;
+        font-size: 9px;
+        line-height: 1.3;
+        padding: 6px 8px;
+    }
+
     .password-tooltip {
         top: calc(100% + 8px);
         right: auto;
