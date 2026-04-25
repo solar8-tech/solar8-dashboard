@@ -15,7 +15,7 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
         if (!res.ok) throw new Error(`Weather API: HTTP ${res.status}`);
 
         const data = await res.json();
-        const t = window.TRANSLATIONS[window.App.lang];
+        const t = window.TRANSLATIONS[window.App.lang] ?? {};
         const cloudiness = Math.round(data.clouds?.all ?? 0);
         const isLowImpact = cloudiness > 70;
 
@@ -35,14 +35,16 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
         else if (main.includes("snow")) descKey = "data_weather_snow";
 
         _setText("w-desc", t[descKey] ?? "--");
-        _setImpactState(isLowImpact, cloudiness);
+        _setImpactState(isLowImpact, cloudiness, t);
     } catch (err) {
         console.error("[Weather]", err);
+        const t = window.TRANSLATIONS[window.App.lang] ?? {};
+
         _setText("w-city", window.App.data.context.plant?.city ?? "--");
-        _setText("w-desc", window.App.lang === "tr" ? "Servis Dışı" : "Service Unavailable");
+        _setText("w-desc", t.weather_service_unavailable ?? "Service Unavailable");
         _setText("w-sunrise", "--");
         _setText("w-sunset", "--");
-        _setImpactFallback();
+        _setImpactFallback(t);
     }
 };
 
@@ -73,35 +75,42 @@ function _formatLocalTime(unixSeconds, timezoneOffsetSeconds = 0) {
     return `${hours}:${minutes}`;
 }
 
-function _setImpactState(isLowImpact, cloudiness) {
+function _setImpactState(isLowImpact, cloudiness, t) {
     const impactEl = document.getElementById("w-impact");
     const impactTextEl = impactEl?.querySelector("span");
     const impactTooltipEl = document.getElementById("w-impact-tooltip");
     if (!impactEl || !impactTextEl) return;
 
-    impactTextEl.innerText = window.App.lang === "tr"
-        ? (isLowImpact ? "Etki: Düşük" : "Etki: Normal")
-        : (isLowImpact ? "Impact: Low" : "Impact: Normal");
+    impactTextEl.innerText = isLowImpact
+        ? (t.weather_impact_low ?? "Impact: Low")
+        : (t.weather_impact_normal ?? "Impact: Normal");
 
     impactEl.className = isLowImpact
         ? "inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.16em] px-1 sm:px-2 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/20 whitespace-nowrap transition-colors"
         : "inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.16em] px-1 sm:px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 whitespace-nowrap transition-colors";
 
     if (impactTooltipEl) {
-        impactTooltipEl.innerText = window.App.lang === "tr"
-            ? `Bulutluluk oranı %${cloudiness}. Bu seviye güneşlenmeyi ${isLowImpact ? "daha fazla baskıladığı için üretime etkisi düşük" : "çok sınırlı etkilediği için üretime etkisi normal"} görünüyor.`
-            : `Cloud cover is ${cloudiness}%. At this level, solar exposure is ${isLowImpact ? "reduced enough to lower production impact" : "still strong enough that production impact remains normal"}.`;
+        const template = isLowImpact
+            ? (t.weather_impact_tooltip_low ?? "Cloud cover is %{cloudiness}.")
+            : (t.weather_impact_tooltip_normal ?? "Cloud cover is %{cloudiness}.");
+        impactTooltipEl.innerText = _formatTranslation(template, { cloudiness: `%${cloudiness}` });
     }
 }
 
-function _setImpactFallback() {
+function _setImpactFallback(t) {
     const impactTextEl = document.getElementById("w-impact")?.querySelector("span");
     const impactTooltipEl = document.getElementById("w-impact-tooltip");
 
     if (impactTextEl) impactTextEl.innerText = "--";
     if (impactTooltipEl) {
-        impactTooltipEl.innerText = window.App.lang === "tr"
-            ? "Bulutluluk verisi alınamadı. Üretime etki hesabı hava servisi yanıtına göre gösterilir."
-            : "Cloud cover data is unavailable. Production impact is shown when the weather service responds.";
+        impactTooltipEl.innerText = t.weather_impact_tooltip_fallback
+            ?? "Cloud cover data is unavailable. Production impact is shown when the weather service responds.";
     }
+}
+
+function _formatTranslation(template, values = {}) {
+    return Object.entries(values).reduce(
+        (result, [key, value]) => result.replaceAll(`%{${key}}`, String(value)),
+        template
+    );
 }

@@ -196,6 +196,7 @@ aside {
 
 html:not([data-theme="light"]) .grid-bg,
 html:not([data-theme="light"]) #canvas-bg,
+[data-theme="light"] #canvas-bg,
 [data-theme="dark"] .grid-bg,
 [data-theme="dark"] #canvas-bg {
     display: none;
