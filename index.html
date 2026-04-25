@@ -969,7 +969,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Grafik Card -->
                         <div
                             class="glass-panel rounded-3xl p-5 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-[540px]">
                             <div class="flex justify-between items-center mb-6">
@@ -996,22 +995,25 @@
                                 <canvas id="projectionChart"></canvas>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:gap-6">
+
+                        <div class="grid grid-cols-2 lg:flex lg:flex-row gap-3 lg:gap-6 lg:h-[540px]">
                             <div
-                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-[258px]">
-                                <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2 mb-4">
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-full lg:flex-1 overflow-hidden">
+                                <h3
+                                    class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2 mb-4 shrink-0">
                                     <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-xs md:text-base"></i>
                                     <span data-key="sec_fault_predict"
                                         class="text-[10px] md:text-base truncate">--</span>
                                 </h3>
-                                <div class="flex-1 overflow-visible lg:overflow-y-auto custom-scrollbar pr-1">
-                                    <div id="predictive-list-container" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 touch-scroll">
+                                    <div id="predictive-list-container" class="grid grid-cols-1 gap-3">
                                     </div>
                                 </div>
                             </div>
+
                             <div
-                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-[258px]">
-                                <div class="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-2 mb-3">
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-full lg:flex-1 overflow-hidden">
+                                <div class="flex flex-col gap-2 md:gap-3 mb-4 shrink-0">
                                     <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
                                         <i
                                             class="fa-solid fa-triangle-exclamation text-danger text-xs md:text-base"></i>
@@ -1019,15 +1021,14 @@
                                             class="text-[10px] md:text-base truncate">--</span>
                                     </h3>
                                     <button onclick="toggleHistoryModal(true)"
-                                        class="py-1 px-2 bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] text-[8px] md:text-xs font-medium rounded-lg transition flex items-center justify-center gap-1.5 group whitespace-nowrap">
+                                        class="w-full py-1 md:py-1.5 px-3 bg-[var(--surface-soft)] hover:bg-white/10 border border-[var(--surface-soft-bdr)] text-[8px] md:text-xs font-medium rounded-lg transition flex items-center justify-center gap-1.5 group whitespace-nowrap">
                                         <i
                                             class="fa-solid fa-clock-rotate-left text-[color:var(--txt-faint)] group-hover:text-blue-400 transition"></i>
                                         <span data-key="btn_view_history">--</span>
                                     </button>
                                 </div>
-                                <div
-                                    class="flex-1 overflow-visible lg:overflow-y-auto custom-scrollbar pr-1 touch-scroll">
-                                    <div id="fault-list-container" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 touch-scroll">
+                                    <div id="fault-list-container" class="grid grid-cols-1 gap-3">
                                     </div>
                                 </div>
                             </div>
