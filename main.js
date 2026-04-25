@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function _initParticleCanvas() {
     const canvas = document.getElementById("canvas-bg");
-    if (!canvas) return;
+    if (!canvas || document.documentElement.dataset.theme === "light") return;
 
     const ctx = canvas.getContext("2d");
     let w, h, particles = [];
