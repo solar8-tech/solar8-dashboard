@@ -824,8 +824,19 @@
                                                 <p class="text-blue-400 text-[10px] lg:text-sm font-medium truncate"
                                                     id="w-desc">--</p>
                                             </div>
-                                            <span id="w-impact"
-                                                class="inline-block mt-1.5 text-[8px] lg:text-[2px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/5">--</span>
+                                            <div class="relative mt-1.5 inline-flex max-w-full group">
+                                                <button id="w-impact"
+                                                    type="button"
+                                                    aria-describedby="w-impact-tooltip"
+                                                    class="inline-flex items-center gap-1 max-w-full text-[7px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.16em] px-1.5 sm:px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/10 whitespace-nowrap transition-colors">
+                                                    <span>--</span>
+                                                    <i class="fa-solid fa-circle-info text-[8px] lg:text-[10px] opacity-70"></i>
+                                                </button>
+                                                <div id="w-impact-tooltip"
+                                                    class="weather-impact-tooltip pointer-events-none absolute left-0 top-full z-20 mt-2 w-[180px] sm:w-[220px] rounded-2xl border border-[var(--surface-soft-bdr)] px-3 py-2 text-left text-[10px] normal-case tracking-normal opacity-0 translate-y-2 transition duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0">
+                                                    --
+                                                </div>
+                                            </div>
                                         </div>
                                         <i
                                             class="fa-solid fa-cloud-sun text-xl lg:text-4xl text-[color:var(--txt-secondary)] ml-2 shadow-sm"></i>
@@ -852,6 +863,28 @@
                                             <span
                                                 class="text-[color:var(--txt-strong)] text-[9px] lg:text-xs font-medium"
                                                 id="w-hum">--</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 pt-1">
+                                            <div
+                                                class="rounded-2xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2.5 py-2">
+                                                <span
+                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-sun text-amber-400"></i>
+                                                    <span data-key="weather_sunrise">--</span>
+                                                </span>
+                                                <span id="w-sunrise"
+                                                    class="mt-1 block text-[color:var(--txt-strong)] text-[10px] lg:text-xs font-semibold">--</span>
+                                            </div>
+                                            <div
+                                                class="rounded-2xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2.5 py-2">
+                                                <span
+                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-moon text-sky-300"></i>
+                                                    <span data-key="weather_sunset">--</span>
+                                                </span>
+                                                <span id="w-sunset"
+                                                    class="mt-1 block text-[color:var(--txt-strong)] text-[10px] lg:text-xs font-semibold">--</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -637,6 +637,19 @@ body.light-mode .from-black\/80 {
     text-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
+.weather-impact-tooltip {
+    background: rgba(10, 15, 26, 0.92);
+    color: var(--txt-muted);
+    box-shadow: 0 18px 42px -18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .weather-impact-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+    color: #334155;
+    border-color: rgba(148, 163, 184, 0.24);
+    box-shadow: 0 18px 40px -18px rgba(15, 23, 42, 0.18);
+}
+
 @media (max-width: 767px) {
     .password-tooltip {
         top: calc(100% + 8px);

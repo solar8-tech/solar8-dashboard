@@ -36,7 +36,7 @@ window.TRANSLATIONS = {
         data_stabil: "Stabil", data_production: "Üretim", data_p50: "P50 – Ort. Beklenen", data_p10: "P10 – En Kötü Olasılık",
         data_weather_clear: "AÇIK", data_weather_clouds: "BULUTLU", data_weather_rain: "YAĞMURLU",
         data_weather_snow: "KARLI", data_weather_default: "PARÇALI BULUTLU",
-        weather_wind: "Rüzgar", weather_hum: "Nem",
+        weather_wind: "Rüzgar", weather_hum: "Nem", weather_sunrise: "Gün Doğumu", weather_sunset: "Gün Batımı",
         legend_prod: "Üretim",
         // Auth
         msg_demo_feature: "Demo modunda bu özellik aktif değildir.",
@@ -128,7 +128,7 @@ window.TRANSLATIONS = {
         data_stabil: "Stable", data_production: "Production", data_p50: "P50 – Avg. Expected", data_p10: "P10 – Worst Case",
         data_weather_clear: "CLEAR", data_weather_clouds: "CLOUDY", data_weather_rain: "RAINY",
         data_weather_snow: "SNOWY", data_weather_default: "PARTLY CLOUDY",
-        weather_wind: "Wind", weather_hum: "Humidity",
+        weather_wind: "Wind", weather_hum: "Humidity", weather_sunrise: "Sunrise", weather_sunset: "Sunset",
         legend_prod: "Production",
         msg_demo_feature: "This feature is disabled in demo mode.",
         btn_login: "LOG IN", inp_id_placeholder: "User ID", inp_pass_placeholder: "Password",
