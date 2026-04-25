@@ -3,9 +3,9 @@
 window.TRANSLATIONS = {
     tr: {
         // Nav
-        nav_dashboard: "Dashboard", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
+        nav_dashboard: "Ana Sayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
         // Page titles
-        page_overview: "Genel Bakış", page_twin: "Kestirimci Bakım & Projeksiyon", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
+        page_overview: "Genel Bakış", page_twin: "Solar8+", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
         // System
         system_active: "SİSTEM AKTİF",
         card_instant_power: "Anlık Güç", card_compare_yest: "Düne göre",
@@ -103,7 +103,7 @@ window.TRANSLATIONS = {
     },
     en: {
         nav_dashboard: "Dashboard", nav_twin: "Predictive Maint.", nav_reports: "Reports", nav_settings: "System Settings",
-        page_overview: "Overview", page_twin: "Predictive Maint. & Projection", page_reports: "Report Center",
+        page_overview: "Overview", page_twin: "Solar8+", page_reports: "Report Center",
         system_active: "SYSTEM ACTIVE",
         card_instant_power: "Instant Power", card_compare_yest: "vs Yesterday",
         card_daily_prod: "Daily Production", card_daily_rev: "Daily Revenue",
