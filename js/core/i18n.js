@@ -12,15 +12,6 @@ window.TRANSLATIONS = {
         card_daily_prod: "Günlük Üretim", card_daily_rev: "Günlük Gelir",
         card_base_price: "~75 USD/MWh baz alınmıştır.", card_critical_alert: "Kritik Uyarı",
         btn_open_analysis: "Arıza Analizini Aç →",
-        // Reports
-        rep_card_prod: "Bu Ay Üretim", rep_card_income: "Aylık Kazanç", rep_card_carbon: "Karbon Nötr",
-        rep_compare_prev: "Geçen aya göre", rep_collection: "Tahsilat:", rep_trees: "Ağaç dikimine eşdeğer",
-        rep_archive: "Rapor Arşivi", rep_create_new: "Yeni Rapor Oluştur",
-        rep_ai_title: "Solar8 Intelligence Analizi", rep_verified: "Doğrulanmış",
-        rep_status_ready: "HAZIR", rep_download: "İndir",
-        rep_sub_monthly: "Aylık • Otomatik", rep_sub_yearly: "Yıllık • P50/P90",
-        rep_sub_financial: "Finans • Onaylı", rep_sub_technical: "Teknik • İnverter",
-        rep_legend_actual: "Gerçekleşen", rep_legend_target: "Hedef (P50)",
         // Twin
         twin_eff_score: "Verimlilik Skoru", twin_risk_hw: "Riskli Donanım", twin_device: "Cihaz",
         twin_fault_panel: "Arızalı Panel", twin_avg_detect: "Ort. Tespit Süresi",
@@ -114,14 +105,6 @@ window.TRANSLATIONS = {
         card_daily_prod: "Daily Production", card_daily_rev: "Daily Revenue",
         card_base_price: "Based on ~75 USD/MWh.", card_critical_alert: "Critical Alert",
         btn_open_analysis: "Open Failure Analysis →",
-        rep_card_prod: "Monthly Prod.", rep_card_income: "Monthly Income", rep_card_carbon: "Carbon Neutral",
-        rep_compare_prev: "vs Last Month", rep_collection: "Collection:", rep_trees: "Trees equivalent",
-        rep_archive: "Report Archive", rep_create_new: "Create New Report",
-        rep_ai_title: "Solar8 Intelligence Analysis", rep_verified: "Verified",
-        rep_status_ready: "READY", rep_download: "Download",
-        rep_sub_monthly: "Monthly • Auto", rep_sub_yearly: "Yearly • P50/P90",
-        rep_sub_financial: "Finance • Approved", rep_sub_technical: "Technical • Inverter",
-        rep_legend_actual: "Actual", rep_legend_target: "Target (P50)",
         twin_eff_score: "Efficiency Score", twin_risk_hw: "Risky Hardware", twin_device: "Device",
         twin_fault_panel: "Faulty Panel", twin_avg_detect: "Avg. Detection Time",
         sec_fault_predict: "Failure Prediction", sec_active_faults: "Active Faults",
@@ -223,8 +206,8 @@ window.updateLanguage = function updateLanguage() {
     _toggleBtn("forgot-btn-tr",   "forgot-btn-en",   window.App.lang === "tr");
 
     const activeTab = localStorage.getItem("activeTab");
-    if (activeTab === "reports" && typeof window.loadReport === "function") {
-        window.loadReport(localStorage.getItem("lastReportId") || "monthly");
+    if (activeTab === "reports" && typeof window.ensureReportMocks === "function") {
+        window.ensureReportMocks();
     }
     if (activeTab === "dashboard" && typeof window.renderApp === "function") {
         window.renderApp();

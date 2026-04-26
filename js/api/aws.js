@@ -58,12 +58,6 @@ window.fetchPlants = async function fetchPlants() {
     await window.fetchDashboardFromAWS?.();
 };
 
-window.fetchReports = async function fetchReports() {
-    await window.fetchDashboardFromAWS?.();
-    const lastId = localStorage.getItem("lastReportId") || Object.keys(window.App.data.reports ?? {})[0];
-    if (lastId) window.loadReport?.(lastId);
-};
-
 window.fetchHistory = async function fetchHistory() {
     await window.fetchDashboardFromAWS?.();
 };

@@ -86,3 +86,33 @@ window.toggleAnalysisModal = function toggleAnalysisModal(show) {
     if (!modal) return;
     modal.dataset.open = show ? "true" : "false";
 };
+
+window.toggleReportDayModal = function toggleReportDayModal(show, detail) {
+    const modal = document.getElementById("report-day-modal");
+    if (!modal) return;
+
+    if (show && detail) {
+        window.renderReportDayModal?.(detail);
+    }
+
+    modal.dataset.open = show ? "true" : "false";
+};
+
+window.renderReportDayModal = function renderReportDayModal(detail) {
+    const fields = {
+        "report-day-modal-title": detail.title,
+        "report-day-modal-subtitle": detail.subtitle,
+        "report-day-modal-production": detail.production,
+        "report-day-modal-income": detail.income,
+        "report-day-modal-target": detail.target,
+        "report-day-modal-delta": detail.delta,
+        "report-day-modal-note": detail.note,
+        "report-day-modal-status": detail.status,
+        "report-day-modal-action": detail.action
+    };
+
+    Object.entries(fields).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value ?? "--";
+    });
+};

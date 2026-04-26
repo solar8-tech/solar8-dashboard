@@ -185,6 +185,62 @@
         </div>
     </div>
 
+    <div id="report-day-modal"
+        class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+        data-open="false" onclick="toggleReportDayModal(false)">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 relative border border-[var(--surface-glass-bdr)]"
+            onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start gap-4 mb-6 border-b border-[var(--surface-glass-bdr)] pb-4">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.24em] text-[color:var(--txt-faint)]">Günlük Rapor</p>
+                    <h3 id="report-day-modal-title"
+                        class="text-xl md:text-2xl font-semibold text-[color:var(--txt-strong)] mt-2">--</h3>
+                    <p id="report-day-modal-subtitle" class="text-sm text-[color:var(--txt-muted)] mt-1">--</p>
+                </div>
+                <button onclick="toggleReportDayModal(false)"
+                    class="w-9 h-9 rounded-full bg-[var(--surface-soft)] hover:bg-white/20 flex items-center justify-center text-[color:var(--txt-strong)] transition shrink-0">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div class="report-modal-stat">
+                    <p class="report-modal-stat-label">Üretim</p>
+                    <p id="report-day-modal-production" class="report-modal-stat-value">--</p>
+                </div>
+                <div class="report-modal-stat">
+                    <p class="report-modal-stat-label">Tahmini Gelir</p>
+                    <p id="report-day-modal-income" class="report-modal-stat-value">--</p>
+                </div>
+                <div class="report-modal-stat">
+                    <p class="report-modal-stat-label">Hedef</p>
+                    <p id="report-day-modal-target" class="report-modal-stat-value">--</p>
+                </div>
+                <div class="report-modal-stat">
+                    <p class="report-modal-stat-label">Sapma</p>
+                    <p id="report-day-modal-delta" class="report-modal-stat-value">--</p>
+                </div>
+            </div>
+
+            <div class="report-modal-body">
+                <div class="report-modal-callout">
+                    <p class="report-modal-callout-label">Gün Değerlendirmesi</p>
+                    <p id="report-day-modal-note" class="report-modal-callout-text">--</p>
+                </div>
+                <div class="report-modal-split">
+                    <div class="report-modal-panel">
+                        <p class="report-modal-panel-label">Performans Durumu</p>
+                        <p id="report-day-modal-status" class="report-modal-panel-value">--</p>
+                    </div>
+                    <div class="report-modal-panel">
+                        <p class="report-modal-panel-label">Öneri</p>
+                        <p id="report-day-modal-action" class="report-modal-panel-value">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!--LOGIN-->
     <div id="view-login" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
@@ -1038,195 +1094,46 @@
 
                 <!--RAPORLAR-->
                 <div id="view-reports" class="view-hidden w-full h-full flex flex-col pb-10">
-                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-4 lg:mb-8 flex-none">
-                        <div class="glass-hero rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
-                            <div
-                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
-                                <i class="fa-solid fa-bolt text-3xl text-solar"></i>
-                            </div>
-                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
-                                data-key="rep_card_prod">--</p>
-                            <h3 id="val-rep-prod"
-                                class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
-                                --</h3>
-                            <div class="mt-2 md:mt-4 flex items-center gap-2">
-                                <span id="val-rep-prod-delta"
-                                    class="bg-green-500/10 text-green-400 text-[8px] md:text-xs px-2 py-0.5 md:py-1 rounded-full font-medium flex items-center gap-1">
-                                    <i class="fa-solid fa-arrow-trend-up text-[8px] md:text-xs"></i> --
-                                </span>
-                                <span class="text-[8px] md:text-xs text-[color:var(--txt-faint)] hidden md:inline"
-                                    data-key="rep_compare_prev">--</span>
-                            </div>
-                        </div>
-                        <div class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
-                            <div
-                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
-                                <i class="fa-solid fa-sack-dollar text-3xl text-blue-400"></i>
-                            </div>
-                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
-                                data-key="rep_card_income">--</p>
-                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight"
-                                id="val-rep-income">--</h3>
-                            <div
-                                class="mt-2 md:mt-4 w-full bg-[var(--surface-soft)] rounded-full h-1 md:h-1.5 overflow-hidden">
-                                <div id="rep-collection-bar" class="bg-blue-500 h-full rounded-full" style="width:0%">
+                    <div class="report-weekly-shell glass-panel rounded-[28px] p-4 md:p-6 lg:p-7 mb-4 lg:mb-8 border border-[var(--surface-soft-bdr)] overflow-hidden relative">
+                        <div class="relative z-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-8">
+                            <div class="max-w-2xl">
+                                <div class="mb-3">
+                                    <span class="report-kicker">Haftalık Özet</span>
                                 </div>
+                                <h2 class="text-xl md:text-3xl font-light text-[color:var(--txt-strong)] tracking-tight leading-tight">
+                                    <span>Son 7 günde üretim ve gelir performansı</span>
+                                </h2>
                             </div>
-                            <p
-                                class="text-[8px] md:text-[10px] text-[color:var(--txt-faint)] mt-1.5 md:mt-2 text-right">
-                                <span data-key="rep_collection">--</span> <span id="rep-collection-pct">--</span>
-                            </p>
-                        </div>
-                        <div class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
-                            <div
-                                class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
-                                <i class="fa-solid fa-tree text-3xl text-emerald-400"></i>
-                            </div>
-                            <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
-                                data-key="rep_card_carbon">--</p>
-                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight"
-                                id="val-rep-carbon">--</h3>
-                            <div class="mt-2 md:mt-4 flex items-center gap-2">
-                                <div class="flex -space-x-1.5 md:-space-x-2">
-                                    <div
-                                        class="w-4 h-4 md:w-6 md:h-6 rounded-full bg-[var(--surface-soft)] border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[6px] md:text-[8px] text-[color:var(--txt-strong)]">
-                                        CO2</div>
-                                    <div
-                                        class="w-4 h-4 md:w-6 md:h-6 rounded-full bg-emerald-500/20 border border-[var(--surface-glass-bdr)] flex items-center justify-center text-[7px] md:text-[9px] text-emerald-400">
-                                        <i class="fa-solid fa-leaf"></i>
-                                    </div>
+                            <div class="report-week-meta">
+                                <div class="report-week-meta-card">
+                                    <p class="report-week-meta-label">Hafta Aralığı</p>
+                                    <p class="report-week-meta-value" id="rep-week-range">--</p>
                                 </div>
-                                <span class="text-[7px] md:text-xs text-[color:var(--txt-faint)] truncate">
-                                    <span id="val-rep-trees">--</span> <span data-key="rep_trees">--</span>
-                                </span>
-                            </div>
-                        </div>
-                        <div
-                            class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group lg:hidden flex flex-col justify-center items-center border border-dashed border-[var(--surface-soft-bdr)]">
-                            <i class="fa-solid fa-plus text-[color:var(--txt-faint)] text-xs mb-1"></i>
-                            <p class="text-[8px] text-[color:var(--txt-faint)] uppercase font-bold">Yeni Veri Eklenecek!
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-0">
-                        <div
-                            class="lg:col-span-4 glass-panel rounded-3xl p-0 flex flex-col h-[250px] lg:h-full overflow-hidden border border-[var(--surface-soft-bdr)]">
-                            <div class="p-4 md:p-6 border-b border-[var(--surface-soft-bdr)]">
-                                <h3
-                                    class="text-sm md:text-base text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-solar text-xs md:text-base"></i>
-                                    <span data-key="rep_archive">--</span>
-                                </h3>
-                            </div>
-                            <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1" id="report-list">
-                                <div onclick="loadReport('monthly')" id="rep-btn-monthly"
-                                    class="report-item active p-3 rounded-xl cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
-                                            <i class="fa-solid fa-file-pdf"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-strong)]"
-                                                id="rep-list-title-monthly">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-muted)]"
-                                                data-key="rep_sub_monthly">--</p>
-                                        </div>
-                                    </div>
+                                <div class="report-week-meta-card">
+                                    <p class="report-week-meta-label">Toplam Üretim</p>
+                                    <p class="report-week-meta-value" id="rep-week-total">--</p>
                                 </div>
-                                <div onclick="loadReport('yearly')" id="rep-btn-yearly"
-                                    class="report-item p-3 rounded-xl cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                                            <i class="fa-solid fa-chart-pie"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
-                                                id="rep-list-title-yearly">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
-                                                data-key="rep_sub_yearly">--</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div onclick="loadReport('financial')" id="rep-btn-financial"
-                                    class="report-item p-3 rounded-xl cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                                            <i class="fa-solid fa-file-invoice-dollar"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
-                                                id="rep-list-title-financial">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
-                                                data-key="rep_sub_financial">--</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div onclick="loadReport('technical')" id="rep-btn-technical"
-                                    class="report-item p-3 rounded-xl cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
-                                            <i class="fa-solid fa-microchip"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-sm font-medium text-[color:var(--txt-secondary)]"
-                                                id="rep-list-title-technical">--</h4>
-                                            <p class="text-[10px] text-[color:var(--txt-faint)]"
-                                                data-key="rep_sub_technical">--</p>
-                                        </div>
-                                    </div>
+                                <div class="report-week-meta-card">
+                                    <p class="report-week-meta-label">Tahmini Gelir</p>
+                                    <p class="report-week-meta-value" id="rep-week-income">--</p>
                                 </div>
                             </div>
                         </div>
-                        <div
-                            class="lg:col-span-8 glass-panel rounded-3xl p-5 md:p-8 flex flex-col relative overflow-hidden h-auto lg:h-full border border-[var(--surface-soft-bdr)]">
-                            <div class="flex justify-between items-start mb-4">
-                                <h2 id="rep-detail-title"
-                                    class="text-lg md:text-2xl font-light text-[color:var(--txt-strong)]">--</h2>
-                                <button
-                                    class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-solar text-black flex items-center justify-center shadow-lg">
-                                    <i class="fa-solid fa-download text-xs"></i>
-                                </button>
+                        <div class="report-week-summary relative z-10 mt-5">
+                            <div class="report-week-summary-card">
+                                <p class="report-week-summary-label">En İyi Gün</p>
+                                <p class="report-week-summary-value" id="rep-week-best-day">--</p>
                             </div>
-                            <div class="ai-insight-box p-4 rounded-2xl mb-4 flex gap-3 items-start relative overflow-hidden"
-                                id="rep-ai-box">
-                                <div
-                                    class="w-7 h-7 md:w-10 md:h-10 rounded-lg bg-blue-600 flex-none flex items-center justify-center text-white">
-                                    <i class="fa-solid fa-robot text-[10px] md:text-sm"></i>
-                                </div>
-                                <p id="rep-ai-text"
-                                    class="text-[10px] md:text-xs text-[color:var(--txt-secondary)] leading-snug">--</p>
+                            <div class="report-week-summary-card">
+                                <p class="report-week-summary-label">Günlük Ortalama</p>
+                                <p class="report-week-summary-value" id="rep-week-daily-avg">--</p>
                             </div>
-                            <div class="flex-1 relative mb-4 min-h-[180px] lg:min-h-[250px]">
-                                <canvas id="reportChart"></canvas>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 h-16 md:h-24">
-                                <div
-                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
-                                    <p
-                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
-                                        --</p>
-                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
-                                </div>
-                                <div
-                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
-                                    <p
-                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
-                                        --</p>
-                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
-                                </div>
-                                <div
-                                    class="glass-soft rounded-xl p-1 flex flex-col items-center justify-center bg-[var(--surface-soft)]">
-                                    <p
-                                        class="text-[7px] md:text-[9px] text-[color:var(--txt-faint)] uppercase font-bold">
-                                        --</p>
-                                    <p class="text-xs md:text-2xl font-light text-[color:var(--txt-strong)]">--</p>
-                                </div>
+                            <div class="report-week-summary-card">
+                                <p class="report-week-summary-label">Plan Uyumu</p>
+                                <p class="report-week-summary-value" id="rep-week-adherence">--</p>
                             </div>
                         </div>
+                        <div id="report-week-grid" class="report-week-grid relative z-10 mt-5 md:mt-6"></div>
                     </div>
                 </div>
             </div>

@@ -11,8 +11,7 @@ window.App = {
 
     charts: {
         main       : null,
-        projection : null,
-        report     : null
+        projection : null
     },
 
     map: {
@@ -33,7 +32,6 @@ Object.defineProperties(window, {
     currentLang            : { get: () => window.App.lang, set: v => { window.App.lang = v; }, configurable: true },
     mainChartInstance      : { get: () => window.App.charts.main, set: v => { window.App.charts.main = v; }, configurable: true },
     projectionChartInstance: { get: () => window.App.charts.projection, set: v => { window.App.charts.projection = v; }, configurable: true },
-    reportChartInstance    : { get: () => window.App.charts.report, set: v => { window.App.charts.report = v; }, configurable: true },
     mapInstance            : { get: () => window.App.map.instance, set: v => { window.App.map.instance = v; }, configurable: true },
     tileLayerInstance      : { get: () => window.App.map.tileLayer, set: v => { window.App.map.tileLayer = v; }, configurable: true },
     SYSTEM_DATA            : { get: () => window.App.data, set: v => { window.App.data = v; }, configurable: true }

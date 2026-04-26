@@ -61,12 +61,7 @@ window.switchTab = function switchTab(tabName) {
             window.App.charts.main?.resize?.();
         }
         if (tabName === "reports") {
-            if (!window.App.data.reports) {
-                window.fetchReports?.();
-            } else {
-                const lastId = localStorage.getItem("lastReportId") || Object.keys(window.App.data.reports ?? {})[0];
-                if (lastId) window.loadReport?.(lastId);
-            }
+            window.ensureReportMocks?.();
         }
     }, 50);
 };

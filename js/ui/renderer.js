@@ -9,8 +9,6 @@ window.renderApp = function renderApp() {
         "power-loading","chart-loading",
         "val-power","val-daily","val-revenue",
         "val-risk-title","val-risk-desc","alert-msg","risk-bar",
-        "val-rep-prod","val-rep-income","val-rep-carbon","val-rep-trees",
-        "rep-collection-bar","rep-collection-pct",
         "t-eff","t-risk-dev","t-fault-panel","t-total-panels","t-detect"
     ];
     const el = {};
@@ -31,22 +29,6 @@ window.renderApp = function renderApp() {
 
     if (el["risk-bar"] && typeof live.riskLevel === "number") {
         el["risk-bar"].style.width = Math.min(live.riskLevel, 100) + "%";
-    }
-
-    if (el["val-rep-prod"]) {
-        el["val-rep-prod"].innerHTML = live.monthlyProduction !== null
-            ? `${window.safe(live.monthlyProduction)} <span class="text-lg text-slate-500 font-normal">MWh</span>`
-            : "--";
-    }
-    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? `$${window.safe(live.monthlyRevenue)}` : "--";
-    if (el["val-rep-carbon"]) el["val-rep-carbon"].innerText = live.carbonOffset   !== null ? `${window.safe(live.carbonOffset)} Ton` : "--";
-    if (el["val-rep-trees"])  el["val-rep-trees"].innerText  = live.treesEquivalent !== null ? `~${window.safe(live.treesEquivalent)}` : "--";
-
-    if (el["rep-collection-bar"] && live.collectionRate !== null) {
-        el["rep-collection-bar"].style.width = Math.min(live.collectionRate, 100) + "%";
-    }
-    if (el["rep-collection-pct"] && live.collectionRate !== null) {
-        el["rep-collection-pct"].innerText = `%${live.collectionRate}`;
     }
 
     // Twin metrikleri
