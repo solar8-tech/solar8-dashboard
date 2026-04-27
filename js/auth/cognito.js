@@ -6,6 +6,7 @@
     const AUTH_STORAGE_KEY = "solar8.auth.session";
     const PENDING_SIGNUP_KEY = "solar8.auth.pendingSignup";
     const PENDING_RESET_KEY = "solar8.auth.pendingReset";
+    const PENDING_PASSWORD_CHANGE_KEY = "solar8.auth.pendingPasswordChange";
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
     const REGISTER_PROFILE_ENDPOINT = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod/register-profile";
 
@@ -63,6 +64,9 @@
             resetPasswordTitle: "Yeni Şifrenizi Belirleyin",
             resetPasswordDesc: "Doğrulama kodunu girdiniz. Şimdi yeni şifrenizi oluşturun.",
             resetCodeAccepted: "Kod girildi. Şimdi yeni şifrenizi belirleyin.",
+            forcePasswordTitle: "Yeni Şifrenizi Belirleyin",
+            forcePasswordDesc: "Güvenliğiniz için geçici şifrenizi değiştirmeniz gerekiyor.",
+            forcePasswordSuccess: "Şifreniz güncellendi.",
             resendAvailableIn: "Tekrar gönderim için kalan süre: {time}"
         },
         en: {
@@ -107,6 +111,9 @@
             resetPasswordTitle: "Set Your New Password",
             resetPasswordDesc: "Your verification code has been entered. Now create your new password.",
             resetCodeAccepted: "Code entered. Now set your new password.",
+            forcePasswordTitle: "Set Your New Password",
+            forcePasswordDesc: "For your security, you need to change your temporary password.",
+            forcePasswordSuccess: "Your password has been updated.",
             resendAvailableIn: "Resend available in: {time}"
         }
     };
@@ -170,6 +177,8 @@
         return {
             titleEl: document.querySelector('#view-verify [data-key="verify_title"]'),
             descEl: document.querySelector('#view-verify [data-key="verify_desc"]'),
+            logoWrapper: document.getElementById("verify-logo-wrapper"),
+            headingWrapper: document.getElementById("verify-heading-wrapper"),
             codeGroup: document.getElementById("verify-code-group"),
             codeInput: document.getElementById("inp-verify-code"),
             resetFields: document.getElementById("verify-reset-fields"),
@@ -513,6 +522,8 @@
         const {
             titleEl,
             descEl,
+            logoWrapper,
+            headingWrapper,
             codeGroup,
             codeInput,
             resetFields,
@@ -528,48 +539,66 @@
 
         const isResetVerify = mode === "reset-verify";
         const isResetPassword = mode === "reset-password";
+        const isForcePasswordChange = mode === "force-password-change";
+        const isPasswordOnlyMode = isResetPassword || isForcePasswordChange;
+
+        if (logoWrapper) {
+            logoWrapper.classList.toggle("hidden", isForcePasswordChange);
+        }
+
+        if (headingWrapper) {
+            headingWrapper.classList.toggle("mt-8", isForcePasswordChange);
+        }
 
         if (titleEl) {
-            titleEl.textContent = isResetPassword
-                ? t("resetPasswordTitle")
-                : isResetVerify
-                    ? t("resetVerifyTitle")
-                    : (appCopy.verify_title || "Kodu Doğrula");
+            if (isForcePasswordChange) {
+                titleEl.textContent = t("forcePasswordTitle");
+            } else if (isResetPassword) {
+                titleEl.textContent = t("resetPasswordTitle");
+            } else if (isResetVerify) {
+                titleEl.textContent = t("resetVerifyTitle");
+            } else {
+                titleEl.textContent = appCopy.verify_title || "Kodu Doğrula";
+            }
         }
 
         if (descEl) {
-            descEl.textContent = isResetPassword
-                ? t("resetPasswordDesc")
-                : isResetVerify
-                    ? t("resetVerifyDesc")
-                    : (appCopy.verify_desc || "Lütfen doğrulama kodunu giriniz.");
+            if (isForcePasswordChange) {
+                descEl.textContent = t("forcePasswordDesc");
+            } else if (isResetPassword) {
+                descEl.textContent = t("resetPasswordDesc");
+            } else if (isResetVerify) {
+                descEl.textContent = t("resetVerifyDesc");
+            } else {
+                descEl.textContent = appCopy.verify_desc || "Lütfen doğrulama kodunu giriniz.";
+            }
         }
 
         if (resetFields) {
-            resetFields.classList.toggle("hidden", !isResetPassword);
+            resetFields.classList.toggle("hidden", !isPasswordOnlyMode);
         }
 
         if (codeGroup) {
-            codeGroup.classList.toggle("hidden", isResetPassword);
+            codeGroup.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (metaBox) {
-            metaBox.classList.toggle("hidden", isResetPassword);
+            metaBox.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (resendGroup) {
-            resendGroup.classList.toggle("hidden", isResetPassword);
+            resendGroup.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (codeInput) {
-            codeInput.readOnly = isResetPassword;
-            codeInput.classList.toggle("opacity-70", isResetPassword);
-            if (!isResetPassword) {
+            codeInput.readOnly = isPasswordOnlyMode;
+            codeInput.classList.toggle("opacity-70", isPasswordOnlyMode);
+            if (!isPasswordOnlyMode) {
                 codeInput.value = "";
             }
         }
 
-        if (!isResetPassword) {
+        if (!isPasswordOnlyMode) {
             if (passwordInput) passwordInput.value = "";
             if (confirmInput) confirmInput.value = "";
         }
@@ -583,7 +612,7 @@
         }
 
         if (submitLabel) {
-            submitLabel.textContent = isResetPassword
+            submitLabel.textContent = isPasswordOnlyMode
                 ? t("forgotSubmitConfirm")
                 : (appCopy.btn_verify || "ONAYLA");
         }
@@ -591,14 +620,26 @@
         if (backButton) {
             const pendingSignup = readPendingSignup();
             const backTarget = pendingSignup?.sourceView === "login" ? window.navToLogin : window.navToRegister;
-            backButton.onclick = isResetVerify || isResetPassword ? window.navToForgot : backTarget;
+            backButton.onclick = isForcePasswordChange
+                ? () => {
+                    clearPendingPasswordChange();
+                    window.navToLogin?.();
+                }
+                : isResetVerify || isResetPassword ? window.navToForgot : backTarget;
         }
-        updatePasswordTooltip(getVerifyFlowElements().tooltipEl, passwordInput?.value || "", isResetPassword && document.activeElement === passwordInput);
+        updatePasswordTooltip(getVerifyFlowElements().tooltipEl, passwordInput?.value || "", isPasswordOnlyMode && document.activeElement === passwordInput);
     }
 
     function syncVerifyFlowUI() {
+        const pendingPasswordChange = readPendingPasswordChange();
         const pendingReset = readPendingReset();
         const { codeInput } = getVerifyFlowElements();
+
+        if (pendingPasswordChange?.username && pendingPasswordChange?.session) {
+            setVerifyMode("force-password-change");
+            stopVerifyTimer();
+            return;
+        }
 
         if (pendingReset?.email && pendingReset?.stage === "set-password") {
             if (codeInput) codeInput.value = pendingReset.code || "";
@@ -675,6 +716,18 @@
         renderVerifyMeta();
     }
 
+    function persistPendingPasswordChange(data) {
+        persistJson(PENDING_PASSWORD_CHANGE_KEY, data);
+    }
+
+    function readPendingPasswordChange() {
+        return readJson(PENDING_PASSWORD_CHANGE_KEY);
+    }
+
+    function clearPendingPasswordChange() {
+        clearJson(PENDING_PASSWORD_CHANGE_KEY);
+    }
+
     function getConfigFromWindow() {
         const incoming = window.COGNITO_CONFIG;
         return incoming && typeof incoming === "object" ? incoming : {};
@@ -705,6 +758,7 @@
         if (!email) return;
 
         clearPendingReset();
+        clearPendingPasswordChange();
         persistPendingSignup(withCodeTiming({ email, sourceView: "login" }));
         window.navToVerify?.();
         syncVerifyFlowUI();
@@ -851,6 +905,32 @@
             AuthParameters: {
                 USERNAME: username,
                 PASSWORD: password
+            }
+        });
+
+        if (result.ChallengeName) {
+            if (result.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+                return {
+                    challengeName: result.ChallengeName,
+                    session: result.Session,
+                    username: result.ChallengeParameters?.USER_ID_FOR_SRP || username
+                };
+            }
+
+            throw new Error(`Additional auth step required: ${result.ChallengeName}`);
+        }
+
+        return buildSessionFromAuthResult(result.AuthenticationResult, username);
+    }
+
+    async function respondToNewPasswordChallenge(username, newPassword, session) {
+        const result = await postToCognito("AWSCognitoIdentityProviderService.RespondToAuthChallenge", {
+            ChallengeName: "NEW_PASSWORD_REQUIRED",
+            ClientId: state.config.userPoolClientId,
+            Session: session,
+            ChallengeResponses: {
+                USERNAME: username,
+                NEW_PASSWORD: newPassword
             }
         });
 
@@ -1072,6 +1152,20 @@
 
         try {
             const session = await signInWithPassword(username, password);
+
+            if (session?.challengeName === "NEW_PASSWORD_REQUIRED") {
+                clearPendingSignup();
+                clearPendingReset();
+                persistPendingPasswordChange({
+                    username: session.username || username,
+                    session: session.session
+                });
+                clearVerifyMessages();
+                window.navToVerify?.();
+                syncVerifyFlowUI();
+                return null;
+            }
+
             session.user = await fetchUserFromAccessToken(
                 session.tokens.accessToken,
                 session.tokens.idToken,
@@ -1099,6 +1193,7 @@
         clearPersistedSession();
         clearPendingSignup();
         clearPendingReset();
+        clearPendingPasswordChange();
         localStorage.removeItem("selectedPlant");
         localStorage.removeItem("activeTab");
         clearLoginError();
@@ -1197,7 +1292,57 @@
 
         const pendingSignup = readPendingSignup();
         const pendingReset = readPendingReset();
+        const pendingPasswordChange = readPendingPasswordChange();
         const code = (getVerifyElements().codeInput?.value || "").replace(/\D+/g, "").slice(0, 6);
+
+        if (pendingPasswordChange?.username && pendingPasswordChange?.session) {
+            const { passwordInput, confirmInput } = getVerifyFlowElements();
+            const password = passwordInput?.value || "";
+            const confirmPassword = confirmInput?.value || "";
+
+            if (!password || !confirmPassword) {
+                showVerifyError(t("forgotPasswordRequired"));
+                return null;
+            }
+
+            if (password !== confirmPassword) {
+                showVerifyError(t("forgotPasswordMismatch"));
+                return null;
+            }
+
+            if (!isPasswordPolicySatisfied(password)) {
+                showVerifyError(t("invalidPassword"));
+                updatePasswordTooltip(getVerifyFlowElements().tooltipEl, password, true);
+                return null;
+            }
+
+            setButtonBusy(buttonEl, true);
+
+            try {
+                const session = await respondToNewPasswordChallenge(
+                    pendingPasswordChange.username,
+                    password,
+                    pendingPasswordChange.session
+                );
+                session.user = await fetchUserFromAccessToken(
+                    session.tokens.accessToken,
+                    session.tokens.idToken,
+                    session.user
+                );
+
+                clearPendingPasswordChange();
+                persistSession(session);
+                syncUserToApp(session.user);
+                showVerifySuccess(t("forcePasswordSuccess"));
+                await window.navToSelection?.();
+                return session.user;
+            } catch (error) {
+                showVerifyError(getAuthErrorMessage(error));
+                return null;
+            } finally {
+                setButtonBusy(buttonEl, false);
+            }
+        }
 
         if (pendingReset?.email) {
             const { passwordInput, confirmInput } = getVerifyFlowElements();
@@ -1388,6 +1533,7 @@
 
     window.syncForgotPasswordUI = syncForgotPasswordUI;
     window.syncVerifyFlowUI = syncVerifyFlowUI;
+    window.clearPendingPasswordChange = clearPendingPasswordChange;
     syncForgotPasswordUI();
     syncVerifyFlowUI();
     setupEnterKeyHandlers();
