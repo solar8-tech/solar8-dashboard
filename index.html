@@ -186,57 +186,157 @@
     </div>
 
     <div id="report-day-modal"
-        class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+        class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-6"
         data-open="false" onclick="toggleReportDayModal(false)">
-        <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 relative border border-[var(--surface-glass-bdr)]"
+        <div class="glass-panel report-modal-shell w-full max-w-7xl rounded-[2rem] p-5 md:p-7 relative border border-[var(--surface-glass-bdr)]"
             onclick="event.stopPropagation()">
-            <div class="flex justify-between items-start gap-4 mb-6 border-b border-[var(--surface-glass-bdr)] pb-4">
+            <div class="report-modal-topbar">
                 <div>
-                    <p class="text-[10px] uppercase tracking-[0.24em] text-[color:var(--txt-faint)]">Günlük Rapor</p>
-                    <h3 id="report-day-modal-title"
-                        class="text-xl md:text-2xl font-semibold text-[color:var(--txt-strong)] mt-2">--</h3>
-                    <p id="report-day-modal-subtitle" class="text-sm text-[color:var(--txt-muted)] mt-1">--</p>
+                    <p class="report-modal-eyebrow">Günlük Analiz</p>
+                    <div class="report-modal-title-row">
+                        <h3 id="report-day-modal-title"
+                            class="text-2xl md:text-3xl font-semibold text-[color:var(--txt-strong)]">--</h3>
+                        <span id="report-day-modal-badge" class="report-modal-badge">--</span>
+                    </div>
+                    <p id="report-day-modal-subtitle" class="text-sm text-[color:var(--txt-muted)] mt-2">--</p>
                 </div>
-                <button onclick="toggleReportDayModal(false)"
-                    class="w-9 h-9 rounded-full bg-[var(--surface-soft)] hover:bg-white/20 flex items-center justify-center text-[color:var(--txt-strong)] transition shrink-0">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                <div class="report-modal-stat">
-                    <p class="report-modal-stat-label">Üretim</p>
-                    <p id="report-day-modal-production" class="report-modal-stat-value">--</p>
-                </div>
-                <div class="report-modal-stat">
-                    <p class="report-modal-stat-label">Tahmini Gelir</p>
-                    <p id="report-day-modal-income" class="report-modal-stat-value">--</p>
-                </div>
-                <div class="report-modal-stat">
-                    <p class="report-modal-stat-label">Hedef</p>
-                    <p id="report-day-modal-target" class="report-modal-stat-value">--</p>
-                </div>
-                <div class="report-modal-stat">
-                    <p class="report-modal-stat-label">Sapma</p>
-                    <p id="report-day-modal-delta" class="report-modal-stat-value">--</p>
+                <div class="report-modal-actions">
+                    <button type="button" class="report-modal-action-btn" onclick="showToast('msg_demo_feature')">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>PDF indir</span>
+                    </button>
+                    <button type="button" class="report-modal-action-btn" onclick="showToast('msg_demo_feature')">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                        <span>Karşılaştır</span>
+                    </button>
+                    <button onclick="toggleReportDayModal(false)" class="report-modal-close-btn">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="report-modal-body">
-                <div class="report-modal-callout">
-                    <p class="report-modal-callout-label">Gün Değerlendirmesi</p>
-                    <p id="report-day-modal-note" class="report-modal-callout-text">--</p>
-                </div>
-                <div class="report-modal-split">
-                    <div class="report-modal-panel">
-                        <p class="report-modal-panel-label">Performans Durumu</p>
-                        <p id="report-day-modal-status" class="report-modal-panel-value">--</p>
+            <div class="report-modal-kpi-strip">
+                <div class="glass-soft report-modal-kpi-box-primary rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-5 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-bolt text-xl md:text-2xl text-solar"></i>
                     </div>
-                    <div class="report-modal-panel">
-                        <p class="report-modal-panel-label">Öneri</p>
-                        <p id="report-day-modal-action" class="report-modal-panel-value">--</p>
-                    </div>
+                    <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                        Üretim
+                    </p>
+                    <h3 class="text-xl md:text-3xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                        <span id="report-day-modal-production">--</span>
+                    </h3>
                 </div>
+
+                <div class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-5 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-bullseye text-xl md:text-2xl text-amber-300"></i>
+                    </div>
+                    <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                        Hedef
+                    </p>
+                    <h3 class="text-xl md:text-3xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                        <span id="report-day-modal-target">--</span>
+                    </h3>
+                </div>
+
+                <div class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-5 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-wave-square text-xl md:text-2xl text-rose-300"></i>
+                    </div>
+                    <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                        Sapma
+                    </p>
+                    <h3 class="text-xl md:text-3xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                        <span id="report-day-modal-delta">--</span>
+                    </h3>
+                </div>
+
+                <div class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-5 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-wallet text-xl md:text-2xl text-emerald-400"></i>
+                    </div>
+                    <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                        Tahmini gelir
+                    </p>
+                    <h3 class="text-xl md:text-3xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                        <span id="report-day-modal-income">--</span>
+                    </h3>
+                </div>
+
+                <div class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 md:top-0 md:right-0 p-2 md:p-5 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-gauge-high text-xl md:text-2xl text-blue-400"></i>
+                    </div>
+                    <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
+                        Performans
+                    </p>
+                    <h3 class="text-xl md:text-3xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                        <span id="report-day-modal-performance-score">--</span>
+                    </h3>
+                </div>
+            </div>
+
+            <div class="report-modal-lower">
+                <aside class="report-modal-sidepanel report-modal-sidepanel-left">
+                    <div class="report-modal-side-head">
+                        <div>
+                            <p class="report-modal-side-eyebrow">Gün Özeti</p>
+                        </div>
+                    </div>
+                    <p id="report-day-modal-note" class="report-modal-side-copy">--</p>
+                    <div class="report-modal-side-highlight">
+                        <span class="report-modal-side-highlight-label">Öne çıkan bulgu</span>
+                        <strong id="report-day-modal-summary-headline" class="report-modal-side-highlight-value">--</strong>
+                    </div>
+                </aside>
+                <div class="report-modal-chart-panel report-modal-chart-panel-wide">
+                    <div class="report-modal-chart-head">
+                        <div>
+                            <p class="report-modal-section-kicker">Saatlik Analiz</p>
+                            <h4 class="report-modal-section-title">Gerçekleşen ve beklenen profil</h4>
+                        </div>
+                        <div class="report-modal-legend">
+                            <span class="report-modal-legend-item">
+                                <span class="report-modal-dot actual"></span>
+                                <span>Gerçekleşen</span>
+                            </span>
+                            <span class="report-modal-legend-item">
+                                <span class="report-modal-dot target"></span>
+                                <span>Beklenen</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="report-day-modal-chart" class="report-modal-chart report-modal-chart-compact"></div>
+                </div>
+                <aside class="report-modal-sidepanel report-modal-sidepanel-right">
+                    <div class="report-modal-side-head">
+                        <div>
+                            <p class="report-modal-side-eyebrow">Karar Notları</p>
+                            <p class="report-modal-side-title">Ne oldu, ne yapmalı</p>
+                        </div>
+                    </div>
+                    <div class="report-modal-decision-list">
+                        <div class="report-modal-decision-item">
+                            <div>
+                                <span class="report-modal-point-label">Performans durumu</span>
+                                <p id="report-day-modal-decision-status" class="report-modal-decision-copy">--</p>
+                            </div>
+                        </div>
+                        <div class="report-modal-decision-item">
+                            <div>
+                                <span class="report-modal-point-label">Muhtemel neden</span>
+                                <p id="report-day-modal-decision-reason" class="report-modal-decision-copy">--</p>
+                            </div>
+                        </div>
+                        <div class="report-modal-decision-item">
+                            <div>
+                                <span class="report-modal-point-label">Önerilen aksiyon</span>
+                                <p id="report-day-modal-action" class="report-modal-decision-copy">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
     </div>

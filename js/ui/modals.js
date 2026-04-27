@@ -96,6 +96,8 @@ window.toggleReportDayModal = function toggleReportDayModal(show, detail) {
     }
 
     modal.dataset.open = show ? "true" : "false";
+    document.documentElement.style.overflow = show ? "hidden" : "";
+    document.body.style.overflow = show ? "hidden" : "";
 };
 
 window.renderReportDayModal = function renderReportDayModal(detail) {
@@ -107,12 +109,96 @@ window.renderReportDayModal = function renderReportDayModal(detail) {
         "report-day-modal-target": detail.target,
         "report-day-modal-delta": detail.delta,
         "report-day-modal-note": detail.note,
+        "report-day-modal-summary-headline": detail.summaryHeadline,
+        "report-day-modal-summary-support": detail.summarySupport,
+        "report-day-modal-reason": detail.reason,
         "report-day-modal-status": detail.status,
-        "report-day-modal-action": detail.action
+        "report-day-modal-decision-reason": detail.reason,
+        "report-day-modal-decision-status": detail.status,
+        "report-day-modal-action": detail.action,
+        "report-day-modal-specific-yield": detail.specificYield,
+        "report-day-modal-performance-score": detail.performanceScore,
+        "report-day-modal-weather-impact": detail.weatherImpact,
+        "report-day-modal-active-alerts": detail.activeAlerts,
+        "report-day-modal-vs-previous": detail.comparePrevious,
+        "report-day-modal-vs-average": detail.compareAverage,
+        "report-day-modal-week-rank": detail.weekRank,
+        "report-day-modal-peak-hour": detail.peakHour,
+        "report-day-modal-low-hour": detail.lowHour,
+        "report-day-modal-data-confidence": detail.dataConfidence,
+        "report-day-modal-ops-note": detail.opsNote
     };
 
     Object.entries(fields).forEach(([id, value]) => {
         const el = document.getElementById(id);
         if (el) el.innerText = value ?? "--";
     });
+
+    const badge = document.getElementById("report-day-modal-badge");
+    if (badge) {
+        badge.className = `report-modal-badge ${detail.tone || "soft"}`;
+        badge.innerText = detail.badgeText ?? "--";
+    }
+
+    window.renderReportDayChart?.(detail.hourlySeries ?? []);
+};
+
+window.renderReportDayChart = function renderReportDayChart(series) {
+    const chart = document.getElementById("report-day-modal-chart");
+    if (!chart) return;
+
+    if (!Array.isArray(series) || series.length === 0) {
+        chart.innerHTML = "";
+        return;
+    }
+
+    const width = 820;
+    const height = 280;
+    const padding = { top: 18, right: 24, bottom: 36, left: 28 };
+    const values = series.flatMap(point => [point.actual, point.target]);
+    const max = Math.max(...values, 1);
+    const innerWidth = width - padding.left - padding.right;
+    const innerHeight = height - padding.top - padding.bottom;
+    const stepX = innerWidth / Math.max(series.length - 1, 1);
+
+    const toX = index => padding.left + (stepX * index);
+    const toY = value => padding.top + (innerHeight - ((value / max) * innerHeight));
+    const actualPoints = series.map((point, index) => `${toX(index)},${toY(point.actual)}`).join(" ");
+    const targetPoints = series.map((point, index) => `${toX(index)},${toY(point.target)}`).join(" ");
+    const areaPoints = [
+        `${toX(0)},${height - padding.bottom}`,
+        ...series.map((point, index) => `${toX(index)},${toY(point.actual)}`),
+        `${toX(series.length - 1)},${height - padding.bottom}`
+    ].join(" ");
+
+    const gridLines = [0.25, 0.5, 0.75, 1].map(ratio => {
+        const y = padding.top + (innerHeight - (innerHeight * ratio));
+        return `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="rgba(148,163,184,0.16)" stroke-dasharray="4 6" />`;
+    }).join("");
+
+    const labels = series.map((point, index) => `
+        <text x="${toX(index)}" y="${height - 12}" text-anchor="middle" fill="#64748b" font-size="11">${point.hour}</text>
+    `).join("");
+
+    const dots = series.map((point, index) => `
+        <circle cx="${toX(index)}" cy="${toY(point.actual)}" r="3.5" fill="#f59e0b" />
+        <circle cx="${toX(index)}" cy="${toY(point.target)}" r="3" fill="#60a5fa" />
+    `).join("");
+
+    chart.innerHTML = `
+        <svg class="report-modal-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Saatlik üretim grafiği">
+            <defs>
+                <linearGradient id="report-modal-area-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.30" />
+                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.02" />
+                </linearGradient>
+            </defs>
+            ${gridLines}
+            <polygon points="${areaPoints}" fill="url(#report-modal-area-fill)"></polygon>
+            <polyline points="${targetPoints}" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 7"></polyline>
+            <polyline points="${actualPoints}" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            ${dots}
+            ${labels}
+        </svg>
+    `;
 };
