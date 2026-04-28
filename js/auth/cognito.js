@@ -8,7 +8,9 @@
     const PENDING_RESET_KEY = "solar8.auth.pendingReset";
     const PENDING_PASSWORD_CHANGE_KEY = "solar8.auth.pendingPasswordChange";
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
-    const REGISTER_PROFILE_ENDPOINT = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod/register-profile";
+    const DASHBOARD_API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
+    const ME_ENDPOINT = `${DASHBOARD_API_BASE}/me`;
+    const REGISTER_PROFILE_ENDPOINT = `${DASHBOARD_API_BASE}/register-profile`;
 
     const defaultConfig = {
         region: "eu-central-1",
@@ -894,6 +896,7 @@
         if (/InvalidPassword/i.test(name) || /InvalidPassword/i.test(message)) return t("invalidPassword");
         if (/InvalidParameter/i.test(name) || /InvalidParameter/i.test(message)) return t("invalidParameter");
         if (/Network/i.test(message) || /Failed to fetch/i.test(message)) return t("networkError");
+        if (/HTTP 401|HTTP 403|UNAUTHORIZED|user_not_found|profile/i.test(message)) return t("userNotFound");
 
         return message || t("unexpectedError");
     }
@@ -958,19 +961,45 @@
     }
 
     async function fetchUserFromAccessToken(accessToken, idToken, fallbackUser) {
-        if (!accessToken) return fallbackUser;
+        const baseUser = {
+            ...(fallbackUser || {}),
+            ...buildUserFromIdToken(idToken, fallbackUser?.username)
+        };
 
-        const result = await postToCognito("AWSCognitoIdentityProviderService.GetUser", {
-            AccessToken: accessToken
+        if (!idToken) return baseUser;
+
+        const response = await fetch(ME_ENDPOINT, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${idToken}`
+            }
         });
 
-        const attrs = Object.fromEntries((result.UserAttributes || []).map((item) => [item.Name, item.Value]));
-        const baseUser = buildUserFromIdToken(idToken, result.Username);
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const detail = json?.error || json?.message || response.statusText;
+            throw new Error(`HTTP ${response.status}: ${detail}`);
+        }
+
+        return normaliseInternalUser(json?.user || json, baseUser);
+    }
+
+    function normaliseInternalUser(user, fallbackUser = {}) {
+        const name = user.full_name || user.fullName || user.name || fallbackUser.name || user.email || fallbackUser.email || fallbackUser.username;
+        const status = user.role_name || user.role || user.company_name || user.companyName || (user.is_active === false ? "Pasif" : "Aktif");
 
         return {
-            ...baseUser,
-            name: attrs.name || attrs.email || baseUser.name,
-            email: attrs.email || baseUser.email
+            ...fallbackUser,
+            ...user,
+            id: user.id ?? fallbackUser.id ?? null,
+            companyId: user.company_id ?? user.companyId ?? fallbackUser.companyId ?? null,
+            roleId: user.role_id ?? user.roleId ?? fallbackUser.roleId ?? null,
+            cognitoSub: user.cognito_sub ?? user.cognitoSub ?? fallbackUser.cognitoSub ?? null,
+            fullName: user.full_name ?? user.fullName ?? name,
+            companyName: user.company_name ?? user.companyName ?? fallbackUser.companyName ?? null,
+            name: name || "--",
+            email: user.email ?? fallbackUser.email ?? null,
+            status
         };
     }
 

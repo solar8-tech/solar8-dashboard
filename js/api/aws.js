@@ -1,61 +1,110 @@
-const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
-const LIVE_REFRESH_MS = 5000;
+const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
+const DASHBOARD_REFRESH_MS = 30000;
+const AUTH_STORAGE_KEY = "solar8.auth.session";
 
 const ENDPOINTS = {
-    live: `${API_BASE}/live`
+    me: `${API_BASE}/me`,
+    sites: `${API_BASE}/sites`,
+    dashboardSummary: (siteId) => `${API_BASE}/sites/${encodeURIComponent(siteId)}/dashboard-summary`
 };
 
 async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
+    const token = _getIdToken();
 
     try {
         const res = await fetch(url, {
             method: "GET",
             signal: controller.signal,
-            ...options
+            ...options,
+            headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(options.headers || {})
+            }
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        return await res.json();
+        const body = await res.json().catch(() => null);
+
+        if (!res.ok) {
+            const detail = body?.error || body?.message || res.statusText;
+            throw new Error(`HTTP ${res.status}: ${detail}`);
+        }
+
+        return _unwrapPayload(body);
     } finally {
         clearTimeout(timeout);
     }
 }
 
+window.fetchCurrentUser = async function fetchCurrentUser() {
+    const json = await _apiFetch(ENDPOINTS.me);
+    const user = _normaliseUser(json?.user || json);
+
+    window.App.data.context.user = {
+        ...(window.App.data.context.user || {}),
+        ...user
+    };
+
+    _setText("user-name", user.name || "--");
+    _setText("user-status", user.status || "--");
+
+    return user;
+};
+
+window.fetchPlants = async function fetchPlants() {
+    try {
+        if (!window.App.data.context.user?.id) {
+            await window.fetchCurrentUser?.();
+        }
+
+        const json = await _apiFetch(ENDPOINTS.sites);
+        const plants = _normaliseSites(json?.sites || []);
+        window.App.data.plants = plants;
+
+        const selectedPlant = _pickSelectedPlant(plants);
+        if (selectedPlant?.id !== undefined) {
+            window.App.data.context.plant = selectedPlant;
+        }
+
+        _renderContextHeader();
+        window.renderPlantList?.();
+        return plants;
+    } catch (err) {
+        window.handleApiError("sites", err);
+        _renderPlantLoadError(err);
+        return [];
+    }
+};
+
 window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
     if (window.App.isRefreshing) return;
+
+    const siteId = _getSelectedSiteId();
+    if (siteId === null) {
+        await window.fetchPlants?.();
+        return;
+    }
+
     window.App.isRefreshing = true;
     window.setLoadingState?.(true);
 
     try {
-        const json = await _apiFetch(ENDPOINTS.live);
-        _mapLivePayload(json);
+        const json = await _apiFetch(ENDPOINTS.dashboardSummary(siteId));
+        _mapDashboardSummaryPayload(json);
 
-        _setText("user-name", window.App.data.context.user?.name ?? "--");
-        _setText("user-status", window.App.data.context.user?.status ?? "--");
-
-        const pName = window.App.data.context.plant?.name;
-        _setText("plant-title", typeof pName === "object"
-            ? (pName[window.App.lang] || pName.tr || "--")
-            : (pName ?? "--"));
-
+        _renderContextHeader();
         window.renderApp?.();
-        window.renderPlantList?.();
 
         if (localStorage.getItem("activeTab") === "dashboard") {
             window.initCharts?.();
         }
     } catch (err) {
-        window.handleApiError("live", err);
+        window.handleApiError("dashboard-summary", err);
     } finally {
         window.App.isRefreshing = false;
         window.setLoadingState?.(false);
     }
-};
-
-window.fetchPlants = async function fetchPlants() {
-    await window.fetchDashboardFromAWS?.();
 };
 
 window.fetchReports = async function fetchReports() {
@@ -76,7 +125,7 @@ window.startDashboardRefresh = function startDashboardRefresh() {
 
     window.App.dashboardIntervalId = setInterval(() => {
         window.fetchDashboardFromAWS?.();
-    }, LIVE_REFRESH_MS);
+    }, DASHBOARD_REFRESH_MS);
 };
 
 window.stopDashboardRefresh = function stopDashboardRefresh() {
@@ -85,144 +134,197 @@ window.stopDashboardRefresh = function stopDashboardRefresh() {
     window.App.dashboardIntervalId = null;
 };
 
-function _mapLivePayload(api) {
+function _mapDashboardSummaryPayload(api) {
     if (!api || typeof api !== "object") {
-        console.warn("[API:live] Beklenmeyen yanit formati:", api);
+        console.warn("[API:dashboard-summary] Beklenmeyen yanit formati:", api);
         return;
     }
 
-    const toCoord = (value) => {
-        const parsed = parseFloat(value);
-        return Number.isFinite(parsed) ? parsed : null;
+    const apiSite = api.site ? _normaliseSite(api.site) : null;
+    const selectedPlant = {
+        ...(window.App.data.context.plant || {}),
+        ...(apiSite || {})
     };
 
-    const plants = _normalisePlants(api, toCoord);
-    const selectedPlant = _pickSelectedPlant(plants);
-    const liveSource = _pickLiveSource(api, selectedPlant);
+    if (selectedPlant?.id !== undefined) {
+        window.App.data.context.plant = selectedPlant;
+        localStorage.setItem("selectedPlant", JSON.stringify(selectedPlant));
+    }
 
-    window.App.data.plants = plants;
-    window.App.data.context = {
-        user: {
-            name: api.user?.name ?? api.userName ?? window.App.data.context.user?.name ?? null,
-            status: api.user?.status ?? api.userStatus ?? window.App.data.context.user?.status ?? null
-        },
-        plant: selectedPlant
-    };
+    const cards = api.cards || api.summary || api.dashboard || api.metrics || api;
+    const instantPowerMw = _number(cards.instant_power_mw ?? cards.instantPowerMw);
+    const instantPowerW = _number(cards.instant_power_w ?? cards.instantPowerW);
+    const dailyProductionMwh = _number(cards.daily_production_mwh ?? cards.dailyProductionMwh);
+    const dailyProductionKwh = _number(cards.daily_production_kwh ?? cards.dailyProductionKwh);
+    const revenueUsd = _number(cards.daily_revenue_usd ?? cards.dailyRevenueUsd ?? cards.revenue);
+    const activeFaultCount = _number(cards.active_fault_count ?? cards.activeFaultCount) || 0;
+
+    const instantPower = instantPowerMw ?? (instantPowerW !== null ? instantPowerW / 1000000 : null);
+    const dailyProduction = dailyProductionMwh ?? (dailyProductionKwh !== null ? dailyProductionKwh / 1000 : null);
 
     window.App.data.live = {
-        instantPower: liveSource.instantPower ?? api.instantPower ?? null,
-        dailyProduction: liveSource.dailyProduction ?? api.dailyProduction ?? null,
-        revenue: liveSource.revenue ?? api.revenue ?? null,
-        hourlyLabels: Array.isArray(liveSource.hourlyLabels) ? liveSource.hourlyLabels : [],
-        hourlyData: Array.isArray(liveSource.hourlyData) ? liveSource.hourlyData : [],
-        riskTitle: liveSource.riskTitle ?? null,
-        riskLevel: typeof liveSource.riskLevel === "number" ? liveSource.riskLevel : 0,
-        riskDesc: liveSource.riskDesc ?? null,
-        alertMsg: liveSource.alertMsg ?? null,
-        monthlyProduction: liveSource.monthlyProduction ?? null,
-        monthlyRevenue: liveSource.monthlyRevenue ?? null,
-        carbonOffset: liveSource.carbonOffset ?? null,
-        collectionRate: liveSource.collectionRate ?? null,
-        treesEquivalent: liveSource.treesEquivalent ?? null,
-        efficiency: liveSource.efficiency ?? api.efficiency ?? null,
-        riskyDevices: liveSource.riskyDevices ?? null,
-        faultyPanels: liveSource.faultyPanels ?? null,
-        totalPanels: liveSource.totalPanels ?? null,
-        detectTime: liveSource.detectTime ?? null,
-        predictions: Array.isArray(liveSource.predictions) ? liveSource.predictions : [],
-        activeFaults: Array.isArray(liveSource.activeFaults) ? liveSource.activeFaults : [],
-        projection: liveSource.projection ?? { labels: [], p50: [], p10: [] }
+        instantPower,
+        dailyProduction,
+        revenue: revenueUsd,
+        hourlyLabels: [],
+        hourlyData: [],
+        riskTitle: activeFaultCount > 0
+            ? { tr: "Aktif Ariza", en: "Active Fault" }
+            : { tr: "Stabil", en: "Stable" },
+        riskLevel: activeFaultCount > 0 ? Math.min(activeFaultCount * 20, 100) : 0,
+        riskDesc: activeFaultCount > 0
+            ? { tr: `${activeFaultCount} aktif ariza kaydi var.`, en: `${activeFaultCount} active fault records.` }
+            : { tr: "Aktif ariza kaydi bulunmuyor.", en: "No active fault records." },
+        alertMsg: activeFaultCount > 0
+            ? { tr: "Santral icin aktif ariza kontrolu gerekli.", en: "Active fault review is required for this site." }
+            : { tr: "Santral icin kritik alarm bulunmuyor.", en: "No critical alarm for this site." },
+        monthlyProduction: null,
+        monthlyRevenue: null,
+        carbonOffset: null,
+        collectionRate: null,
+        treesEquivalent: null,
+        efficiency: null,
+        riskyDevices: null,
+        faultyPanels: activeFaultCount,
+        totalPanels: null,
+        detectTime: null,
+        predictions: [],
+        activeFaults: [],
+        projection: { labels: [], p50: [], p10: [] }
     };
 
-    window.App.data.reports = _normaliseReports(api, selectedPlant);
-    window.App.data.history = _normaliseHistory(api, selectedPlant);
+    window.App.data.reports = window.App.data.reports || null;
+    window.App.data.history = window.App.data.history || [];
 
     if (!window.App.weatherStarted) {
-        const { lat, lon } = window.App.data.context.plant;
-        if (lat !== null && lon !== null) {
+        const { lat, lon } = window.App.data.context.plant || {};
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
             window.startWeatherRefresh?.();
             window.App.weatherStarted = true;
         }
     }
 }
 
-function _normalisePlants(api, toCoord) {
-    const rawPlants = [
-        ...(Array.isArray(api.plants) ? api.plants : []),
-        ...(Array.isArray(api.live?.plants) ? api.live.plants : []),
-        ...(Array.isArray(api.data?.plants) ? api.data.plants : [])
-    ];
+function _normaliseSites(sites) {
+    return (Array.isArray(sites) ? sites : [])
+        .map(_normaliseSite);
+}
 
-    const plants = rawPlants.map((plant, index) => {
-        const lat = toCoord(plant.lat ?? plant.latitude ?? plant.coords?.[0] ?? plant.location?.lat);
-        const lon = toCoord(plant.lon ?? plant.lng ?? plant.longitude ?? plant.coords?.[1] ?? plant.location?.lon ?? plant.location?.lng);
+function _unwrapPayload(payload) {
+    if (!payload || typeof payload !== "object") return payload;
 
-        return {
-            ...plant,
-            id: plant.id ?? plant.plantId ?? index,
-            name: plant.name ?? plant.plantName ?? plant.title ?? `Plant ${index + 1}`,
-            city: plant.city ?? plant.location?.city ?? null,
-            lat,
-            lon,
-            capacity: plant.capacity ?? plant.capacityMw ?? plant.installedPower ?? null,
-            inverters: plant.inverters ?? plant.inverterCount ?? null
-        };
-    }).filter((plant) => Number.isFinite(plant.lat) && Number.isFinite(plant.lon));
+    if (typeof payload.body === "string") {
+        try {
+            return JSON.parse(payload.body);
+        } catch {
+            return payload;
+        }
+    }
 
-    if (plants.length > 0) return plants;
+    return payload;
+}
 
-    const fallbackPlant = {
-        id: api.plant?.id ?? api.plantId ?? window.App.data.context.plant?.id ?? "live",
-        name: api.plant?.name ?? api.plantName ?? window.App.data.context.plant?.name ?? null,
-        city: api.plant?.city ?? api.city ?? window.App.data.context.plant?.city ?? null,
-        lat: toCoord(api.plant?.lat ?? api.lat ?? window.App.data.context.plant?.lat),
-        lon: toCoord(api.plant?.lon ?? api.lng ?? api.lon ?? window.App.data.context.plant?.lon)
+function _normaliseSite(site, index = 0) {
+    const capacityKwp = _number(site.installed_capacity_kwp ?? site.installedCapacityKwp);
+    const capacityW = _number(site.installed_capacity_w ?? site.installedCapacityW);
+    const capacityMw = _number(site.capacity ?? site.capacityMw);
+
+    return {
+        ...site,
+        id: site.site_id ?? site.siteId ?? site.id ?? index,
+        siteId: site.site_id ?? site.siteId ?? site.id ?? index,
+        siteUuid: site.site_uuid ?? site.siteUuid ?? null,
+        siteCodePrefix: site.site_code_prefix ?? site.siteCodePrefix ?? null,
+        name: site.name ?? site.title ?? `Plant ${index + 1}`,
+        city: site.city ?? null,
+        address: site.address ?? null,
+        timezone: site.timezone ?? null,
+        status: site.status ?? null,
+        lat: _number(site.latitude ?? site.lat),
+        lon: _number(site.longitude ?? site.lon ?? site.lng),
+        capacity: capacityMw ?? (capacityKwp !== null ? capacityKwp / 1000 : (capacityW !== null ? capacityW / 1000000 : null))
     };
+}
 
-    return Number.isFinite(fallbackPlant.lat) && Number.isFinite(fallbackPlant.lon) ? [fallbackPlant] : [];
+function _normaliseUser(user) {
+    const name = user.full_name || user.fullName || user.name || user.email || "--";
+    const status = user.role_name || user.role || user.company_name || user.companyName || (user.is_active === false ? "Pasif" : "Aktif");
+
+    return {
+        ...user,
+        id: user.id ?? null,
+        companyId: user.company_id ?? user.companyId ?? null,
+        roleId: user.role_id ?? user.roleId ?? null,
+        cognitoSub: user.cognito_sub ?? user.cognitoSub ?? null,
+        fullName: user.full_name ?? user.fullName ?? name,
+        companyName: user.company_name ?? user.companyName ?? null,
+        name,
+        email: user.email ?? null,
+        status
+    };
 }
 
 function _pickSelectedPlant(plants) {
-    const current = window.App.data.context.plant ?? {};
-    const currentName = _plantName(current.name);
-
+    const current = window.App.data.context.plant || {};
     const selected = plants.find((plant) =>
-        (current.id !== undefined && plant.id === current.id) ||
-        (currentName && _plantName(plant.name) === currentName) ||
-        (Number.isFinite(current.lat) && Number.isFinite(current.lon) && plant.lat === current.lat && plant.lon === current.lon)
+        String(plant.id) === String(current.id) ||
+        String(plant.siteId) === String(current.siteId) ||
+        String(plant.siteCodePrefix || "") === String(current.siteCodePrefix || "")
     );
 
-    return {
-        ...(plants[0] ?? {}),
-        ...current,
-        ...(selected ?? plants[0] ?? {})
-    };
+    return selected || plants[0] || null;
 }
 
-function _pickLiveSource(api, selectedPlant) {
-    const currentName = _plantName(selectedPlant?.name);
-    const namedPlantPayload = (Array.isArray(api.plants) ? api.plants : []).find((plant) =>
-        _plantName(plant?.name ?? plant?.plantName) === currentName
-    );
-
-    return namedPlantPayload ?? api.live ?? api.dashboard ?? api.metrics ?? api;
+function _getSelectedSiteId() {
+    const plant = window.App.data.context.plant || {};
+    const siteId = plant.siteId ?? plant.site_id ?? plant.id;
+    return siteId === undefined || siteId === null || siteId === "" ? null : siteId;
 }
 
-function _normaliseReports(api, selectedPlant) {
-    if (api.reports && typeof api.reports === "object" && !Array.isArray(api.reports)) return api.reports;
-    if (selectedPlant?.reports && typeof selectedPlant.reports === "object") return selectedPlant.reports;
-    return window.App.data.reports ?? null;
+function _getIdToken() {
+    const session = _readAuthSession();
+    return session?.tokens?.idToken || null;
 }
 
-function _normaliseHistory(api, selectedPlant) {
-    if (Array.isArray(api.history)) return api.history;
-    if (Array.isArray(selectedPlant?.history)) return selectedPlant.history;
-    if (Array.isArray(api.activeFaults)) return api.activeFaults;
-    return window.App.data.history ?? [];
+function _readAuthSession() {
+    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
 }
 
-function _plantName(value) {
-    return String(window.localise(value) ?? value ?? "").trim().toLowerCase();
+function _number(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _renderContextHeader() {
+    const user = window.App.data.context.user || {};
+    const plant = window.App.data.context.plant || {};
+
+    _setText("user-name", user.name || user.fullName || user.email || "--");
+    _setText("user-status", user.status || "--");
+    _setText("plant-title", window.localise(plant.name) || plant.name || "--");
+}
+
+function _renderPlantLoadError(error) {
+    console.error("[API:sites]", error);
+    window.App.data.plants = [];
+
+    const container = document.getElementById("plant-list-container");
+    if (!container) return;
+
+    const t = window.TRANSLATIONS?.[window.App.lang] || {};
+    container.innerHTML = `
+        <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-red-300 leading-relaxed">
+            ${t.error_data_source || "Veri kaynagina ulasilamiyor"}
+        </div>
+    `;
 }
 
 function _setText(id, text) {
