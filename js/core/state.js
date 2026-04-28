@@ -8,6 +8,7 @@ window.App = {
     weatherStarted    : false,
     weatherIntervalId : null,
     toastTimeout      : null,
+    epiasCache        : null,
 
     charts: {
         main       : null,

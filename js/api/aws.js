@@ -1,6 +1,8 @@
 const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
 const DASHBOARD_REFRESH_MS = 30000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
+const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
+const EPIAS_CACHE_MS = 15 * 60 * 1000;
 
 const ENDPOINTS = {
     me: `${API_BASE}/me`,
@@ -10,7 +12,7 @@ const ENDPOINTS = {
 
 async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
     const token = _getIdToken();
 
     try {
@@ -90,8 +92,13 @@ window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
     window.setLoadingState?.(true);
 
     try {
-        const json = await _apiFetch(ENDPOINTS.dashboardSummary(siteId));
+        const [json, epias] = await Promise.all([
+            _apiFetch(ENDPOINTS.dashboardSummary(siteId)),
+            _fetchEpiasBasePrice()
+        ]);
+
         _mapDashboardSummaryPayload(json);
+        _applyEpiasBasePrice(epias);
 
         _renderContextHeader();
         window.renderApp?.();
@@ -156,16 +163,33 @@ function _mapDashboardSummaryPayload(api) {
     const instantPowerW = _number(cards.instant_power_w ?? cards.instantPowerW);
     const dailyProductionMwh = _number(cards.daily_production_mwh ?? cards.dailyProductionMwh);
     const dailyProductionKwh = _number(cards.daily_production_kwh ?? cards.dailyProductionKwh);
-    const revenueUsd = _number(cards.daily_revenue_usd ?? cards.dailyRevenueUsd ?? cards.revenue);
+    const revenue = _number(
+        cards.daily_revenue_try ??
+        cards.dailyRevenueTry ??
+        cards.daily_revenue_tl ??
+        cards.dailyRevenueTl ??
+        cards.daily_revenue ??
+        cards.dailyRevenue ??
+        cards.revenue
+    );
     const activeFaultCount = _number(cards.active_fault_count ?? cards.activeFaultCount) || 0;
 
     const instantPower = instantPowerMw ?? (instantPowerW !== null ? instantPowerW / 1000000 : null);
     const dailyProduction = dailyProductionMwh ?? (dailyProductionKwh !== null ? dailyProductionKwh / 1000 : null);
+    const basePrice = _toFiniteNumber(
+        cards.base_price ??
+        cards.basePrice ??
+        cards.epias_ptf ??
+        cards.epiasPtf
+    );
+    const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
 
     window.App.data.live = {
         instantPower,
         dailyProduction,
-        revenue: revenueUsd,
+        revenue,
+        basePrice,
+        basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
         hourlyLabels: [],
         hourlyData: [],
         riskTitle: activeFaultCount > 0
@@ -178,23 +202,23 @@ function _mapDashboardSummaryPayload(api) {
         alertMsg: activeFaultCount > 0
             ? { tr: "Santral icin aktif ariza kontrolu gerekli.", en: "Active fault review is required for this site." }
             : { tr: "Santral icin kritik alarm bulunmuyor.", en: "No critical alarm for this site." },
-        monthlyProduction: null,
-        monthlyRevenue: null,
-        carbonOffset: null,
-        collectionRate: null,
-        treesEquivalent: null,
-        efficiency: null,
-        riskyDevices: null,
+        monthlyProduction: _number(cards.monthly_production_mwh ?? cards.monthlyProductionMwh),
+        monthlyRevenue: _number(cards.monthly_revenue_try ?? cards.monthlyRevenueTry ?? cards.monthly_revenue ?? cards.monthlyRevenue),
+        carbonOffset: _number(cards.carbon_offset ?? cards.carbonOffset),
+        collectionRate: _number(cards.collection_rate ?? cards.collectionRate),
+        treesEquivalent: _number(cards.trees_equivalent ?? cards.treesEquivalent),
+        efficiency: _number(cards.efficiency ?? api.efficiency),
+        riskyDevices: _number(cards.risky_devices ?? cards.riskyDevices),
         faultyPanels: activeFaultCount,
-        totalPanels: null,
-        detectTime: null,
-        predictions: [],
-        activeFaults: [],
-        projection: { labels: [], p50: [], p10: [] }
+        totalPanels: _number(cards.total_panels ?? cards.totalPanels),
+        detectTime: _number(cards.detect_time ?? cards.detectTime),
+        predictions: Array.isArray(api.predictions) ? api.predictions : [],
+        activeFaults: Array.isArray(api.activeFaults) ? api.activeFaults : [],
+        projection: api.projection ?? { labels: [], p50: [], p10: [] }
     };
 
-    window.App.data.reports = window.App.data.reports || null;
-    window.App.data.history = window.App.data.history || [];
+    window.App.data.reports = api.reports ?? window.App.data.reports ?? null;
+    window.App.data.history = api.history ?? api.activeFaults ?? window.App.data.history ?? [];
 
     if (!window.App.weatherStarted) {
         const { lat, lon } = window.App.data.context.plant || {};
@@ -206,8 +230,7 @@ function _mapDashboardSummaryPayload(api) {
 }
 
 function _normaliseSites(sites) {
-    return (Array.isArray(sites) ? sites : [])
-        .map(_normaliseSite);
+    return (Array.isArray(sites) ? sites : []).map(_normaliseSite);
 }
 
 function _unwrapPayload(payload) {
@@ -330,4 +353,111 @@ function _renderPlantLoadError(error) {
 function _setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
+}
+
+async function _fetchEpiasBasePrice() {
+    const cached = window.App.epiasCache;
+    if (cached?.fetchedAt && Date.now() - cached.fetchedAt < EPIAS_CACHE_MS) {
+        return cached.data;
+    }
+
+    try {
+        const payload = _buildEpiasPayload();
+        const data = await _apiFetch(EPIAS_BASE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const parsed = _normaliseEpiasResponse(data);
+        window.App.epiasCache = { fetchedAt: Date.now(), data: parsed };
+        return parsed;
+    } catch (error) {
+        console.warn("[API:epias]", error);
+        return cached?.data ?? null;
+    }
+}
+
+function _buildEpiasPayload() {
+    const today = _getIstanbulDateParts();
+    return {
+        startDate: `${today}T00:00:00+03:00`,
+        endDate: `${today}T23:59:59+03:00`,
+        page: {
+            number: 1,
+            size: 100,
+            sort: { direction: "ASC", field: "date" }
+        }
+    };
+}
+
+function _getIstanbulDateParts() {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Istanbul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find((p) => p.type === "year")?.value ?? "1970";
+    const month = parts.find((p) => p.type === "month")?.value ?? "01";
+    const day = parts.find((p) => p.type === "day")?.value ?? "01";
+    return `${year}-${month}-${day}`;
+}
+
+function _normaliseEpiasResponse(raw) {
+    const root = raw?.data ?? raw?.body ?? raw;
+    const items = Array.isArray(root?.items) ? root.items : Array.isArray(root) ? root : [];
+    const stats = root?.statistic ?? root?.statistics ?? root?.summary ?? {};
+
+    const numericCandidates = [
+        stats.ptfWeightedAvg,
+        stats.priceAvg,
+        root?.ptfWeightedAvg,
+        root?.priceAvg,
+        _averageEpiasPrices(items),
+        items[items.length - 1]?.price,
+        items[items.length - 1]?.ptf
+    ];
+
+    const basePrice = numericCandidates
+        .map(_toFiniteNumber)
+        .find((value) => Number.isFinite(value)) ?? null;
+
+    return {
+        basePrice,
+        unit: root?.unit ?? stats?.unit ?? "TL/MWh",
+        items
+    };
+}
+
+function _averageEpiasPrices(items) {
+    const prices = items
+        .map((item) => _toFiniteNumber(item?.price ?? item?.ptf))
+        .filter((value) => Number.isFinite(value));
+
+    if (prices.length === 0) return null;
+    return prices.reduce((sum, value) => sum + value, 0) / prices.length;
+}
+
+function _toFiniteNumber(value) {
+    const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _applyEpiasBasePrice(epias) {
+    if (!window.App.data.live || !Number.isFinite(epias?.basePrice)) return;
+
+    window.App.data.live.basePrice = epias.basePrice;
+    window.App.data.live.basePriceLabel = _formatEpiasPrice(epias.basePrice, epias.unit);
+}
+
+function _formatEpiasPrice(value, unit) {
+    const formatted = Number(value).toLocaleString("tr-TR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+
+    return `${formatted} ${unit ?? "TL/MWh"}`;
 }

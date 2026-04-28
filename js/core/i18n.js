@@ -3,14 +3,14 @@
 window.TRANSLATIONS = {
     tr: {
         // Nav
-        nav_dashboard: "Ana Sayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
+        nav_dashboard: "Anasayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
         // Page titles
         page_overview: "Genel Bakış", page_twin: "Solar8+", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
         // System
         system_active: "SİSTEM AKTİF",
         card_instant_power: "Anlık Güç", card_compare_yest: "Düne göre",
         card_daily_prod: "Günlük Üretim", card_daily_rev: "Günlük Gelir",
-        card_base_price: "~75 USD/MWh baz alınmıştır.", card_critical_alert: "Kritik Uyarı",
+        card_base_price: "Baz fiyat alınamadı.", epias_based_price: "EPİAŞ PTF baz fiyatı: %{price}", card_critical_alert: "Kritik Uyarı",
         btn_open_analysis: "Arıza Analizini Aç →",
         // Reports
         rep_card_prod: "Bu Ay Üretim", rep_card_income: "Aylık Kazanç", rep_card_carbon: "Karbon Nötr",
@@ -113,7 +113,7 @@ window.TRANSLATIONS = {
         system_active: "SYSTEM ACTIVE",
         card_instant_power: "Instant Power", card_compare_yest: "vs Yesterday",
         card_daily_prod: "Daily Production", card_daily_rev: "Daily Revenue",
-        card_base_price: "Based on ~75 USD/MWh.", card_critical_alert: "Critical Alert",
+        card_base_price: "Base price unavailable.", epias_based_price: "EPİAŞ PTF base price: %{price}", card_critical_alert: "Critical Alert",
         btn_open_analysis: "Open Failure Analysis →",
         rep_card_prod: "Monthly Prod.", rep_card_income: "Monthly Income", rep_card_carbon: "Carbon Neutral",
         rep_compare_prev: "vs Last Month", rep_collection: "Collection:", rep_trees: "Trees equivalent",
