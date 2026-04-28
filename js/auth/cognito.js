@@ -152,6 +152,7 @@
             emailInput: document.getElementById("reg-email"),
             passwordInput: document.getElementById("reg-pass"),
             confirmInput: document.getElementById("reg-pass-confirm"),
+            tokenInput: document.getElementById("reg-token"),
             tooltipEl: document.getElementById("register-password-tooltip"),
             errorBox: document.getElementById("register-error"),
             successBox: document.getElementById("register-success")
@@ -355,11 +356,12 @@
     }
 
     window.resetRegisterForm = function resetRegisterForm() {
-        const { nameInput, emailInput, passwordInput, confirmInput, tooltipEl } = getRegisterElements();
+        const { nameInput, emailInput, passwordInput, confirmInput, tokenInput, tooltipEl } = getRegisterElements();
         clearInputValue(nameInput);
         clearInputValue(emailInput);
         clearInputValue(passwordInput);
         clearInputValue(confirmInput);
+        clearInputValue(tokenInput);
         clearRegisterMessages();
         updatePasswordTooltip(tooltipEl, "", false);
     };
@@ -1109,6 +1111,7 @@
         bindEnterSubmit(document.getElementById("reg-email"), () => window.handleRegister?.(registerButton));
         bindEnterSubmit(document.getElementById("reg-pass"), () => window.handleRegister?.(registerButton));
         bindEnterSubmit(document.getElementById("reg-pass-confirm"), () => window.handleRegister?.(registerButton));
+        bindEnterSubmit(document.getElementById("reg-token"), () => window.handleRegister?.(registerButton));
 
         bindEnterSubmit(document.getElementById("forgot-email"), () => window.handleForgotPass?.(forgotButton));
         bindEnterSubmit(document.getElementById("inp-verify-code"), () => window.handleVerify?.(verifyButton));
@@ -1260,13 +1263,14 @@
         ensureInitialized();
         clearRegisterMessages();
 
-        const { nameInput, emailInput, passwordInput, confirmInput } = getRegisterElements();
+        const { nameInput, emailInput, passwordInput, confirmInput, tokenInput } = getRegisterElements();
         const name = nameInput?.value.trim() || "";
         const email = emailInput?.value.trim().toLowerCase() || "";
         const password = passwordInput?.value || "";
         const confirmPassword = confirmInput?.value || "";
+        const registerToken = tokenInput?.value.trim() || "";
 
-        if (!name || !email || !password || !confirmPassword) {
+        if (!name || !email || !password || !confirmPassword || !registerToken) {
             showRegisterError(t("registerRequired"));
             return null;
         }
@@ -1291,17 +1295,30 @@
 
         try {
             const result = await signUpUser(name, email, password);
+            const cognitoSub = result?.UserSub || null;
+
+            if (cognitoSub) {
+                await syncRegisterProfile({
+                    cognito_sub: cognitoSub,
+                    email,
+                    full_name: name,
+                    register_token: registerToken,
+                    status: "unverified"
+                });
+            }
+
             clearPendingReset();
             persistPendingSignup(withCodeTiming({
                 name,
                 email,
+                registerToken,
                 sourceView: "register",
-                cognitoSub: result?.UserSub || null
+                cognitoSub
             }));
             showRegisterSuccess(t("registerVerifySent"));
 
-            if (result?.UserSub) {
-                console.info("[Auth] Signup created:", result.UserSub);
+            if (cognitoSub) {
+                console.info("[Auth] Signup created:", cognitoSub);
             }
 
             window.navToVerify?.();
@@ -1454,7 +1471,9 @@
                 await syncRegisterProfile({
                     cognito_sub: pendingSignup.cognitoSub,
                     email: pendingSignup.email,
-                    full_name: pendingSignup.name || ""
+                    full_name: pendingSignup.name || "",
+                    register_token: pendingSignup.registerToken || "",
+                    status: "verified"
                 });
             }
             clearPendingSignup();
