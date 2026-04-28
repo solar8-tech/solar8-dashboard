@@ -352,6 +352,11 @@
                             class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
                             placeholder="Parola (Tekrar)">
                     </div>
+                    <div class="relative group">
+                        <input type="text" id="reg-token" data-ph-key="inp_register_token"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Register Token">
+                    </div>
                     <div id="register-error" class="hidden text-center text-xs text-red-400"></div>
                     <div id="register-success" class="hidden text-center text-xs text-green-500"></div>
                     <div class="flex justify-center">
@@ -458,7 +463,7 @@
             </div>
             <div class="flex flex-col justify-center items-center p-10 w-full relative">
                 <div id="verify-logo-wrapper" class="mb-8">
-                    <img src="logo1.png" class="w-[120px] h-auto object-contain opacity-90" alt="logo">
+                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3" class="w-[120px] h-auto object-contain opacity-90" alt="logo">
                 </div>
                 <div id="verify-heading-wrapper" class="text-center mb-6">
                     <h2 class="text-[1.6rem] font-bold text-[#2C2072] leading-tight" data-key="verify_title">Kodu
@@ -1248,10 +1253,10 @@
     </script>
 
     <!--Custom auth layer: reads the form and calls Cognito directly-->
-    <script src="js/auth/cognito.js?v=4"></script>
+    <script src="js/auth/cognito.js?v=5"></script>
 
     <!--API-->
-    <script src="js/api/aws.js?v=4"></script>
+    <script src="js/api/aws.js?v=5"></script>
     <script src="js/api/weather.js?v=4"></script>
 
     <!--UI-->
