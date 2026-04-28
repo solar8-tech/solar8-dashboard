@@ -76,6 +76,7 @@ window.navToSelection = async function navToSelection() {
     _setView("view-login",    false);
     _setView("view-register", false);
     _setView("view-forgot",   false);
+    _setView("view-verify",   false);
     _setView("dashboard-container", false);
 
     const canvas = document.getElementById("canvas-bg");
@@ -117,6 +118,7 @@ window.navToLogin = function() {
     _setView("view-verify", false);
     _setView("view-login", true);
 
+    window.clearPendingPasswordChange?.();
     window.resetRegisterForm?.();
     window.resetForgotForm?.();
     window.resetVerifyForm?.();
