@@ -3,9 +3,9 @@
 window.TRANSLATIONS = {
     tr: {
         // Nav
-        nav_dashboard: "Dashboard", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
+        nav_dashboard: "Ana Sayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
         // Page titles
-        page_overview: "Genel Bakış", page_twin: "Kestirimci Bakım & Projeksiyon", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
+        page_overview: "Genel Bakış", page_twin: "Solar8+", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
         // System
         system_active: "SİSTEM AKTİF",
         card_instant_power: "Anlık Güç", card_compare_yest: "Düne göre",
@@ -36,7 +36,12 @@ window.TRANSLATIONS = {
         data_stabil: "Stabil", data_production: "Üretim", data_p50: "P50 – Ort. Beklenen", data_p10: "P10 – En Kötü Olasılık",
         data_weather_clear: "AÇIK", data_weather_clouds: "BULUTLU", data_weather_rain: "YAĞMURLU",
         data_weather_snow: "KARLI", data_weather_default: "PARÇALI BULUTLU",
-        weather_wind: "Rüzgar", weather_hum: "Nem",
+        weather_wind: "Rüzgar", weather_hum: "Nem", weather_sunrise: "Gün Doğumu", weather_sunset: "Gün Batımı",
+        weather_impact_low: "Etki: Düşük", weather_impact_normal: "Etki: Normal",
+        weather_impact_tooltip_low: "Bulutluluk oranı %{cloudiness}. Bu seviye güneşlenmeyi daha fazla baskıladığı için üretime etkisi düşük görünüyor.",
+        weather_impact_tooltip_normal: "Bulutluluk oranı %{cloudiness}. Bu seviye güneşlenmeyi çok sınırlı etkilediği için üretime etkisi normal görünüyor.",
+        weather_impact_tooltip_fallback: "Bulutluluk verisi alınamadı. Üretime etki hesabı hava servisi yanıtına göre gösterilir.",
+        weather_service_unavailable: "Servis Dışı",
         legend_prod: "Üretim",
         // Auth
         msg_demo_feature: "Demo modunda bu özellik aktif değildir.",
@@ -78,6 +83,7 @@ window.TRANSLATIONS = {
         inp_email: "E-Mail",
         inp_pass: "Parola",
         inp_pass_confirm: "Parola (Tekrar)",
+        inp_register_token: "Register Token",
         inp_forgot_email: "E-Mail Adresiniz",
         forgot_pass_link: "Şifremi Unuttum",
         btn_login: "GİRİŞ YAP",
@@ -103,7 +109,7 @@ window.TRANSLATIONS = {
     },
     en: {
         nav_dashboard: "Dashboard", nav_twin: "Predictive Maint.", nav_reports: "Reports", nav_settings: "System Settings",
-        page_overview: "Overview", page_twin: "Predictive Maint. & Projection", page_reports: "Report Center",
+        page_overview: "Overview", page_twin: "Solar8+", page_reports: "Report Center",
         system_active: "SYSTEM ACTIVE",
         card_instant_power: "Instant Power", card_compare_yest: "vs Yesterday",
         card_daily_prod: "Daily Production", card_daily_rev: "Daily Revenue",
@@ -128,7 +134,12 @@ window.TRANSLATIONS = {
         data_stabil: "Stable", data_production: "Production", data_p50: "P50 – Avg. Expected", data_p10: "P10 – Worst Case",
         data_weather_clear: "CLEAR", data_weather_clouds: "CLOUDY", data_weather_rain: "RAINY",
         data_weather_snow: "SNOWY", data_weather_default: "PARTLY CLOUDY",
-        weather_wind: "Wind", weather_hum: "Humidity",
+        weather_wind: "Wind", weather_hum: "Humidity", weather_sunrise: "Sunrise", weather_sunset: "Sunset",
+        weather_impact_low: "Impact: Low", weather_impact_normal: "Impact: Normal",
+        weather_impact_tooltip_low: "Cloud cover is %{cloudiness}. At this level, solar exposure is reduced enough to lower production impact.",
+        weather_impact_tooltip_normal: "Cloud cover is %{cloudiness}. At this level, solar exposure is still strong enough that production impact remains normal.",
+        weather_impact_tooltip_fallback: "Cloud cover data is unavailable. Production impact is shown when the weather service responds.",
+        weather_service_unavailable: "Service Unavailable",
         legend_prod: "Production",
         msg_demo_feature: "This feature is disabled in demo mode.",
         btn_login: "LOG IN", inp_id_placeholder: "User ID", inp_pass_placeholder: "Password",
@@ -166,6 +177,7 @@ window.TRANSLATIONS = {
         inp_email: "E-Mail",
         inp_pass: "Password",
         inp_pass_confirm: "Confirm Password",
+        inp_register_token: "Register Token",
         inp_forgot_email: "E-Mail Address",
         forgot_pass_link: "Forgot Password?",
         btn_login: "LOGIN",
