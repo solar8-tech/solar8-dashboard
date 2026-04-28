@@ -10,7 +10,8 @@
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
     const DASHBOARD_API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
     const ME_ENDPOINT = `${DASHBOARD_API_BASE}/me`;
-    const REGISTER_PROFILE_ENDPOINT = `${DASHBOARD_API_BASE}/register-profile`;
+    const REGISTER_START_ENDPOINT = `${DASHBOARD_API_BASE}/register-start`;
+    const REGISTER_CONFIRM_ENDPOINT = `${DASHBOARD_API_BASE}/register-confirm`;
 
     const defaultConfig = {
         region: "eu-central-1",
@@ -42,6 +43,7 @@
             registerRequired: "Lütfen tüm alanları doldurun.",
             registerInvalidEmail: "Geçerli bir e-posta adresi girin.",
             registerPasswordMismatch: "Parolalar birbiriyle aynı değil.",
+            registerInvalidToken: "Register token geçersiz.",
             registerVerifySent: "Doğrulama kodu e-posta adresinize gönderildi.",
             verifySignupFirst: "Doğrulama için önce kayıt olmanız gerekiyor.",
             verifyCodeRequired: "Lütfen doğrulama kodunu girin.",
@@ -89,6 +91,7 @@
             registerRequired: "Please fill in all fields.",
             registerInvalidEmail: "Enter a valid email address.",
             registerPasswordMismatch: "The passwords do not match.",
+            registerInvalidToken: "The register token is invalid.",
             registerVerifySent: "A verification code has been sent to your email address.",
             verifySignupFirst: "You need to sign up before completing verification.",
             verifyCodeRequired: "Please enter the verification code.",
@@ -797,8 +800,8 @@
         return json;
     }
 
-    async function syncRegisterProfile(payload) {
-        const response = await fetch(REGISTER_PROFILE_ENDPOINT, {
+    async function postToDashboardApi(endpoint, payload) {
+        const response = await fetch(endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -808,8 +811,11 @@
 
         const json = await response.json().catch(() => ({}));
         if (!response.ok || json?.ok === false) {
-            const detail = json?.error || json?.message || response.statusText;
-            throw new Error(detail || "Register profile sync failed");
+            const detail = json?.detail || json?.error || json?.message || response.statusText;
+            const error = new Error(detail || "Request failed");
+            error.name = json?.error || `HTTP ${response.status}`;
+            error.status = response.status;
+            throw error;
         }
 
         return json;
@@ -888,7 +894,7 @@
         const name = error?.name || "";
 
         if (/UserNotFound/i.test(name) || /UserNotFound/i.test(message)) return t("userNotFound");
-        if (/UsernameExists/i.test(name) || /UsernameExists/i.test(message)) return t("usernameExists");
+        if (/UsernameExists|User already exists|Cognito user already exists/i.test(name) || /UsernameExists|User already exists|Cognito user already exists/i.test(message)) return t("usernameExists");
         if (/NotAuthorized/i.test(name) || /Incorrect username or password/i.test(message)) return t("notAuthorized");
         if (/UserNotConfirmed/i.test(name) || /UserNotConfirmed/i.test(message)) return t("userNotConfirmed");
         if (/PasswordResetRequired/i.test(name) || /PasswordResetRequired/i.test(message)) return t("passwordResetRequired");
@@ -897,6 +903,8 @@
         if (/LimitExceeded/i.test(name) || /TooManyRequests/i.test(name) || /Attempt limit exceeded/i.test(message)) return t("attemptLimitExceeded");
         if (/InvalidPassword/i.test(name) || /InvalidPassword/i.test(message)) return t("invalidPassword");
         if (/InvalidParameter/i.test(name) || /InvalidParameter/i.test(message)) return t("invalidParameter");
+        if (/Invalid register token/i.test(name) || /Invalid register token/i.test(message)) return t("registerInvalidToken");
+        if (/Internal server error/i.test(name) || /Internal server error/i.test(message)) return t("unexpectedError");
         if (/Network/i.test(message) || /Failed to fetch/i.test(message)) return t("networkError");
         if (/HTTP 401|HTTP 403|UNAUTHORIZED|user_not_found|profile/i.test(message)) return t("userNotFound");
 
@@ -1005,23 +1013,20 @@
         };
     }
 
-    async function signUpUser(name, email, password) {
-        return postToCognito("AWSCognitoIdentityProviderService.SignUp", {
-            ClientId: state.config.userPoolClientId,
-            Username: email,
-            Password: password,
-            UserAttributes: [
-                { Name: "email", Value: email },
-                { Name: "name", Value: name }
-            ]
+    async function signUpUser(name, email, password, registerToken) {
+        return postToDashboardApi(REGISTER_START_ENDPOINT, {
+            full_name: name,
+            email,
+            password,
+            register_token: registerToken
         });
     }
 
-    async function confirmUserSignUp(email, code) {
-        return postToCognito("AWSCognitoIdentityProviderService.ConfirmSignUp", {
-            ClientId: state.config.userPoolClientId,
-            Username: email,
-            ConfirmationCode: code
+    async function confirmUserSignUp(email, code, registerToken) {
+        return postToDashboardApi(REGISTER_CONFIRM_ENDPOINT, {
+            email,
+            code,
+            register_token: registerToken || ""
         });
     }
 
@@ -1294,18 +1299,8 @@
         setButtonBusy(buttonEl, true);
 
         try {
-            const result = await signUpUser(name, email, password);
-            const cognitoSub = result?.UserSub || null;
-
-            if (cognitoSub) {
-                await syncRegisterProfile({
-                    cognito_sub: cognitoSub,
-                    email,
-                    full_name: name,
-                    register_token: registerToken,
-                    status: "unverified"
-                });
-            }
+            const result = await signUpUser(name, email, password, registerToken);
+            const cognitoSub = result?.UserSub || result?.user?.cognito_sub || result?.user?.cognitoSub || null;
 
             clearPendingReset();
             persistPendingSignup(withCodeTiming({
@@ -1466,16 +1461,7 @@
         setButtonBusy(buttonEl, true);
 
         try {
-            const result = await confirmUserSignUp(pendingSignup.email, code);
-            if (pendingSignup.cognitoSub) {
-                await syncRegisterProfile({
-                    cognito_sub: pendingSignup.cognitoSub,
-                    email: pendingSignup.email,
-                    full_name: pendingSignup.name || "",
-                    register_token: pendingSignup.registerToken || "",
-                    status: "verified"
-                });
-            }
+            const result = await confirmUserSignUp(pendingSignup.email, code, pendingSignup.registerToken);
             clearPendingSignup();
             showVerifySuccess(t("verifySuccess"));
 
@@ -1488,10 +1474,7 @@
 
             return result;
         } catch (error) {
-            const message = /Register profile sync failed|cognito_sub is required|email is required/i.test(error?.message || "")
-                ? `${t("verifyProfileSyncFailed")} (${error.message})`
-                : getAuthErrorMessage(error);
-            showVerifyError(message);
+            showVerifyError(getAuthErrorMessage(error));
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
