@@ -1,5 +1,7 @@
 const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
 const LIVE_REFRESH_MS = 5000;
+const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
+const EPIAS_CACHE_MS = 15 * 60 * 1000;
 
 const ENDPOINTS = {
     live: `${API_BASE}/live`
@@ -7,7 +9,7 @@ const ENDPOINTS = {
 
 async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
         const res = await fetch(url, {
@@ -29,8 +31,12 @@ window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
     window.setLoadingState?.(true);
 
     try {
-        const json = await _apiFetch(ENDPOINTS.live);
+        const [json, epias] = await Promise.all([
+            _apiFetch(ENDPOINTS.live),
+            _fetchEpiasBasePrice()
+        ]);
         _mapLivePayload(json);
+        _applyEpiasBasePrice(epias);
 
         _setText("user-name", window.App.data.context.user?.name ?? "--");
         _setText("user-status", window.App.data.context.user?.status ?? "--");
@@ -113,6 +119,8 @@ function _mapLivePayload(api) {
         instantPower: liveSource.instantPower ?? api.instantPower ?? null,
         dailyProduction: liveSource.dailyProduction ?? api.dailyProduction ?? null,
         revenue: liveSource.revenue ?? api.revenue ?? null,
+        basePrice: liveSource.basePrice ?? api.basePrice ?? null,
+        basePriceLabel: liveSource.basePriceLabel ?? api.basePriceLabel ?? null,
         hourlyLabels: Array.isArray(liveSource.hourlyLabels) ? liveSource.hourlyLabels : [],
         hourlyData: Array.isArray(liveSource.hourlyData) ? liveSource.hourlyData : [],
         riskTitle: liveSource.riskTitle ?? null,
@@ -133,6 +141,12 @@ function _mapLivePayload(api) {
         activeFaults: Array.isArray(liveSource.activeFaults) ? liveSource.activeFaults : [],
         projection: liveSource.projection ?? { labels: [], p50: [], p10: [] }
     };
+
+    const mappedBasePrice = _toFiniteNumber(window.App.data.live.basePrice);
+    if (Number.isFinite(mappedBasePrice) && !window.App.data.live.basePriceLabel) {
+        window.App.data.live.basePrice = mappedBasePrice;
+        window.App.data.live.basePriceLabel = _formatEpiasPrice(mappedBasePrice, api.basePriceUnit ?? liveSource.basePriceUnit);
+    }
 
     window.App.data.reports = _normaliseReports(api, selectedPlant);
     window.App.data.history = _normaliseHistory(api, selectedPlant);
@@ -228,4 +242,111 @@ function _plantName(value) {
 function _setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
+}
+
+async function _fetchEpiasBasePrice() {
+    const cached = window.App.epiasCache;
+    if (cached?.fetchedAt && Date.now() - cached.fetchedAt < EPIAS_CACHE_MS) {
+        return cached.data;
+    }
+
+    try {
+        const payload = _buildEpiasPayload();
+        const data = await _apiFetch(EPIAS_BASE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const parsed = _normaliseEpiasResponse(data);
+        window.App.epiasCache = { fetchedAt: Date.now(), data: parsed };
+        return parsed;
+    } catch (error) {
+        console.warn("[API:epias]", error);
+        return cached?.data ?? null;
+    }
+}
+
+function _buildEpiasPayload() {
+    const today = _getIstanbulDateParts();
+    return {
+        startDate: `${today}T00:00:00+03:00`,
+        endDate: `${today}T23:59:59+03:00`,
+        page: {
+            number: 1,
+            size: 100,
+            sort: { direction: "ASC", field: "date" }
+        }
+    };
+}
+
+function _getIstanbulDateParts() {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Istanbul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find((p) => p.type === "year")?.value ?? "1970";
+    const month = parts.find((p) => p.type === "month")?.value ?? "01";
+    const day = parts.find((p) => p.type === "day")?.value ?? "01";
+    return `${year}-${month}-${day}`;
+}
+
+function _normaliseEpiasResponse(raw) {
+    const root = raw?.data ?? raw?.body ?? raw;
+    const items = Array.isArray(root?.items) ? root.items : Array.isArray(root) ? root : [];
+    const stats = root?.statistic ?? root?.statistics ?? root?.summary ?? {};
+
+    const numericCandidates = [
+        stats.ptfWeightedAvg,
+        stats.priceAvg,
+        root?.ptfWeightedAvg,
+        root?.priceAvg,
+        _averageEpiasPrices(items),
+        items[items.length - 1]?.price,
+        items[items.length - 1]?.ptf
+    ];
+
+    const basePrice = numericCandidates
+        .map(_toFiniteNumber)
+        .find((value) => Number.isFinite(value)) ?? null;
+
+    return {
+        basePrice,
+        unit: root?.unit ?? stats?.unit ?? "TL/MWh",
+        items
+    };
+}
+
+function _averageEpiasPrices(items) {
+    const prices = items
+        .map((item) => _toFiniteNumber(item?.price ?? item?.ptf))
+        .filter((value) => Number.isFinite(value));
+
+    if (prices.length === 0) return null;
+    return prices.reduce((sum, value) => sum + value, 0) / prices.length;
+}
+
+function _toFiniteNumber(value) {
+    const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _applyEpiasBasePrice(epias) {
+    if (!window.App.data.live || !Number.isFinite(epias?.basePrice)) return;
+
+    window.App.data.live.basePrice = epias.basePrice;
+    window.App.data.live.basePriceLabel = _formatEpiasPrice(epias.basePrice, epias.unit);
+}
+
+function _formatEpiasPrice(value, unit) {
+    const formatted = Number(value).toLocaleString("tr-TR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+
+    return `${formatted} ${unit ?? "TL/MWh"}`;
 }
