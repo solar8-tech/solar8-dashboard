@@ -7,7 +7,7 @@ window.renderApp = function renderApp() {
 
     const ids = [
         "power-loading","chart-loading",
-        "val-power","val-daily","val-revenue",
+        "val-power","val-daily","val-revenue","val-base-price",
         "val-risk-title","val-risk-desc","alert-msg","risk-bar",
         "val-rep-prod","val-rep-income","val-rep-carbon","val-rep-trees",
         "rep-collection-bar","rep-collection-pct",
@@ -21,7 +21,14 @@ window.renderApp = function renderApp() {
 
     if (el["val-power"])   el["val-power"].innerText   = live.instantPower !== null ? live.instantPower.toLocaleString("tr-TR") : "--";
     if (el["val-daily"])   el["val-daily"].innerText   = window.safe(live.dailyProduction);
-    if (el["val-revenue"]) el["val-revenue"].innerText = window.safe(live.revenue);
+    if (el["val-revenue"]) el["val-revenue"].innerText = _formatWholeTl(live.revenue);
+    if (el["val-base-price"]) {
+        const fallbackText = t.card_base_price ?? "--";
+        const template = t.epias_based_price ?? fallbackText;
+        el["val-base-price"].innerText = live.basePriceLabel
+            ? template.replace("%{price}", live.basePriceLabel)
+            : fallbackText;
+    }
 
     const riskTitleRaw = window.localise(live.riskTitle);
     const riskKeyMap   = { "Stabil": "data_stabil", "Stable": "data_stabil" };
@@ -38,7 +45,7 @@ window.renderApp = function renderApp() {
             ? `${window.safe(live.monthlyProduction)} <span class="text-lg text-slate-500 font-normal">MWh</span>`
             : "--";
     }
-    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? `$${window.safe(live.monthlyRevenue)}` : "--";
+    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? `${_formatWholeTl(live.monthlyRevenue)} TL` : "--";
     if (el["val-rep-carbon"]) el["val-rep-carbon"].innerText = live.carbonOffset   !== null ? `${window.safe(live.carbonOffset)} Ton` : "--";
     if (el["val-rep-trees"])  el["val-rep-trees"].innerText  = live.treesEquivalent !== null ? `~${window.safe(live.treesEquivalent)}` : "--";
 
@@ -62,6 +69,13 @@ window.renderApp = function renderApp() {
     window.generateFaultList(live.activeFaults);
 };
 
+function _formatWholeTl(value) {
+    if (value === null || value === undefined || value === "") return "--";
+    const parsed = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+    if (!Number.isFinite(parsed)) return String(value);
+    return Math.round(parsed).toLocaleString("tr-TR");
+}
+
 window.generatePredictiveList = function generatePredictiveList(list) {
     const container = document.getElementById("predictive-list-container");
     if (!container) return;
@@ -84,7 +98,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         const icon  = /^[\w-]+$/.test(item.icon ?? "") ? item.icon : "fa-circle-exclamation";
 
         const div = document.createElement("div");
-        // GÖRSELDEKİ STİL: Sol tarafa kalın şerit (border-l-[6px]) ve saydam cam efekti
+        // Visual style: thick left accent and glass background.
         div.className = `predict-item mb-5 p-5 rounded-2xl bg-[var(--surface-glass)] border border-[var(--surface-glass-bdr)] border-l-[6px] ${c.border.replace('border-', 'border-l-')} shadow-[var(--surface-glass-shd)] transition-all cursor-pointer group hover:translate-y-[-2px] backdrop-blur-md`;
 
         const header = document.createElement("div");
@@ -94,7 +108,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         iconEl.className = `fa-solid ${icon} ${c.text} text-sm`;
 
         const h4 = document.createElement("h4");
-        // Başlıklar görseldeki gibi tamamen büyük harf ve geniş aralıklı
+        // Headings stay uppercase with wide tracking.
         h4.className = "text-xs font-bold text-[color:var(--txt-strong)] uppercase tracking-widest";
         h4.textContent = title;
 
@@ -102,7 +116,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         header.appendChild(h4);
 
         const p = document.createElement("p");
-        // Yazı kalınlığını font-medium yaparak okunaklılığı koruyoruz
+        // Medium weight keeps the copy readable.
         p.className = "text-xs text-[color:var(--txt-muted)] leading-relaxed font-medium";
         p.textContent = desc;
 
