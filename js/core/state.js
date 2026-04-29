@@ -4,9 +4,11 @@ window.App = {
     lang              : localStorage.getItem("appLang") || "tr",
     theme             : localStorage.getItem("theme") || "dark",
     isRefreshing      : false,
+    dashboardRequestSeq: 0,
+    dashboardPendingCount: 0,
     dashboardIntervalId: null,
-    weatherStarted    : false,
     weatherIntervalId : null,
+    weatherCoordsKey  : null,
     toastTimeout      : null,
     epiasCache        : null,
 
@@ -151,6 +153,43 @@ window.setLoadingState = function setLoadingState(isLoading) {
     Array.from(document.querySelectorAll(".skeleton-loader")).forEach(el => {
         isLoading ? el.classList.add("animate-pulse") : el.classList.remove("animate-pulse");
     });
+};
+
+window.resetDashboardView = function resetDashboardView() {
+    window.App.data.live = null;
+    window.App.data.reports = null;
+    window.App.data.history = null;
+
+    [
+        "val-power", "val-daily", "val-revenue", "val-base-price",
+        "val-risk-title", "val-risk-desc", "alert-msg",
+        "val-rep-prod", "val-rep-income", "val-rep-carbon", "val-rep-trees",
+        "w-city", "w-temp", "w-desc", "w-wind", "w-hum", "w-sunrise", "w-sunset"
+    ].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = id === "w-temp" ? "--°C" : "--";
+    });
+
+    const riskBar = document.getElementById("risk-bar");
+    if (riskBar) riskBar.style.width = "0%";
+
+    const collectionBar = document.getElementById("rep-collection-bar");
+    if (collectionBar) collectionBar.style.width = "0%";
+
+    const collectionPct = document.getElementById("rep-collection-pct");
+    if (collectionPct) collectionPct.innerText = "%0";
+
+    const impactText = document.getElementById("w-impact")?.querySelector("span");
+    if (impactText) impactText.innerText = "--";
+
+    const impactTooltip = document.getElementById("w-impact-tooltip");
+    if (impactTooltip) impactTooltip.innerText = "--";
+
+    const predictiveList = document.getElementById("predictive-list-container");
+    if (predictiveList) predictiveList.innerHTML = "";
+
+    const faultList = document.getElementById("fault-list-container");
+    if (faultList) faultList.innerHTML = "";
 };
 
 window.handleApiError = function handleApiError(context, error) {

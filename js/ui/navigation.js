@@ -110,6 +110,7 @@ window.navToLogin = function() {
         clearInterval(window.App.weatherIntervalId);
         window.App.weatherIntervalId = null;
     }
+    window.App.weatherCoordsKey = null;
 
     _setView("view-selection", false);
     _setView("dashboard-container", false);
@@ -181,6 +182,9 @@ window.selectPlant = async function selectPlant(plantOrName, coords) {
         lon
     };
     localStorage.setItem("selectedPlant", JSON.stringify(window.App.data.context.plant));
+    window.resetDashboardView?.();
+    window.App.weatherCoordsKey = null;
+    window.renderContextHeader?.();
 
     const dash = document.getElementById("dashboard-container");
     if (!dash) return;
@@ -192,7 +196,7 @@ window.selectPlant = async function selectPlant(plantOrName, coords) {
         window.switchTab(activeTab);
         window.startDashboardRefresh?.();
         await window.fetchDashboardFromAWS?.();
-        window.startWeatherRefresh?.();
+        window.syncWeatherToActivePlant?.(true);
     }, 50);
 };
 

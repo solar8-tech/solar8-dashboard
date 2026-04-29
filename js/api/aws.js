@@ -14,6 +14,7 @@ async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
     const token = _getIdToken();
+    const shouldAttachAuth = options.attachAuth ?? url.startsWith(API_BASE);
 
     try {
         const res = await fetch(url, {
@@ -21,7 +22,7 @@ async function _apiFetch(url, options = {}) {
             signal: controller.signal,
             ...options,
             headers: {
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(shouldAttachAuth && token ? { Authorization: `Bearer ${token}` } : {}),
                 ...(options.headers || {})
             }
         });
@@ -80,14 +81,15 @@ window.fetchPlants = async function fetchPlants() {
 };
 
 window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
-    if (window.App.isRefreshing) return;
-
     const siteId = _getSelectedSiteId();
     if (siteId === null) {
         await window.fetchPlants?.();
         return;
     }
 
+    const requestId = ++window.App.dashboardRequestSeq;
+    const requestedSiteId = String(siteId);
+    window.App.dashboardPendingCount += 1;
     window.App.isRefreshing = true;
     window.setLoadingState?.(true);
 
@@ -96,6 +98,11 @@ window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
             _apiFetch(ENDPOINTS.dashboardSummary(siteId)),
             _fetchEpiasBasePrice()
         ]);
+
+        const activeSiteId = String(_getSelectedSiteId() ?? "");
+        if (requestId !== window.App.dashboardRequestSeq || activeSiteId !== requestedSiteId) {
+            return;
+        }
 
         _mapDashboardSummaryPayload(json);
         _applyEpiasBasePrice(epias);
@@ -107,10 +114,15 @@ window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
             window.initCharts?.();
         }
     } catch (err) {
-        window.handleApiError("dashboard-summary", err);
+        if (requestId === window.App.dashboardRequestSeq) {
+            window.handleApiError("dashboard-summary", err);
+        }
     } finally {
-        window.App.isRefreshing = false;
-        window.setLoadingState?.(false);
+        window.App.dashboardPendingCount = Math.max(0, window.App.dashboardPendingCount - 1);
+        if (window.App.dashboardPendingCount === 0) {
+            window.App.isRefreshing = false;
+            window.setLoadingState?.(false);
+        }
     }
 };
 
@@ -147,11 +159,19 @@ function _mapDashboardSummaryPayload(api) {
         return;
     }
 
+    const currentPlant = window.App.data.context.plant || {};
     const apiSite = api.site ? _normaliseSite(api.site) : null;
     const selectedPlant = {
-        ...(window.App.data.context.plant || {}),
+        ...currentPlant,
         ...(apiSite || {})
     };
+
+    if (!Number.isFinite(selectedPlant.lat) && Number.isFinite(currentPlant.lat)) {
+        selectedPlant.lat = currentPlant.lat;
+    }
+    if (!Number.isFinite(selectedPlant.lon) && Number.isFinite(currentPlant.lon)) {
+        selectedPlant.lon = currentPlant.lon;
+    }
 
     if (selectedPlant?.id !== undefined) {
         window.App.data.context.plant = selectedPlant;
@@ -220,13 +240,7 @@ function _mapDashboardSummaryPayload(api) {
     window.App.data.reports = api.reports ?? window.App.data.reports ?? null;
     window.App.data.history = api.history ?? api.activeFaults ?? window.App.data.history ?? [];
 
-    if (!window.App.weatherStarted) {
-        const { lat, lon } = window.App.data.context.plant || {};
-        if (Number.isFinite(lat) && Number.isFinite(lon)) {
-            window.startWeatherRefresh?.();
-            window.App.weatherStarted = true;
-        }
-    }
+    window.syncWeatherToActivePlant?.();
 }
 
 function _normaliseSites(sites) {
@@ -251,6 +265,37 @@ function _normaliseSite(site, index = 0) {
     const capacityKwp = _number(site.installed_capacity_kwp ?? site.installedCapacityKwp);
     const capacityW = _number(site.installed_capacity_w ?? site.installedCapacityW);
     const capacityMw = _number(site.capacity ?? site.capacityMw);
+    const lat = _number(
+        site.latitude ??
+        site.lat ??
+        site.site_latitude ??
+        site.siteLatitude ??
+        site.coordinate_latitude ??
+        site.coordinateLatitude ??
+        site.location_lat ??
+        site.locationLat ??
+        site.coords?.lat ??
+        site.coordinates?.lat ??
+        site.coordinates?.latitude
+    );
+    const lon = _number(
+        site.longitude ??
+        site.lon ??
+        site.lng ??
+        site.site_longitude ??
+        site.siteLongitude ??
+        site.coordinate_longitude ??
+        site.coordinateLongitude ??
+        site.location_lon ??
+        site.locationLon ??
+        site.location_lng ??
+        site.locationLng ??
+        site.coords?.lon ??
+        site.coords?.lng ??
+        site.coordinates?.lon ??
+        site.coordinates?.lng ??
+        site.coordinates?.longitude
+    );
 
     return {
         ...site,
@@ -263,8 +308,8 @@ function _normaliseSite(site, index = 0) {
         address: site.address ?? null,
         timezone: site.timezone ?? null,
         status: site.status ?? null,
-        lat: _number(site.latitude ?? site.lat),
-        lon: _number(site.longitude ?? site.lon ?? site.lng),
+        lat,
+        lon,
         capacity: capacityMw ?? (capacityKwp !== null ? capacityKwp / 1000 : (capacityW !== null ? capacityW / 1000000 : null))
     };
 }
@@ -322,7 +367,7 @@ function _readAuthSession() {
 
 function _number(value) {
     if (value === null || value === undefined || value === "") return null;
-    const parsed = Number(value);
+    const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
     return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -334,6 +379,8 @@ function _renderContextHeader() {
     _setText("user-status", user.status || "--");
     _setText("plant-title", window.localise(plant.name) || plant.name || "--");
 }
+
+window.renderContextHeader = _renderContextHeader;
 
 function _renderPlantLoadError(error) {
     console.error("[API:sites]", error);
@@ -365,6 +412,7 @@ async function _fetchEpiasBasePrice() {
         const payload = _buildEpiasPayload();
         const data = await _apiFetch(EPIAS_BASE_URL, {
             method: "POST",
+            attachAuth: false,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
