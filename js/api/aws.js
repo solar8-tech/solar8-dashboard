@@ -179,6 +179,7 @@ function _mapDashboardSummaryPayload(api) {
     }
 
     const cards = api.cards || api.summary || api.dashboard || api.metrics || api;
+    const instantPowerKw = _number(cards.instant_power_kw ?? cards.instantPowerKw);
     const instantPowerMw = _number(cards.instant_power_mw ?? cards.instantPowerMw);
     const instantPowerW = _number(cards.instant_power_w ?? cards.instantPowerW);
     const dailyProductionMwh = _number(cards.daily_production_mwh ?? cards.dailyProductionMwh);
@@ -194,8 +195,8 @@ function _mapDashboardSummaryPayload(api) {
     );
     const activeFaultCount = _number(cards.active_fault_count ?? cards.activeFaultCount) || 0;
 
-    const instantPower = instantPowerMw ?? (instantPowerW !== null ? instantPowerW / 1000000 : null);
-    const dailyProduction = dailyProductionMwh ?? (dailyProductionKwh !== null ? dailyProductionKwh / 1000 : null);
+    const instantPower = instantPowerKw ?? (instantPowerW !== null ? instantPowerW / 1000 : (instantPowerMw !== null ? instantPowerMw * 1000 : null));
+    const dailyProduction = dailyProductionKwh ?? (dailyProductionMwh !== null ? dailyProductionMwh * 1000 : null);
     const basePrice = _toFiniteNumber(
         cards.base_price ??
         cards.basePrice ??
