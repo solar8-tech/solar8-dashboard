@@ -1,15 +1,15 @@
 // navigation.js
 
 window.toggleTheme = function toggleTheme() {
-    const html    = document.documentElement;
+    const html = document.documentElement;
     const isLight = html.dataset.theme !== "light";
- 
+
     html.dataset.theme = isLight ? "light" : "dark";
     localStorage.setItem("theme", isLight ? "light" : "dark");
- 
+
     window.updateThemeUI(isLight);
     if (typeof window.updateChartTheme === "function") window.updateChartTheme(isLight ? "light" : "dark");
-    if (typeof window.updateMapTheme   === "function") window.updateMapTheme(isLight);
+    if (typeof window.updateMapTheme === "function") window.updateMapTheme(isLight);
 };
 
 window.switchTab = function switchTab(tabName) {
@@ -21,7 +21,7 @@ window.switchTab = function switchTab(tabName) {
         el?.setAttribute("aria-hidden", "true");
     });
 
-    ["nav-dashboard","nav-twin","nav-reports","mob-nav-dashboard","mob-nav-twin","mob-nav-reports"].forEach(id => {
+    ["nav-dashboard", "nav-twin", "nav-reports", "mob-nav-dashboard", "mob-nav-twin", "mob-nav-reports"].forEach(id => {
         const btn = document.getElementById(id);
         if (!btn) return;
         btn.classList.remove("active", "text-white", "bg-white/5");
@@ -30,9 +30,9 @@ window.switchTab = function switchTab(tabName) {
     });
 
     const TAB_MAP = {
-        dashboard : { view: "view-overview", navs: ["nav-dashboard","mob-nav-dashboard"], titleKey: "page_overview"  },
-        twin      : { view: "view-twin",     navs: ["nav-twin",     "mob-nav-twin"    ], titleKey: "page_twin"      },
-        reports   : { view: "view-reports",  navs: ["nav-reports",  "mob-nav-reports" ], titleKey: "page_reports"   }
+        dashboard: { view: "view-overview", navs: ["nav-dashboard", "mob-nav-dashboard"], titleKey: "page_overview" },
+        twin: { view: "view-twin", navs: ["nav-twin", "mob-nav-twin"], titleKey: "page_twin" },
+        reports: { view: "view-reports", navs: ["nav-reports", "mob-nav-reports"], titleKey: "page_reports" }
     };
     const cfg = TAB_MAP[tabName] ?? TAB_MAP.dashboard;
 
@@ -73,10 +73,10 @@ window.switchTab = function switchTab(tabName) {
 
 window.navToSelection = async function navToSelection() {
     window.stopDashboardRefresh?.();
-    _setView("view-login",    false);
+    _setView("view-login", false);
     _setView("view-register", false);
-    _setView("view-forgot",   false);
-    _setView("view-verify",   false);
+    _setView("view-forgot", false);
+    _setView("view-verify", false);
     _setView("dashboard-container", false);
 
     const canvas = document.getElementById("canvas-bg");
@@ -96,15 +96,15 @@ window.navToSelection = async function navToSelection() {
     }, 50);
 };
 
-window.navToRegister = function() {
+window.navToRegister = function () {
     window.resetRegisterForm?.();
-    _setView("view-login", false);  
+    _setView("view-login", false);
     _setView("view-forgot", false);
     _setView("view-verify", false);
-    _setView("view-register", true); 
+    _setView("view-register", true);
 };
 
-window.navToLogin = function() {
+window.navToLogin = function () {
     window.stopDashboardRefresh?.();
     if (window.App?.weatherIntervalId !== null) {
         clearInterval(window.App.weatherIntervalId);
@@ -113,7 +113,7 @@ window.navToLogin = function() {
 
     _setView("view-selection", false);
     _setView("dashboard-container", false);
-    _setView("view-register", false); 
+    _setView("view-register", false);
     _setView("view-forgot", false);
     _setView("view-verify", false);
     _setView("view-login", true);
@@ -128,7 +128,7 @@ window.navToLogin = function() {
     if (canvas) canvas.style.opacity = "1";
 };
 
-window.navToForgot = function() {
+window.navToForgot = function () {
     window.resetForgotForm?.();
     _setView("view-login", false);
     _setView("view-register", false);
@@ -136,7 +136,7 @@ window.navToForgot = function() {
     _setView("view-forgot", true);
 };
 
-window.navToVerify = function() {
+window.navToVerify = function () {
     window.resetVerifyForm?.();
     _setView("view-login", false);
     _setView("view-register", false);
@@ -205,5 +205,26 @@ function _setView(id, visible) {
     } else {
         el.classList.remove("view-active");
         el.classList.add("view-hidden");
+    }
+}
+
+function toggleRegPass(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = "password";
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+function toggleLoginPass(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = "password";
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
 }
