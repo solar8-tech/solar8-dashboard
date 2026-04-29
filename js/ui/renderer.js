@@ -45,7 +45,7 @@ window.renderApp = function renderApp() {
             ? `${window.safe(live.monthlyProduction)} <span class="text-lg text-slate-500 font-normal">MWh</span>`
             : "--";
     }
-    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? `${_formatWholeTl(live.monthlyRevenue)} TL` : "--";
+    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? _formatWholeTl(live.monthlyRevenue) : "--";
     if (el["val-rep-carbon"]) el["val-rep-carbon"].innerText = live.carbonOffset   !== null ? `${window.safe(live.carbonOffset)} Ton` : "--";
     if (el["val-rep-trees"])  el["val-rep-trees"].innerText  = live.treesEquivalent !== null ? `~${window.safe(live.treesEquivalent)}` : "--";
 

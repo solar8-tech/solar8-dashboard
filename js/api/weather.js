@@ -37,10 +37,13 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
         _setText("w-desc", t[descKey] ?? "--");
         _setImpactState(isLowImpact, cloudiness, t);
     } catch (err) {
-        console.error("[Weather]", err);
+        console.error("[Weather] Fetch failed:", err);
         const t = window.TRANSLATIONS[window.App.lang] ?? {};
 
         _setText("w-city", window.App.data.context.plant?.city ?? "--");
+        _setText("w-temp", "--°C");
+        _setText("w-wind", "--");
+        _setText("w-hum", "--");
         _setText("w-desc", t.weather_service_unavailable ?? "Service Unavailable");
         _setText("w-sunrise", "--");
         _setText("w-sunset", "--");
@@ -50,8 +53,12 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
 
 window.startWeatherRefresh = function startWeatherRefresh() {
     const { lat, lon } = window.App.data.context?.plant ?? {};
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        console.warn("[Weather] Refresh skipped due to invalid plant coordinates:", window.App.data.context?.plant);
+        return;
+    }
 
+    window.App.weatherCoordsKey = `${lat},${lon}`;
     window.fetchWeather(lat, lon);
 
     if (window.App.weatherIntervalId !== null) {
@@ -59,6 +66,21 @@ window.startWeatherRefresh = function startWeatherRefresh() {
         window.App.weatherIntervalId = null;
     }
     window.App.weatherIntervalId = setInterval(() => window.fetchWeather(lat, lon), 5 * 60 * 1000);
+};
+
+window.syncWeatherToActivePlant = function syncWeatherToActivePlant(force = false) {
+    const { lat, lon } = window.App.data.context?.plant ?? {};
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        console.warn("[Weather] Sync skipped due to invalid plant coordinates:", window.App.data.context?.plant);
+        return;
+    }
+
+    const nextCoordsKey = `${lat},${lon}`;
+    if (!force && window.App.weatherCoordsKey === nextCoordsKey && window.App.weatherIntervalId !== null) {
+        return;
+    }
+
+    window.startWeatherRefresh();
 };
 
 function _setText(id, text) {
