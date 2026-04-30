@@ -216,7 +216,7 @@
             class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
-                <div class="absolute inset-0 z-0 bg-black/55"></div>
+                <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="login_welcome">Tekrar Hoş
@@ -302,7 +302,7 @@
             class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:150%] bg-center text-center">
-                <div class="absolute inset-0 z-0 bg-black/55"></div>
+                <div class="absolute inset-0 z-0"></div>
 
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-m font-semibold tracking-wide -translate-y-8" data-key="reg_welcome">Hoş Geldiniz!
@@ -419,7 +419,7 @@
             class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
-                <div class="absolute inset-0 z-0 bg-black/55"></div>
+                <div class="absolute inset-0 z-0"></div>
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">
                         Endişelenmeyin!</p>
@@ -494,7 +494,7 @@
             class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
-                <div class="absolute inset-0 z-0 bg-black/55"></div>
+                <div class="absolute inset-0 z-0"></div>
                 <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
                     <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">
                         Endişelenmeyin!</p>
@@ -571,8 +571,10 @@
                     <div id="verify-reset-fields" class="hidden space-y-4">
                         <div class="relative group">
                             <input type="password" id="verify-new-pass"
-                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-sm outline-none"
                                 placeholder="Yeni Parola">
+                            <i class="fa-regular fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                                onclick="toggleRegPass('verify-new-pass', this)"></i>
                             <div id="reset-password-tooltip" class="password-tooltip" aria-live="polite">
                                 <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
                                 <div class="password-tooltip-rule" data-password-rule="length">
@@ -595,8 +597,10 @@
                         </div>
                         <div class="relative group">
                             <input type="password" id="verify-new-pass-confirm"
-                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
-                                placeholder="Yeni Parola (tekrar)">
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-sm outline-none"
+                                placeholder="Yeni Parola (Tekrar)">
+                            <i class="fa-regular fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                                onclick="toggleRegPass('verify-new-pass-confirm', this)"></i>
                         </div>
                     </div>
                     <div id="verify-error" class="hidden text-center text-xs text-red-400"></div>
