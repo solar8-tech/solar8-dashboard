@@ -73,6 +73,11 @@ window.switchTab = function switchTab(tabName) {
 
 window.navToSelection = async function navToSelection() {
     window.stopDashboardRefresh?.();
+    localStorage.removeItem("selectedPlant");
+    if (window.App?.data?.context) {
+        window.App.data.context.plant = {};
+    }
+
     _setView("view-login", false);
     _setView("view-register", false);
     _setView("view-forgot", false);
