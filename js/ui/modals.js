@@ -46,7 +46,7 @@ window.renderHistoryList = function renderHistoryList() {
     const csvBtn = document.querySelector("#history-modal .mt-4 button");
     if (csvBtn) {
         csvBtn.innerHTML = `<i class="fa-solid fa-download"></i> ${t.btn_download_csv}`;
-        csvBtn.setAttribute("onclick", "event.stopPropagation(); showToast('msg_demo_feature')");
+        csvBtn.setAttribute("onclick", "event.stopPropagation(); notifyReportDownloadUnavailable()");
     }
 
     if (list.length === 0) {
