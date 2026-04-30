@@ -512,14 +512,15 @@ body.light-mode .from-black\/80 {
 
 /*Login*/
 .login-modern {
-    background: #ffffff; 
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    background: transparent;
+    border    : none;
+    box-shadow: none;
 }
 
 [data-theme="light"] .login-modern {
-    background: #ffffff;
-    border    : 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+    background: transparent;
+    border    : none;
+    box-shadow: none;
 }
 
 .input-modern {

@@ -7,6 +7,10 @@
     const PENDING_SIGNUP_KEY = "solar8.auth.pendingSignup";
     const PENDING_RESET_KEY = "solar8.auth.pendingReset";
     const PENDING_PASSWORD_CHANGE_KEY = "solar8.auth.pendingPasswordChange";
+    const TAB_SESSION_KEY = "solar8.auth.tabSessionId";
+    const TAB_HEARTBEAT_PREFIX = "solar8.auth.tabHeartbeat.";
+    const TAB_HEARTBEAT_MS = 1000;
+    const TAB_HEARTBEAT_STALE_MS = 4000;
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
     const DASHBOARD_API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
     const ME_ENDPOINT = `${DASHBOARD_API_BASE}/me`;
@@ -21,7 +25,8 @@
 
     const state = {
         config: { ...defaultConfig },
-        initialized: false
+        initialized: false,
+        heartbeatIntervalId: null
     };
 
     const authMessages = {
@@ -685,6 +690,52 @@
         sessionStorage.removeItem(key);
     }
 
+    function getTabHeartbeatKey(tabSessionId) {
+        return `${TAB_HEARTBEAT_PREFIX}${tabSessionId}`;
+    }
+
+    function getOrCreateTabSessionId() {
+        const existing = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (existing) return existing;
+
+        const nextId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem(TAB_SESSION_KEY, nextId);
+        return nextId;
+    }
+
+    function touchTabHeartbeat() {
+        const tabSessionId = getOrCreateTabSessionId();
+        localStorage.setItem(getTabHeartbeatKey(tabSessionId), String(Date.now()));
+    }
+
+    function clearTabHeartbeat() {
+        const tabSessionId = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (tabSessionId) {
+            localStorage.removeItem(getTabHeartbeatKey(tabSessionId));
+        }
+        sessionStorage.removeItem(TAB_SESSION_KEY);
+    }
+
+    function isRestoredClosedBrowserSession() {
+        const session = readPersistedSession();
+        const tabSessionId = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (!session?.tokens || !tabSessionId) return false;
+
+        const lastHeartbeat = Number(localStorage.getItem(getTabHeartbeatKey(tabSessionId)) || 0);
+        if (!Number.isFinite(lastHeartbeat) || lastHeartbeat <= 0) return true;
+
+        return (Date.now() - lastHeartbeat) > TAB_HEARTBEAT_STALE_MS;
+    }
+
+    function startTabHeartbeat() {
+        touchTabHeartbeat();
+        if (state.heartbeatIntervalId !== null) return;
+
+        state.heartbeatIntervalId = setInterval(() => {
+            touchTabHeartbeat();
+        }, TAB_HEARTBEAT_MS);
+    }
+
     function persistSession(session) {
         persistJson(AUTH_STORAGE_KEY, session);
     }
@@ -1136,11 +1187,21 @@
 
     window.initAuth = async function initAuth() {
         ensureInitialized();
+        startTabHeartbeat();
         return { ...state.config };
     };
 
     window.restoreSession = async function restoreSession() {
         ensureInitialized();
+
+        if (isRestoredClosedBrowserSession()) {
+            clearPersistedSession();
+            clearPendingSignup();
+            clearPendingReset();
+            clearPendingPasswordChange();
+            clearTabHeartbeat();
+            return null;
+        }
 
         const session = readPersistedSession();
         if (!session?.tokens) return null;
@@ -1228,6 +1289,7 @@
 
     window.handleLogout = async function handleLogout() {
         clearPersistedSession();
+        clearTabHeartbeat();
         clearPendingSignup();
         clearPendingReset();
         clearPendingPasswordChange();
