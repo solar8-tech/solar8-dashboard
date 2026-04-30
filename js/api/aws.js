@@ -194,6 +194,22 @@ function _mapDashboardSummaryPayload(api) {
         cards.revenue
     );
     const activeFaultCount = _number(cards.active_fault_count ?? cards.activeFaultCount) || 0;
+    const apiRiskTitle = _pickLocalizedValue(
+        cards.risk_title ?? cards.riskTitle ?? api.risk_title ?? api.riskTitle
+    );
+    const apiRiskDesc = _pickLocalizedValue(
+        cards.risk_desc ?? cards.riskDesc ?? api.risk_desc ?? api.riskDesc
+    );
+    const apiAlertMsg = _pickLocalizedValue(
+        cards.alert_message ??
+        cards.alertMessage ??
+        cards.alert_msg ??
+        cards.alertMsg ??
+        api.alert_message ??
+        api.alertMessage ??
+        api.alert_msg ??
+        api.alertMsg
+    );
 
     const instantPower = instantPowerKw ?? (instantPowerW !== null ? instantPowerW / 1000 : (instantPowerMw !== null ? instantPowerMw * 1000 : null));
     const dailyProduction = dailyProductionKwh ?? (dailyProductionMwh !== null ? dailyProductionMwh * 1000 : null);
@@ -213,16 +229,10 @@ function _mapDashboardSummaryPayload(api) {
         basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
         hourlyLabels: [],
         hourlyData: [],
-        riskTitle: activeFaultCount > 0
-            ? { tr: "Aktif Ariza", en: "Active Fault" }
-            : { tr: "Stabil", en: "Stable" },
+        riskTitle: apiRiskTitle ?? { tr: "Stabil", en: "Stable" },
         riskLevel: activeFaultCount > 0 ? Math.min(activeFaultCount * 20, 100) : 0,
-        riskDesc: activeFaultCount > 0
-            ? { tr: `${activeFaultCount} aktif ariza kaydi var.`, en: `${activeFaultCount} active fault records.` }
-            : { tr: "Aktif ariza kaydi bulunmuyor.", en: "No active fault records." },
-        alertMsg: activeFaultCount > 0
-            ? { tr: "Santral icin aktif ariza kontrolu gerekli.", en: "Active fault review is required for this site." }
-            : { tr: "Santral icin kritik alarm bulunmuyor.", en: "No critical alarm for this site." },
+        riskDesc: apiRiskDesc ?? { tr: "Aktif arıza kaydı bulunmuyor.", en: "No active fault records." },
+        alertMsg: apiAlertMsg ?? { tr: "Santral için kritik alarm bulunmuyor.", en: "No critical alarm for this site." },
         monthlyProduction: _number(cards.monthly_production_mwh ?? cards.monthlyProductionMwh),
         monthlyRevenue: _number(cards.monthly_revenue_try ?? cards.monthlyRevenueTry ?? cards.monthly_revenue ?? cards.monthlyRevenue),
         carbonOffset: _number(cards.carbon_offset ?? cards.carbonOffset),
@@ -260,6 +270,25 @@ function _unwrapPayload(payload) {
     }
 
     return payload;
+}
+
+function _pickLocalizedValue(value) {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "object") {
+        const tr = _cleanText(value.tr);
+        const en = _cleanText(value.en);
+        if (tr || en) return { tr: tr ?? en, en: en ?? tr };
+        return null;
+    }
+
+    const cleaned = _cleanText(value);
+    return cleaned ? { tr: cleaned, en: cleaned } : null;
+}
+
+function _cleanText(value) {
+    if (value === null || value === undefined) return null;
+    const text = String(value).trim();
+    return text ? text : null;
 }
 
 function _normaliseSite(site, index = 0) {

@@ -9,6 +9,7 @@ window.renderApp = function renderApp() {
         "power-loading","chart-loading",
         "val-power","val-daily","val-revenue","val-base-price",
         "val-risk-title","val-risk-desc","alert-msg","risk-bar",
+        "alert-analysis-btn",
         "val-rep-prod","val-rep-income","val-rep-carbon","val-rep-trees",
         "rep-collection-bar","rep-collection-pct",
         "t-eff","t-risk-dev","t-fault-panel","t-total-panels","t-detect"
@@ -32,9 +33,21 @@ window.renderApp = function renderApp() {
 
     const riskTitleRaw = window.localise(live.riskTitle);
     const riskKeyMap   = { "Stabil": "data_stabil", "Stable": "data_stabil" };
-    if (el["val-risk-title"]) el["val-risk-title"].innerText = riskKeyMap[riskTitleRaw] ? t[riskKeyMap[riskTitleRaw]] : window.safe(riskTitleRaw);
-    if (el["val-risk-desc"])  el["val-risk-desc"].innerText  = window.safe(window.localise(live.riskDesc));
-    if (el["alert-msg"])      el["alert-msg"].innerText      = window.safe(window.localise(live.alertMsg));
+    if (el["val-risk-title"]) {
+        el["val-risk-title"].innerText = riskTitleRaw
+            ? (riskKeyMap[riskTitleRaw] ? t[riskKeyMap[riskTitleRaw]] : riskTitleRaw)
+            : "";
+    }
+    if (el["val-risk-desc"]) {
+        el["val-risk-desc"].innerText = window.localise(live.riskDesc) ?? "";
+    }
+    if (el["alert-msg"]) {
+        el["alert-msg"].innerText = window.localise(live.alertMsg) ?? "";
+    }
+    if (el["alert-analysis-btn"]) {
+        const hasAlertMessage = Boolean((window.localise(live.alertMsg) ?? "").trim());
+        el["alert-analysis-btn"].classList.toggle("hidden", !hasAlertMessage);
+    }
 
     if (el["risk-bar"] && typeof live.riskLevel === "number") {
         el["risk-bar"].style.width = Math.min(live.riskLevel, 100) + "%";
@@ -79,14 +92,9 @@ function _formatWholeTl(value) {
 window.generatePredictiveList = function generatePredictiveList(list) {
     const container = document.getElementById("predictive-list-container");
     if (!container) return;
-    const t = window.TRANSLATIONS[window.App.lang];
 
     if (!Array.isArray(list) || list.length === 0) {
-        container.textContent = "";
-        const p = document.createElement("p");
-        p.className = "text-xs text-[color:var(--txt-faint)] p-4 font-medium";
-        p.textContent = t.no_predictions;
-        container.appendChild(p);
+        container.innerHTML = "";
         return;
     }
 
@@ -129,9 +137,12 @@ window.generatePredictiveList = function generatePredictiveList(list) {
 window.generateFaultList = function generateFaultList(list) {
     const container = document.getElementById("fault-list-container");
     if (!container) return;
-    const t = window.TRANSLATIONS[window.App.lang];
 
     container.innerHTML = "";
+    if (!Array.isArray(list) || list.length === 0) {
+        return;
+    }
+
     (list ?? []).forEach(item => {
         const colorKey = window.FAULT_COLOR_MAP[item.tagColor] ? item.tagColor : "orange";
         const c        = window.FAULT_COLOR_MAP[colorKey];

@@ -149,6 +149,22 @@ window.showToast = function showToast(messageKey, options = {}) {
     }, 4000);
 };
 
+window.notifyNoWorkOrderFault = function notifyNoWorkOrderFault() {
+    window.showToast("msg_work_order_no_fault", {
+        title: window.App.lang === "tr" ? "İş Emri Oluşturulamadı" : "Work Order Unavailable",
+        variant: "info",
+        iconClass: "fa-solid fa-hammer text-sky-400"
+    });
+};
+
+window.notifyReportDownloadUnavailable = function notifyReportDownloadUnavailable() {
+    window.showToast("msg_report_download_unavailable", {
+        title: window.App.lang === "tr" ? "Rapor İndirilemedi" : "Report Unavailable",
+        variant: "info",
+        iconClass: "fa-solid fa-download text-sky-400"
+    });
+};
+
 window.setLoadingState = function setLoadingState(isLoading) {
     Array.from(document.querySelectorAll(".skeleton-loader")).forEach(el => {
         isLoading ? el.classList.add("animate-pulse") : el.classList.remove("animate-pulse");
@@ -184,6 +200,9 @@ window.resetDashboardView = function resetDashboardView() {
 
     const impactTooltip = document.getElementById("w-impact-tooltip");
     if (impactTooltip) impactTooltip.innerText = "--";
+
+    const alertAnalysisBtn = document.getElementById("alert-analysis-btn");
+    if (alertAnalysisBtn) alertAnalysisBtn.classList.add("hidden");
 
     const predictiveList = document.getElementById("predictive-list-container");
     if (predictiveList) predictiveList.innerHTML = "";
