@@ -16,6 +16,7 @@
     const ME_ENDPOINT = `${DASHBOARD_API_BASE}/me`;
     const REGISTER_START_ENDPOINT = `${DASHBOARD_API_BASE}/register-start`;
     const REGISTER_CONFIRM_ENDPOINT = `${DASHBOARD_API_BASE}/register-confirm`;
+    const REGISTER_RESEND_ENDPOINT = `${DASHBOARD_API_BASE}/register-resend`;
 
     const defaultConfig = {
         region: "eu-central-1",
@@ -58,6 +59,7 @@
             resendSuccess: "Doğrulama kodu tekrar gönderildi.",
             forgotEmailRequired: "Lütfen kayıtlı e-posta adresinizi girin.",
             forgotInvalidEmail: "Geçerli bir e-posta adresi girin.",
+            forgotResetUnavailable: "Bu e-posta için şifre sıfırlama yapılamıyor. Hesap doğrulanmamış veya kayıtlı değil.",
             forgotRequestSuccess: "Şifre sıfırlama kodu e-posta adresinize gönderildi.",
             forgotCodeRequired: "Lütfen doğrulama kodunu girin.",
             forgotPasswordRequired: "Lütfen yeni parolanızı girin.",
@@ -106,6 +108,7 @@
             resendSuccess: "The verification code has been sent again.",
             forgotEmailRequired: "Please enter your registered email address.",
             forgotInvalidEmail: "Enter a valid email address.",
+            forgotResetUnavailable: "Password reset is not available for this email. The account may be unverified or not registered.",
             forgotRequestSuccess: "A password reset code has been sent to your email address.",
             forgotCodeRequired: "Please enter the verification code.",
             forgotPasswordRequired: "Please enter your new password.",
@@ -864,7 +867,10 @@
         if (!response.ok || json?.ok === false) {
             const detail = json?.detail || json?.error || json?.message || response.statusText;
             const error = new Error(detail || "Request failed");
-            error.name = json?.error || `HTTP ${response.status}`;
+            error.name = json?.error || json?.code || `HTTP ${response.status}`;
+            error.code = json?.code || json?.error || "";
+            error.detail = json?.detail || "";
+            error.payload = json;
             error.status = response.status;
             throw error;
         }
@@ -943,19 +949,27 @@
     function getAuthErrorMessage(error) {
         const message = error instanceof Error ? error.message : String(error);
         const name = error?.name || "";
+        const details = [
+            name,
+            message,
+            error?.code,
+            error?.detail,
+            error?.payload ? JSON.stringify(error.payload) : ""
+        ].filter(Boolean).join(" ");
 
-        if (/UserNotFound/i.test(name) || /UserNotFound/i.test(message)) return t("userNotFound");
-        if (/UsernameExists|User already exists|Cognito user already exists/i.test(name) || /UsernameExists|User already exists|Cognito user already exists/i.test(message)) return t("usernameExists");
-        if (/NotAuthorized/i.test(name) || /Incorrect username or password/i.test(message)) return t("notAuthorized");
-        if (/UserNotConfirmed/i.test(name) || /UserNotConfirmed/i.test(message)) return t("userNotConfirmed");
-        if (/PasswordResetRequired/i.test(name) || /PasswordResetRequired/i.test(message)) return t("passwordResetRequired");
-        if (/CodeMismatch/i.test(name) || /CodeMismatch/i.test(message)) return t("codeMismatch");
-        if (/ExpiredCode/i.test(name) || /ExpiredCode/i.test(message)) return t("expiredCode");
-        if (/LimitExceeded/i.test(name) || /TooManyRequests/i.test(name) || /Attempt limit exceeded/i.test(message)) return t("attemptLimitExceeded");
-        if (/InvalidPassword/i.test(name) || /InvalidPassword/i.test(message)) return t("invalidPassword");
-        if (/InvalidParameter/i.test(name) || /InvalidParameter/i.test(message)) return t("invalidParameter");
-        if (/Invalid register token/i.test(name) || /Invalid register token/i.test(message)) return t("registerInvalidToken");
-        if (/Internal server error/i.test(name) || /Internal server error/i.test(message)) return t("unexpectedError");
+        if (/UserNotFound/i.test(details)) return t("userNotFound");
+        if (/UsernameExists|User already exists|Cognito user already exists/i.test(details)) return t("usernameExists");
+        if (/NotAuthorized|Incorrect username or password/i.test(details)) return t("notAuthorized");
+        if (/UserNotConfirmed/i.test(details)) return t("userNotConfirmed");
+        if (/PasswordResetRequired/i.test(details)) return t("passwordResetRequired");
+        if (/CodeMismatch|Invalid verification code|Invalid code|invalid confirmation code|incorrect confirmation code/i.test(details)) return t("codeMismatch");
+        if (/ExpiredCode|expired verification code|verification code has expired|confirmation code has expired/i.test(details)) return t("expiredCode");
+        if (/LimitExceeded|TooManyRequests|Attempt limit exceeded/i.test(details)) return t("attemptLimitExceeded");
+        if (/Cannot reset password|registered\/verified email|verified email|verified phone|phone_number/i.test(details)) return t("forgotResetUnavailable");
+        if (/InvalidPassword/i.test(details)) return t("invalidPassword");
+        if (/InvalidParameter/i.test(details)) return t("invalidParameter");
+        if (/Invalid register token/i.test(details)) return t("registerInvalidToken");
+        if (/Internal server error/i.test(details)) return t("unexpectedError");
         if (/Network/i.test(message) || /Failed to fetch/i.test(message)) return t("networkError");
         if (/HTTP 401|HTTP 403|UNAUTHORIZED|user_not_found|profile/i.test(message)) return t("userNotFound");
 
@@ -1081,10 +1095,10 @@
         });
     }
 
-    async function resendConfirmation(email) {
-        return postToCognito("AWSCognitoIdentityProviderService.ResendConfirmationCode", {
-            ClientId: state.config.userPoolClientId,
-            Username: email
+    async function resendConfirmation(email, registerToken) {
+        return postToDashboardApi(REGISTER_RESEND_ENDPOINT, {
+            email,
+            register_token: registerToken || ""
         });
     }
 
@@ -1536,7 +1550,8 @@
 
             return result;
         } catch (error) {
-            showVerifyError(getAuthErrorMessage(error));
+            const message = getAuthErrorMessage(error);
+            showVerifyError(message === t("unexpectedError") ? t("codeMismatch") : message);
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
@@ -1578,7 +1593,7 @@
         }
 
         try {
-            const result = await resendConfirmation(pendingSignup.email);
+            const result = await resendConfirmation(pendingSignup.email, pendingSignup.registerToken);
             persistPendingSignup(withCodeTiming({ ...pendingSignup }));
             syncVerifyFlowUI();
             showVerifySuccess(t("resendSuccess"));
@@ -1617,7 +1632,8 @@
             window.navToVerify?.();
             return result;
         } catch (error) {
-            showForgotError(getAuthErrorMessage(error));
+            const message = getAuthErrorMessage(error);
+            showForgotError(message === t("invalidParameter") ? t("forgotResetUnavailable") : message);
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
@@ -1632,6 +1648,3 @@
     setupEnterKeyHandlers();
     setupPasswordTooltips();
 })();
-
-
-
