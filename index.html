@@ -148,7 +148,7 @@
 
                 <div
                     class="flex gap-3 p-4 md:p-6 border-t border-[var(--surface-glass-bdr)] bg-[var(--surface-glass)] z-10 shrink-0">
-                    <button onclick="showToast('msg_demo_feature')"
+                    <button onclick="notifyNoWorkOrderFault()"
                         class="w-full bg-solar text-black font-bold py-3 rounded-xl hover:bg-white transition text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-solar/20 group">
                         <i class="fa-solid fa-hammer group-hover:-rotate-12 transition-transform"></i>
                         <span data-key="btn_work_order">İş Emri Oluştur</span>
@@ -923,10 +923,14 @@
                                                     id="w-desc">--</p>
                                             </div>
                                             <div class="relative mt-1.5 inline-flex group">
-                                                <button id="w-impact"
-                                                    class="text-[6px] sm:text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/10">
+                                                <button id="w-impact" type="button" aria-describedby="w-impact-tooltip"
+                                                    class="inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60">
                                                     <span>--</span> <i class="fa-solid fa-circle-info opacity-70"></i>
                                                 </button>
+                                                <div id="w-impact-tooltip" role="tooltip"
+                                                    class="weather-impact-tooltip pointer-events-none absolute left-0 top-full z-20 mt-2 w-52 rounded-2xl border border-slate-200/10 bg-slate-950/95 px-3 py-2 text-[10px] normal-case tracking-normal text-slate-200 opacity-0 shadow-2xl shadow-slate-950/30 transition duration-150 ease-out group-hover:opacity-100 group-focus-within:opacity-100">
+                                                    --
+                                                </div>
                                             </div>
                                         </div>
                                         <i
@@ -983,15 +987,19 @@
                             </div>
 
                             <div
-                                class="glass-panel rounded-3xl p-4 lg:p-8 flex flex-col justify-center border-l-4 border-danger bg-gradient-to-r from-danger/5 to-transparent min-h-[200px] md:min-h-[240px] lg:h-auto">
-                                <h4
-                                    class="text-[color:var(--txt-strong)] text-xs lg:text-base font-medium mb-1 lg:mb-4 flex items-center gap-2">
-                                    <i class="fa-solid fa-circle-exclamation text-danger"></i>
-                                    <span data-key="card_critical_alert">--</span>
-                                </h4>
-                                <p class="text-[10px] lg:text-sm text-[color:var(--txt-muted)] leading-tight font-light"
-                                    id="alert-msg">--</p>
-                                <button onclick="toggleAnalysisModal(true)"
+                                class="glass-panel critical-alert-card rounded-3xl p-4 lg:p-8 flex flex-col items-start min-h-[200px] md:min-h-[240px] lg:h-auto">
+                                <div class="mb-4 flex items-center gap-3">
+                                    <i class="fa-solid fa-circle-exclamation text-danger text-base shrink-0"></i>
+                                    <h4
+                                        class="text-[color:var(--txt-strong)] text-xs lg:text-base font-semibold leading-none">
+                                        <span data-key="card_critical_alert">--</span>
+                                    </h4>
+                                </div>
+                                <div class="flex min-h-[72px] w-full flex-1 items-start">
+                                    <p class="max-w-[32ch] text-[10px] lg:text-sm text-[color:var(--txt-muted)] leading-relaxed font-medium"
+                                        id="alert-msg"></p>
+                                </div>
+                                <button id="alert-analysis-btn" onclick="toggleAnalysisModal(true)"
                                     class="mt-3 lg:mt-6 text-[9px] lg:text-xs font-bold text-danger uppercase tracking-wider hover:text-[color:var(--txt-strong)] transition-colors flex items-center gap-2 group w-fit">
                                     <span data-key="btn_open_analysis">--</span>
                                     <i
@@ -1272,7 +1280,7 @@
                             <div class="flex justify-between items-start mb-4">
                                 <h2 id="rep-detail-title"
                                     class="text-lg md:text-2xl font-light text-[color:var(--txt-strong)]">--</h2>
-                                <button
+                                <button onclick="notifyReportDownloadUnavailable()"
                                     class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-solar text-black flex items-center justify-center shadow-lg">
                                     <i class="fa-solid fa-download text-xs"></i>
                                 </button>

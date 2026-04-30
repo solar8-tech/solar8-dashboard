@@ -43,6 +43,8 @@ window.TRANSLATIONS = {
         weather_impact_tooltip_fallback: "Bulutluluk verisi alınamadı. Üretime etki hesabı hava servisi yanıtına göre gösterilir.",
         weather_service_unavailable: "Servis Dışı",
         legend_prod: "Üretim",
+        msg_work_order_no_fault: "İş emri oluşturmak için aktif bir arıza bulunamadı.",
+        msg_report_download_unavailable: "İndirilebilir bir rapor bulunamadı.",
         // Auth
         msg_demo_feature: "Demo modunda bu özellik aktif değildir.",
         btn_login: "GİRİŞ YAP", inp_id_placeholder: "Kullanıcı Adı", inp_pass_placeholder: "Parola",
@@ -141,6 +143,8 @@ window.TRANSLATIONS = {
         weather_impact_tooltip_fallback: "Cloud cover data is unavailable. Production impact is shown when the weather service responds.",
         weather_service_unavailable: "Service Unavailable",
         legend_prod: "Production",
+        msg_work_order_no_fault: "No active fault was found to create a work order.",
+        msg_report_download_unavailable: "There is no downloadable report available.",
         msg_demo_feature: "This feature is disabled in demo mode.",
         btn_login: "LOG IN", inp_id_placeholder: "User ID", inp_pass_placeholder: "Password",
         title_plant_selection: 'Plant <span class="font-bold text-solar">List</span>',
