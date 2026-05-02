@@ -424,10 +424,6 @@ function _resolveDataFreshness(api, cards) {
     const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
     const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
 
-    if (telemetryOk === false) {
-        return { isActive: false, reason: "telemetry", telemetryOk, lastSeenAt: lastSeenAt?.toISOString() ?? null, rawTimestamp: timestampValue ?? null, ageMs };
-    }
-
     if (isStale) {
         return { isActive: false, reason: "stale", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
     }
@@ -440,7 +436,7 @@ function _resolveDataFreshness(api, cards) {
         return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
     }
 
-    return { isActive: false, reason: "missing_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: null, ageMs: null };
+    return { isActive: true, reason: "missing_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: null, ageMs: null };
 }
 
 function _pickFirstPresent(values) {

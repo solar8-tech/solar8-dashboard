@@ -402,10 +402,6 @@ html:not([data-theme="light"]) #canvas-bg,
 [data-theme="light"] #plant-list-container > div h3 { color: #0f172a; font-weight: 600; }
 [data-theme="light"] #plant-list-container > div p { color: #64748b; }
 
-body.light-mode .from-black\/80 { 
-    display: none !important; 
-}
-
 /*RAPORLAR*/
 .report-item {
     border    : 1px solid transparent;
