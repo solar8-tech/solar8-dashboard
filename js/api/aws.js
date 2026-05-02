@@ -1,5 +1,6 @@
 const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
 const DASHBOARD_REFRESH_MS = 30000;
+const DEVICE_DATA_STALE_MS = 90000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
 const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
 const EPIAS_CACHE_MS = 15 * 60 * 1000;
@@ -220,11 +221,14 @@ function _mapDashboardSummaryPayload(api) {
         cards.epiasPtf
     );
     const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
+    const dataFreshness = _resolveDataFreshness(api, cards);
 
     window.App.data.live = {
         instantPower,
         dailyProduction,
         revenue,
+        deviceActive: dataFreshness.isActive,
+        dataFreshness,
         basePrice,
         basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
         hourlyLabels: [],
@@ -399,6 +403,56 @@ function _number(value) {
     if (value === null || value === undefined || value === "") return null;
     const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
     return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _resolveDataFreshness(api, cards) {
+    const timestampValue = _pickFirstPresent([
+        api.timestamp_utc,
+        api.inverter_telemetry_data?.meta?.timestamp_utc,
+        cards.timestamp_utc,
+        cards.inverter_telemetry_data?.meta?.timestamp_utc
+    ]);
+
+    const telemetryOk = _pickFirstPresent([
+        api.telemetry?.is_data_read_successful,
+        api.http?.is_last_http_send_successful,
+        api.network?.is_connected,
+        api.wifi?.is_wifi_connected
+    ]);
+
+    const lastSeenAt = _parseApiTimestamp(timestampValue);
+    const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
+    const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
+
+    if (telemetryOk === false) {
+        return { isActive: false, reason: "telemetry", telemetryOk, lastSeenAt: lastSeenAt?.toISOString() ?? null, rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (isStale) {
+        return { isActive: false, reason: "stale", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (timestampValue !== undefined && timestampValue !== null && timestampValue !== "" && !lastSeenAt) {
+        return { isActive: false, reason: "invalid_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: timestampValue, ageMs: null };
+    }
+
+    if (lastSeenAt) {
+        return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    return { isActive: false, reason: "missing_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: null, ageMs: null };
+}
+
+function _pickFirstPresent(values) {
+    return values.find((value) => value !== null && value !== undefined && value !== "");
+}
+
+function _parseApiTimestamp(value) {
+    if (value === null || value === undefined || value === "") return null;
+
+    const text = String(value).trim();
+    const date = new Date(text);
+    return Number.isFinite(date.getTime()) ? date : null;
 }
 
 function _renderContextHeader() {
