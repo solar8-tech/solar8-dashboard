@@ -24,9 +24,7 @@ window.renderApp = function renderApp() {
     el["chart-loading"] && (el["chart-loading"].style.display = "none");
 
     const isDeviceUnavailable = live.deviceActive === false || live.dataFreshness?.isActive === false;
-    const unavailableText = live.dataFreshness?.reason === "stale"
-        ? (t.device_data_stale ?? t.device_data_unavailable ?? "--")
-        : (t.device_data_unavailable ?? "--");
+    const unavailableText = t.device_data_unavailable ?? "--";
 
     _renderSystemDataStatus(el, isDeviceUnavailable, t);
     _toggleMetricFooter(el["power-normal-footer"], !isDeviceUnavailable);
@@ -39,14 +37,15 @@ window.renderApp = function renderApp() {
     if (el["val-daily"])   el["val-daily"].innerText   = !isDeviceUnavailable ? window.safe(live.dailyProduction) : "--";
     if (el["val-revenue"]) el["val-revenue"].innerText = !isDeviceUnavailable ? _formatWholeTl(live.revenue) : "--";
     if (el["val-base-price"]) {
+        const isRevenueUnavailable = isDeviceUnavailable || live.revenue === null;
         const fallbackText = t.card_base_price ?? "--";
         const template = t.epias_based_price ?? fallbackText;
         el["val-base-price"].innerText = isDeviceUnavailable
             ? unavailableText
-            : (live.basePriceLabel ? template.replace("%{price}", live.basePriceLabel) : fallbackText);
-        el["val-base-price"].classList.toggle("device-warning", isDeviceUnavailable);
-        el["val-base-price"].classList.toggle("text-[color:var(--txt-faint)]", !isDeviceUnavailable);
-        el["val-base-price"].classList.toggle("font-medium", isDeviceUnavailable);
+            : (live.revenue === null ? (t.revenue_unavailable ?? fallbackText) : (live.basePriceLabel ? template.replace("%{price}", live.basePriceLabel) : fallbackText));
+        el["val-base-price"].classList.toggle("device-warning", isRevenueUnavailable);
+        el["val-base-price"].classList.toggle("text-[color:var(--txt-faint)]", !isRevenueUnavailable);
+        el["val-base-price"].classList.toggle("font-medium", isRevenueUnavailable);
     }
 
     const riskTitleRaw = window.localise(live.riskTitle);
