@@ -769,10 +769,11 @@
                     <i class="fa-regular fa-clock mr-2"></i><span id="clock">--:--</span>
                 </div> -->
                 <div
-                    class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 backdrop-blur-md border border-[var(--surface-glass-bdr)] shadow-sm">
-                    <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></span>
-                    <span data-key="system_active"
-                        class="text-[9px] md:text-[10px] font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
+                    class="glass-panel h-7 md:h-8 px-3 rounded-full inline-flex items-center gap-2 backdrop-blur-md border border-[var(--surface-glass-bdr)] shadow-sm">
+                    <span id="system-status-dot"
+                        class="w-1.5 h-1.5 md:w-2 md:h-2 shrink-0 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse"></span>
+                    <span id="system-status-label" data-key="system_active"
+                        class="leading-none text-[9px] md:text-[10px] font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
                 </div>
             </div>
 
@@ -812,14 +813,17 @@
                             <div id="power-loading"
                                 class="mt-2 h-1.5 md:h-3 w-16 md:w-24 bg-[var(--surface-soft)] rounded animate-pulse skeleton-loader">
                             </div>
-                            <div class="mt-2 md:mt-4 flex items-center gap-1 md:gap-2">
-                                <span
+                            <div class="mt-3 md:mt-4 h-4 md:h-5 flex items-center gap-1 md:gap-2">
+                                <span id="power-normal-footer"
                                     class="bg-green-500/10 text-green-400 text-[8px] md:text-xs px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-arrow-trend-up"></i>
                                     <span id="val-power-delta">--</span>
                                 </span>
-                                <span data-key="card_compare_yest"
+                                <span id="power-compare-footer" data-key="card_compare_yest"
                                     class="text-[8px] md:text-xs text-[color:var(--txt-faint)]">--</span>
+                                <span id="power-device-warning" data-key="device_data_unavailable"
+                                    class="hidden min-w-0 truncate text-[9px] md:text-xs device-warning font-medium leading-none md:-translate-y-2">
+                                    --</span>
                             </div>
                         </div>
 
@@ -836,9 +840,15 @@
                                 <span id="val-daily">--</span> <span
                                     class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal">kWh</span>
                             </h3>
-                            <div
-                                class="mt-3 md:mt-4 w-full bg-slate-200 dark:bg-slate-800/50 rounded-full h-1 md:h-1.5 overflow-hidden">
-                                <div id="daily-bar" class="bg-blue-500 h-full rounded-full" style="width:65%"></div>
+                            <div class="mt-3 md:mt-4 relative w-full h-4 md:h-5">
+                                <div id="daily-normal-footer"
+                                    class="absolute left-0 right-0 top-1/2 -translate-y-1/2 bg-slate-200 dark:bg-slate-800/50 rounded-full h-1 md:h-1.5 overflow-hidden">
+                                    <div id="daily-bar" class="bg-blue-500 h-full rounded-full" style="width:65%">
+                                    </div>
+                                </div>
+                                <p id="daily-device-warning" data-key="device_data_unavailable"
+                                    class="hidden absolute left-0 right-0 top-1/2 -translate-y-1/2 truncate text-[9px] md:text-xs device-warning font-medium leading-none">
+                                    --</p>
                             </div>
                         </div>
 
@@ -856,7 +866,7 @@
                                     class="text-base md:text-2xl font-medium text-[color:var(--txt-faint)]">TL</span>
                             </h3>
                             <p id="val-base-price" data-key="card_base_price"
-                                class="text-[8px] md:text-xs text-[color:var(--txt-faint)] mt-2 md:mt-4">--</p>
+                                class="truncate text-[9px] md:text-xs text-[color:var(--txt-faint)] mt-2 md:mt-4 h-4 md:h-5 leading-4 md:leading-5">--</p>
                         </div>
 
                         <div
