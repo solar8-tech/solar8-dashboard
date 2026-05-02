@@ -390,82 +390,7 @@
         </div>
     </div>
 
-    <!--SANTRAL SEÇİM-->
-    <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
-        <div class="absolute top-6 right-6 z-50 flex gap-2">
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
-                onclick="toggleLanguage()">
-                <div id="forgot-btn-tr"
-                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
-                    TR</div>
-                <div id="forgot-btn-en"
-                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
-                    EN</div>
-            </div>
-            <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
-                onclick="toggleTheme()">
-                <div id="forgot-btn-light"
-                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all text-[color:var(--txt-muted)]">
-                    <i class="fa-solid fa-sun"></i>
-                </div>
-                <div id="forgot-btn-dark"
-                    class="w-8 text-center py-0.5 rounded-full text-[9px] font-bold transition-all bg-white text-black">
-                    <i class="fa-solid fa-moon"></i>
-                </div>
-            </div>
-        </div>
-
-        <div
-            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
-            <div
-                class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
-                <div class="absolute inset-0 z-0"></div>
-                <div class="relative z-10 flex flex-col items-center gap-6 text-[#ffffff]">
-                    <p class="text-sm font-semibold tracking-wide -translate-y-8" data-key="forgot_title">
-                        Endişelenmeyin!</p>
-                    <h1 class="text-[1.6rem] font-medium leading-tight" data-key="forgot_heading">
-                        <span class="text-[#D579EF]">Şifrenizi</span> Yeniden <span
-                            class="text-[#D579EF]">Belirleyin</span>
-                    </h1>
-                    <p class="text-[#D9D9D9] text-xs max-w-[280px] leading-relaxed -translate-y-3"
-                        data-key="forgot_desc">
-                        Kayıtlı e-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
-                    </p>
-                </div>
-            </div>
-            <div class="flex flex-col justify-center items-center p-10 md:p-14 relative bg-white">
-                <div class="mb-12 transition-all duration-300">
-                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3"
-                        class="w-[140px] h-auto object-contain opacity-90" alt="logo">
-                </div>
-                <div class="w-full max-w-[280px] space-y-4">
-                    <div class="relative group">
-                        <input type="email" id="forgot-email" data-ph-key="inp_forgot_email"
-                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
-                            placeholder="E-Mail Adresiniz">
-                    </div>
-                    <div id="forgot-error" class="hidden text-center text-xs text-red-400"></div>
-                    <div id="forgot-success" class="hidden text-center text-xs text-green-500"></div>
-                    <div class="flex justify-center mt-6">
-                        <button id="btn-forgot" type="button" onclick="handleForgotPass(this)"
-                            class="w-full py-3 mt-2 bg-gradient-to-r from-[#2C2072] to-[#D579EF] hover:opacity-90 text-[#ffffff] font-medium text-xs tracking-widest rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 border-none">
-                            <span id="forgot-submit-label" data-key="btn_send_link">DOĞRULAMA KODU GÖNDER</span>
-                        </button>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xs pt-5 text-slate-500">
-                            <span data-key="forgot_back">Hatırladınız mı?</span>
-                            <a href="javascript:void(0)" onclick="navToLogin()"
-                                class="text-[#2C2072] font-bold hover:text-[#D579EF] transition-colors ml-1"
-                                data-key="btn_go_login">Giriş Yap</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!--SANTRAL SEÇİM-->
+    <!--ŞİFREMİ UNUTTUM-->
     <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
             <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
@@ -1342,7 +1267,7 @@
     <!--SCRIPTS yükleme sırasına mümkün olduğunca dokunmayın 08.04.2026-->
     <!--Core-->
     <script src="js/core/state.js?v=4"></script>
-    <script src="js/core/i18n.js?v=4"></script>
+    <script src="js/core/i18n.js?v=5"></script>
 
     <!--Auth config: public browser-side Cognito identifiers-->
     <script>
@@ -1357,11 +1282,11 @@
     <script src="js/auth/cognito.js?v=5"></script>
 
     <!--API-->
-    <script src="js/api/aws.js?v=5"></script>
+    <script src="js/api/aws.js?v=9"></script>
     <script src="js/api/weather.js?v=4"></script>
 
     <!--UI-->
-    <script src="js/ui/renderer.js?v=4"></script>
+    <script src="js/ui/renderer.js?v=6"></script>
     <script src="js/ui/charts.js?v=4"></script>
     <script src="js/ui/modals.js?v=4"></script>
     <script src="js/ui/navigation.js?v=4"></script>
