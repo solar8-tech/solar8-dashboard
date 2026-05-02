@@ -2,6 +2,7 @@ const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod
 const DASHBOARD_REFRESH_MS = 30000;
 const DEVICE_DATA_STALE_MS = 4 * 60 * 1000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
+const DEVICE_FRESHNESS_STORAGE_PREFIX = "solar8.deviceFreshness";
 const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
 const EPIAS_CACHE_MS = 15 * 60 * 1000;
 
@@ -221,7 +222,8 @@ function _mapDashboardSummaryPayload(api) {
         cards.epiasPtf
     );
     const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
-    const dataFreshness = _resolveDataFreshness(api, cards);
+    const deviceMetricSignature = _buildDeviceMetricSignature({ instantPower, dailyProduction, revenue });
+    const dataFreshness = _resolveDataFreshness(api, cards, deviceMetricSignature);
 
     window.App.data.live = {
         instantPower,
@@ -405,12 +407,22 @@ function _number(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
-function _resolveDataFreshness(api, cards) {
+function _resolveDataFreshness(api, cards, deviceMetricSignature) {
     const timestampValue = _pickFirstPresent([
         api.timestamp_utc,
+        api.telemetry_timestamp_utc,
+        api.last_data_timestamp_utc,
+        api.last_seen_at,
         api.inverter_telemetry_data?.meta?.timestamp_utc,
+        api.telemetry?.timestamp_utc,
+        api.telemetry?.last_seen_at,
         cards.timestamp_utc,
-        cards.inverter_telemetry_data?.meta?.timestamp_utc
+        cards.telemetry_timestamp_utc,
+        cards.last_data_timestamp_utc,
+        cards.last_seen_at,
+        cards.inverter_telemetry_data?.meta?.timestamp_utc,
+        cards.telemetry?.timestamp_utc,
+        cards.telemetry?.last_seen_at
     ]);
 
     const telemetryOk = _pickFirstPresent([
@@ -420,6 +432,7 @@ function _resolveDataFreshness(api, cards) {
         api.wifi?.is_wifi_connected
     ]);
 
+    const signatureFreshness = _resolveMetricSignatureFreshness(deviceMetricSignature);
     const lastSeenAt = _parseApiTimestamp(timestampValue);
     const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
     const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
@@ -436,11 +449,81 @@ function _resolveDataFreshness(api, cards) {
         return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
     }
 
-    return { isActive: true, reason: "missing_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: null, ageMs: null };
+    return {
+        isActive: false,
+        reason: signatureFreshness && signatureFreshness.ageMs > DEVICE_DATA_STALE_MS ? "stale" : "missing_timestamp",
+        staleSource: signatureFreshness && signatureFreshness.ageMs > DEVICE_DATA_STALE_MS ? "unchanged_metrics" : "missing_timestamp",
+        telemetryOk: telemetryOk ?? null,
+        lastSeenAt: null,
+        rawTimestamp: null,
+        ageMs: signatureFreshness?.ageMs ?? null,
+        signatureFirstSeenAt: signatureFreshness ? new Date(signatureFreshness.firstSeenAt).toISOString() : null
+    };
 }
 
 function _pickFirstPresent(values) {
     return values.find((value) => value !== null && value !== undefined && value !== "");
+}
+
+function _buildDeviceMetricSignature(metrics) {
+    const parts = [
+        metrics.instantPower,
+        metrics.dailyProduction,
+        metrics.revenue
+    ].map((value) => Number.isFinite(value) ? Number(value).toFixed(6) : "null");
+
+    return parts.every((part) => part === "null") ? null : parts.join("|");
+}
+
+function _resolveMetricSignatureFreshness(signature) {
+    if (!signature) return null;
+
+    const key = _getMetricSignatureStorageKey();
+    if (!key) return null;
+
+    const now = Date.now();
+    const stored = _readMetricSignatureState(key);
+
+    if (!stored || stored.signature !== signature || !Number.isFinite(stored.firstSeenAt)) {
+        const nextState = { signature, firstSeenAt: now };
+        _writeMetricSignatureState(key, nextState);
+        return { ...nextState, ageMs: 0 };
+    }
+
+    return {
+        signature,
+        firstSeenAt: stored.firstSeenAt,
+        ageMs: Math.max(0, now - stored.firstSeenAt)
+    };
+}
+
+function _getMetricSignatureStorageKey() {
+    const siteId = _getSelectedSiteId();
+    if (siteId === null) return null;
+    return `${DEVICE_FRESHNESS_STORAGE_PREFIX}.${String(siteId)}`;
+}
+
+function _readMetricSignatureState(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        const firstSeenAt = Number(parsed?.firstSeenAt);
+        if (!parsed?.signature || !Number.isFinite(firstSeenAt)) return null;
+
+        return { signature: String(parsed.signature), firstSeenAt };
+    } catch {
+        return null;
+    }
+}
+
+function _writeMetricSignatureState(key, state) {
+    try {
+        localStorage.setItem(key, JSON.stringify(state));
+    } catch {
+        // Storage is best-effort; timestamp-based freshness still works without it.
+    }
 }
 
 function _parseApiTimestamp(value) {
