@@ -1,6 +1,6 @@
 const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
 const DASHBOARD_REFRESH_MS = 30000;
-const DEVICE_DATA_STALE_MS = 90000;
+const DEVICE_DATA_STALE_MS = 4 * 60 * 1000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
 const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
 const EPIAS_CACHE_MS = 15 * 60 * 1000;
