@@ -33,6 +33,7 @@
     --txt-muted    : #94a3b8;   /* slate-400 */
     --txt-faint    : #64748b;   /* slate-500 */
     --txt-strong   : #ffffff;
+    --device-warning-txt: #fbbf24;
 
     /* Logo */
     --logo-dark-display : block;
@@ -112,6 +113,7 @@
     --txt-secondary: #475569;
     --txt-muted    : #475569;
     --txt-faint    : #64748b;
+    --device-warning-txt: #b45309;
 
     /*Logo ve Diğerleri */
     --logo-dark-display : none;
@@ -155,6 +157,10 @@ body,
 .ai-insight-box,
 aside {
     transition: var(--transition-theme);
+}
+
+.device-warning {
+    color: var(--device-warning-txt);
 }
 
 /*SCROLLBAR*/
@@ -395,10 +401,6 @@ html:not([data-theme="light"]) #canvas-bg,
 }
 [data-theme="light"] #plant-list-container > div h3 { color: #0f172a; font-weight: 600; }
 [data-theme="light"] #plant-list-container > div p { color: #64748b; }
-
-body.light-mode .from-black\/80 { 
-    display: none !important; 
-}
 
 /*RAPORLAR*/
 .report-item {

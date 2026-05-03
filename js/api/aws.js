@@ -1,8 +1,10 @@
 const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
 const DASHBOARD_REFRESH_MS = 30000;
+const DEVICE_DATA_STALE_MS = 4 * 60 * 1000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
+const DEVICE_FRESHNESS_STORAGE_PREFIX = "solar8.deviceFreshness";
 const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
-const EPIAS_CACHE_MS = 15 * 60 * 1000;
+const EPIAS_CACHE_MS = 5 * 60 * 1000;
 
 const ENDPOINTS = {
     me: `${API_BASE}/me`,
@@ -220,11 +222,15 @@ function _mapDashboardSummaryPayload(api) {
         cards.epiasPtf
     );
     const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
+    const deviceMetricSignature = _buildDeviceMetricSignature({ instantPower, dailyProduction, revenue });
+    const dataFreshness = _resolveDataFreshness(api, cards, deviceMetricSignature);
 
     window.App.data.live = {
         instantPower,
         dailyProduction,
         revenue,
+        deviceActive: dataFreshness.isActive,
+        dataFreshness,
         basePrice,
         basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
         hourlyLabels: [],
@@ -401,6 +407,149 @@ function _number(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function _resolveDataFreshness(api, cards, deviceMetricSignature) {
+    const timestampValue = _pickFirstPresent([
+        api.measured_at,
+        api.measuredAt,
+        api.timestamp_utc,
+        api.telemetry_timestamp_utc,
+        api.last_data_timestamp_utc,
+        api.last_seen_at,
+        api.inverter_telemetry_data?.meta?.timestamp_utc,
+        api.telemetry?.timestamp_utc,
+        api.telemetry?.last_seen_at,
+        cards.measured_at,
+        cards.measuredAt,
+        cards.timestamp_utc,
+        cards.telemetry_timestamp_utc,
+        cards.last_data_timestamp_utc,
+        cards.last_seen_at,
+        cards.inverter_telemetry_data?.meta?.timestamp_utc,
+        cards.telemetry?.timestamp_utc,
+        cards.telemetry?.last_seen_at
+    ]);
+
+    const telemetryOk = _pickFirstPresent([
+        api.telemetry?.is_data_read_successful,
+        api.http?.is_last_http_send_successful,
+        api.network?.is_connected,
+        api.wifi?.is_wifi_connected
+    ]);
+
+    const signatureFreshness = _resolveMetricSignatureFreshness(deviceMetricSignature);
+    const lastSeenAt = _parseApiTimestamp(timestampValue);
+    const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
+    const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
+
+    if (isStale) {
+        return { isActive: false, reason: "stale", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (timestampValue !== undefined && timestampValue !== null && timestampValue !== "" && !lastSeenAt) {
+        return { isActive: false, reason: "invalid_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: timestampValue, ageMs: null };
+    }
+
+    if (lastSeenAt) {
+        return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (signatureFreshness && signatureFreshness.ageMs > DEVICE_DATA_STALE_MS) {
+        return {
+            isActive: false,
+            reason: "stale",
+            staleSource: "unchanged_metrics",
+            telemetryOk: telemetryOk ?? null,
+            lastSeenAt: null,
+            rawTimestamp: null,
+            ageMs: signatureFreshness.ageMs,
+            signatureFirstSeenAt: new Date(signatureFreshness.firstSeenAt).toISOString()
+        };
+    }
+
+    return {
+        isActive: true,
+        reason: "missing_timestamp",
+        telemetryOk: telemetryOk ?? null,
+        lastSeenAt: null,
+        rawTimestamp: null,
+        ageMs: signatureFreshness?.ageMs ?? null,
+        signatureFirstSeenAt: signatureFreshness ? new Date(signatureFreshness.firstSeenAt).toISOString() : null
+    };
+}
+
+function _pickFirstPresent(values) {
+    return values.find((value) => value !== null && value !== undefined && value !== "");
+}
+
+function _buildDeviceMetricSignature(metrics) {
+    const parts = [
+        metrics.instantPower,
+        metrics.dailyProduction,
+        metrics.revenue
+    ].map((value) => Number.isFinite(value) ? Number(value).toFixed(6) : "null");
+
+    return parts.every((part) => part === "null") ? null : parts.join("|");
+}
+
+function _resolveMetricSignatureFreshness(signature) {
+    if (!signature) return null;
+
+    const key = _getMetricSignatureStorageKey();
+    if (!key) return null;
+
+    const now = Date.now();
+    const stored = _readMetricSignatureState(key);
+
+    if (!stored || stored.signature !== signature || !Number.isFinite(stored.firstSeenAt)) {
+        const nextState = { signature, firstSeenAt: now };
+        _writeMetricSignatureState(key, nextState);
+        return { ...nextState, ageMs: 0 };
+    }
+
+    return {
+        signature,
+        firstSeenAt: stored.firstSeenAt,
+        ageMs: Math.max(0, now - stored.firstSeenAt)
+    };
+}
+
+function _getMetricSignatureStorageKey() {
+    const siteId = _getSelectedSiteId();
+    if (siteId === null) return null;
+    return `${DEVICE_FRESHNESS_STORAGE_PREFIX}.${String(siteId)}`;
+}
+
+function _readMetricSignatureState(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        const firstSeenAt = Number(parsed?.firstSeenAt);
+        if (!parsed?.signature || !Number.isFinite(firstSeenAt)) return null;
+
+        return { signature: String(parsed.signature), firstSeenAt };
+    } catch {
+        return null;
+    }
+}
+
+function _writeMetricSignatureState(key, state) {
+    try {
+        localStorage.setItem(key, JSON.stringify(state));
+    } catch {
+        // Storage is best-effort; timestamp-based freshness still works without it.
+    }
+}
+
+function _parseApiTimestamp(value) {
+    if (value === null || value === undefined || value === "") return null;
+
+    const text = String(value).trim();
+    const date = new Date(text);
+    return Number.isFinite(date.getTime()) ? date : null;
+}
+
 function _renderContextHeader() {
     const user = window.App.data.context.user || {};
     const plant = window.App.data.context.plant || {};
@@ -438,14 +587,27 @@ async function _fetchEpiasBasePrice() {
         return cached.data;
     }
 
+    const payloads = [_buildEpiasPayload(0), _buildEpiasPayload(-1)];
+
     try {
-        const payload = _buildEpiasPayload();
-        const data = await _apiFetch(EPIAS_BASE_URL, {
-            method: "POST",
-            attachAuth: false,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        let data = null;
+        let lastError = null;
+
+        for (const payload of payloads) {
+            try {
+                data = await _apiFetch(EPIAS_BASE_URL, {
+                    method: "POST",
+                    attachAuth: false,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                break;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+
+        if (!data) throw lastError || new Error("EPİAŞ verisi alınamadı");
 
         const parsed = _normaliseEpiasResponse(data);
         window.App.epiasCache = { fetchedAt: Date.now(), data: parsed };
@@ -456,11 +618,11 @@ async function _fetchEpiasBasePrice() {
     }
 }
 
-function _buildEpiasPayload() {
-    const today = _getIstanbulDateParts();
+function _buildEpiasPayload(offsetDays = 0) {
+    const today = _getIstanbulDateParts(offsetDays);
     return {
         startDate: `${today}T00:00:00+03:00`,
-        endDate: `${today}T23:59:59+03:00`,
+        endDate: offsetDays === 0 ? _getIstanbulCurrentHourEnd() : `${today}T23:59:59+03:00`,
         page: {
             number: 1,
             size: 100,
@@ -469,7 +631,12 @@ function _buildEpiasPayload() {
     };
 }
 
-function _getIstanbulDateParts() {
+function _getIstanbulDateParts(offsetDays = 0) {
+    const date = new Date();
+    if (Number.isFinite(offsetDays) && offsetDays !== 0) {
+        date.setUTCDate(date.getUTCDate() + offsetDays);
+    }
+
     const formatter = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Istanbul",
         year: "numeric",
@@ -477,11 +644,31 @@ function _getIstanbulDateParts() {
         day: "2-digit"
     });
 
-    const parts = formatter.formatToParts(new Date());
+    const parts = formatter.formatToParts(date);
     const year = parts.find((p) => p.type === "year")?.value ?? "1970";
     const month = parts.find((p) => p.type === "month")?.value ?? "01";
     const day = parts.find((p) => p.type === "day")?.value ?? "01";
     return `${year}-${month}-${day}`;
+}
+
+function _getIstanbulCurrentHourEnd() {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Istanbul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hourCycle: "h23",
+        hour12: false
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find((p) => p.type === "year")?.value ?? "1970";
+    const month = parts.find((p) => p.type === "month")?.value ?? "01";
+    const day = parts.find((p) => p.type === "day")?.value ?? "01";
+    const hourPart = parts.find((p) => p.type === "hour")?.value ?? "00";
+    const hour = hourPart === "24" ? "00" : hourPart.padStart(2, "0");
+    return `${year}-${month}-${day}T${hour}:59:59+03:00`;
 }
 
 function _normaliseEpiasResponse(raw) {
@@ -489,7 +676,9 @@ function _normaliseEpiasResponse(raw) {
     const items = Array.isArray(root?.items) ? root.items : Array.isArray(root) ? root : [];
     const stats = root?.statistic ?? root?.statistics ?? root?.summary ?? {};
 
+    const latestItemPrice = _latestEpiasPrice(items);
     const numericCandidates = [
+        latestItemPrice,
         stats.ptfWeightedAvg,
         stats.priceAvg,
         root?.ptfWeightedAvg,
@@ -508,6 +697,14 @@ function _normaliseEpiasResponse(raw) {
         unit: root?.unit ?? stats?.unit ?? "TL/MWh",
         items
     };
+}
+
+function _latestEpiasPrice(items) {
+    for (let i = items.length - 1; i >= 0; i -= 1) {
+        const price = _toFiniteNumber(items[i]?.price ?? items[i]?.ptf);
+        if (Number.isFinite(price)) return price;
+    }
+    return null;
 }
 
 function _averageEpiasPrices(items) {
@@ -529,6 +726,10 @@ function _applyEpiasBasePrice(epias) {
 
     window.App.data.live.basePrice = epias.basePrice;
     window.App.data.live.basePriceLabel = _formatEpiasPrice(epias.basePrice, epias.unit);
+
+    if (!Number.isFinite(window.App.data.live.revenue) && Number.isFinite(window.App.data.live.dailyProduction)) {
+        window.App.data.live.revenue = (window.App.data.live.dailyProduction / 1000) * epias.basePrice;
+    }
 }
 
 function _formatEpiasPrice(value, unit) {

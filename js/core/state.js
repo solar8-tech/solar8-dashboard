@@ -204,6 +204,34 @@ window.resetDashboardView = function resetDashboardView() {
     const alertAnalysisBtn = document.getElementById("alert-analysis-btn");
     if (alertAnalysisBtn) alertAnalysisBtn.classList.add("hidden");
 
+    ["power-device-warning", "daily-device-warning"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+    });
+
+    ["power-normal-footer", "power-compare-footer", "daily-normal-footer"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("hidden");
+    });
+
+    const basePriceEl = document.getElementById("val-base-price");
+    if (basePriceEl) {
+        basePriceEl.classList.remove("device-warning", "font-medium");
+        basePriceEl.classList.add("text-[color:var(--txt-faint)]");
+    }
+
+    const systemStatusDot = document.getElementById("system-status-dot");
+    if (systemStatusDot) {
+        systemStatusDot.classList.remove("bg-amber-400", "shadow-[0_0_10px_#f59e0b]");
+        systemStatusDot.classList.add("bg-green-500", "shadow-[0_0_10px_#22c55e]", "animate-pulse");
+    }
+
+    const systemStatusLabel = document.getElementById("system-status-label");
+    if (systemStatusLabel) {
+        const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
+        systemStatusLabel.innerText = t.system_active ?? "--";
+    }
+
     const predictiveList = document.getElementById("predictive-list-container");
     if (predictiveList) predictiveList.innerHTML = "";
 
@@ -217,6 +245,41 @@ window.handleApiError = function handleApiError(context, error) {
     if (msgEl) {
         const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
         msgEl.innerText = t.error_data_source ?? "Veri kaynagina ulasilamiyor";
+    }
+
+    if (context === "dashboard-summary") {
+        const previous = window.App.data.live || {};
+        window.App.data.live = {
+            ...previous,
+            instantPower: null,
+            dailyProduction: null,
+            revenue: null,
+            monthlyProduction: null,
+            monthlyRevenue: null,
+            carbonOffset: null,
+            treesEquivalent: null,
+            collectionRate: null,
+            efficiency: null,
+            riskyDevices: null,
+            faultyPanels: null,
+            totalPanels: null,
+            detectTime: null,
+            riskLevel: 0,
+            deviceActive: false,
+            dataFreshness: {
+                isActive: false,
+                reason: "unavailable",
+                status: null,
+                lastSeenAt: null,
+                ageMs: null
+            },
+            hourlyLabels: previous.hourlyLabels ?? [],
+            hourlyData: previous.hourlyData ?? [],
+            predictions: previous.predictions ?? [],
+            activeFaults: previous.activeFaults ?? [],
+            projection: previous.projection ?? { labels: [], p50: [], p10: [] }
+        };
+        window.renderApp?.();
     }
 };
 
