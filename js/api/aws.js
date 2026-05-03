@@ -1,8 +1,6 @@
 const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
 const DASHBOARD_REFRESH_MS = 30000;
-const DEVICE_DATA_STALE_MS = 4 * 60 * 1000;
 const AUTH_STORAGE_KEY = "solar8.auth.session";
-const DEVICE_FRESHNESS_STORAGE_PREFIX = "solar8.deviceFreshness";
 const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
 const EPIAS_CACHE_MS = 5 * 60 * 1000;
 
@@ -147,12 +145,15 @@ window.startDashboardRefresh = function startDashboardRefresh() {
     window.App.dashboardIntervalId = setInterval(() => {
         window.fetchDashboardFromAWS?.();
     }, DASHBOARD_REFRESH_MS);
+    window.Live?.startFreshnessTimer?.();
 };
 
 window.stopDashboardRefresh = function stopDashboardRefresh() {
-    if (window.App.dashboardIntervalId === null) return;
-    clearInterval(window.App.dashboardIntervalId);
-    window.App.dashboardIntervalId = null;
+    if (window.App.dashboardIntervalId !== null) {
+        clearInterval(window.App.dashboardIntervalId);
+        window.App.dashboardIntervalId = null;
+    }
+    window.Live?.stopFreshnessTimer?.();
 };
 
 function _mapDashboardSummaryPayload(api) {
@@ -175,7 +176,7 @@ function _mapDashboardSummaryPayload(api) {
         selectedPlant.lon = currentPlant.lon;
     }
 
-    if (selectedPlant?.id !== undefined) {
+    if (apiSite && _hasDashboardSiteDetails(api.site) && selectedPlant?.id !== undefined) {
         window.App.data.context.plant = selectedPlant;
         localStorage.setItem("selectedPlant", JSON.stringify(selectedPlant));
     }
@@ -183,9 +184,19 @@ function _mapDashboardSummaryPayload(api) {
     const cards = api.cards || api.summary || api.dashboard || api.metrics || api;
     const instantPowerKw = _number(cards.instant_power_kw ?? cards.instantPowerKw);
     const instantPowerMw = _number(cards.instant_power_mw ?? cards.instantPowerMw);
-    const instantPowerW = _number(cards.instant_power_w ?? cards.instantPowerW);
+    const instantPowerW = _number(
+        cards.instant_power_w ??
+        cards.instantPowerW ??
+        cards.inverter_telemetry_data?.ac?.active_power_w ??
+        api.inverter_telemetry_data?.ac?.active_power_w
+    );
     const dailyProductionMwh = _number(cards.daily_production_mwh ?? cards.dailyProductionMwh);
-    const dailyProductionKwh = _number(cards.daily_production_kwh ?? cards.dailyProductionKwh);
+    const dailyProductionKwh = _number(
+        cards.daily_production_kwh ??
+        cards.dailyProductionKwh ??
+        cards.inverter_telemetry_data?.env?.daily_energy_kwh ??
+        api.inverter_telemetry_data?.env?.daily_energy_kwh
+    );
     const revenue = _number(
         cards.daily_revenue_try ??
         cards.dailyRevenueTry ??
@@ -222,8 +233,8 @@ function _mapDashboardSummaryPayload(api) {
         cards.epiasPtf
     );
     const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
-    const deviceMetricSignature = _buildDeviceMetricSignature({ instantPower, dailyProduction, revenue });
-    const dataFreshness = _resolveDataFreshness(api, cards, deviceMetricSignature);
+    const deviceMetricSignature = window.Live?.buildMetricSignature?.({ instantPower, dailyProduction, revenue });
+    const dataFreshness = window.Live?.resolveFreshness?.(api, cards, deviceMetricSignature) ?? { isActive: true, reason: "unchecked" };
 
     window.App.data.live = {
         instantPower,
@@ -289,6 +300,25 @@ function _pickLocalizedValue(value) {
 
     const cleaned = _cleanText(value);
     return cleaned ? { tr: cleaned, en: cleaned } : null;
+}
+
+function _hasDashboardSiteDetails(site) {
+    if (!site || typeof site !== "object") return false;
+    return Boolean(
+        site.name ??
+        site.title ??
+        site.latitude ??
+        site.lat ??
+        site.longitude ??
+        site.lon ??
+        site.lng ??
+        site.city ??
+        site.address ??
+        site.installed_capacity_kwp ??
+        site.installedCapacityKwp ??
+        site.capacity ??
+        site.capacityMw
+    );
 }
 
 function _cleanText(value) {
@@ -405,149 +435,6 @@ function _number(value) {
     if (value === null || value === undefined || value === "") return null;
     const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
     return Number.isFinite(parsed) ? parsed : null;
-}
-
-function _resolveDataFreshness(api, cards, deviceMetricSignature) {
-    const timestampValue = _pickFirstPresent([
-        api.measured_at,
-        api.measuredAt,
-        api.timestamp_utc,
-        api.telemetry_timestamp_utc,
-        api.last_data_timestamp_utc,
-        api.last_seen_at,
-        api.inverter_telemetry_data?.meta?.timestamp_utc,
-        api.telemetry?.timestamp_utc,
-        api.telemetry?.last_seen_at,
-        cards.measured_at,
-        cards.measuredAt,
-        cards.timestamp_utc,
-        cards.telemetry_timestamp_utc,
-        cards.last_data_timestamp_utc,
-        cards.last_seen_at,
-        cards.inverter_telemetry_data?.meta?.timestamp_utc,
-        cards.telemetry?.timestamp_utc,
-        cards.telemetry?.last_seen_at
-    ]);
-
-    const telemetryOk = _pickFirstPresent([
-        api.telemetry?.is_data_read_successful,
-        api.http?.is_last_http_send_successful,
-        api.network?.is_connected,
-        api.wifi?.is_wifi_connected
-    ]);
-
-    const signatureFreshness = _resolveMetricSignatureFreshness(deviceMetricSignature);
-    const lastSeenAt = _parseApiTimestamp(timestampValue);
-    const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
-    const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
-
-    if (isStale) {
-        return { isActive: false, reason: "stale", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
-    }
-
-    if (timestampValue !== undefined && timestampValue !== null && timestampValue !== "" && !lastSeenAt) {
-        return { isActive: false, reason: "invalid_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: timestampValue, ageMs: null };
-    }
-
-    if (lastSeenAt) {
-        return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
-    }
-
-    if (signatureFreshness && signatureFreshness.ageMs > DEVICE_DATA_STALE_MS) {
-        return {
-            isActive: false,
-            reason: "stale",
-            staleSource: "unchanged_metrics",
-            telemetryOk: telemetryOk ?? null,
-            lastSeenAt: null,
-            rawTimestamp: null,
-            ageMs: signatureFreshness.ageMs,
-            signatureFirstSeenAt: new Date(signatureFreshness.firstSeenAt).toISOString()
-        };
-    }
-
-    return {
-        isActive: true,
-        reason: "missing_timestamp",
-        telemetryOk: telemetryOk ?? null,
-        lastSeenAt: null,
-        rawTimestamp: null,
-        ageMs: signatureFreshness?.ageMs ?? null,
-        signatureFirstSeenAt: signatureFreshness ? new Date(signatureFreshness.firstSeenAt).toISOString() : null
-    };
-}
-
-function _pickFirstPresent(values) {
-    return values.find((value) => value !== null && value !== undefined && value !== "");
-}
-
-function _buildDeviceMetricSignature(metrics) {
-    const parts = [
-        metrics.instantPower,
-        metrics.dailyProduction,
-        metrics.revenue
-    ].map((value) => Number.isFinite(value) ? Number(value).toFixed(6) : "null");
-
-    return parts.every((part) => part === "null") ? null : parts.join("|");
-}
-
-function _resolveMetricSignatureFreshness(signature) {
-    if (!signature) return null;
-
-    const key = _getMetricSignatureStorageKey();
-    if (!key) return null;
-
-    const now = Date.now();
-    const stored = _readMetricSignatureState(key);
-
-    if (!stored || stored.signature !== signature || !Number.isFinite(stored.firstSeenAt)) {
-        const nextState = { signature, firstSeenAt: now };
-        _writeMetricSignatureState(key, nextState);
-        return { ...nextState, ageMs: 0 };
-    }
-
-    return {
-        signature,
-        firstSeenAt: stored.firstSeenAt,
-        ageMs: Math.max(0, now - stored.firstSeenAt)
-    };
-}
-
-function _getMetricSignatureStorageKey() {
-    const siteId = _getSelectedSiteId();
-    if (siteId === null) return null;
-    return `${DEVICE_FRESHNESS_STORAGE_PREFIX}.${String(siteId)}`;
-}
-
-function _readMetricSignatureState(key) {
-    try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return null;
-
-        const parsed = JSON.parse(raw);
-        const firstSeenAt = Number(parsed?.firstSeenAt);
-        if (!parsed?.signature || !Number.isFinite(firstSeenAt)) return null;
-
-        return { signature: String(parsed.signature), firstSeenAt };
-    } catch {
-        return null;
-    }
-}
-
-function _writeMetricSignatureState(key, state) {
-    try {
-        localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-        // Storage is best-effort; timestamp-based freshness still works without it.
-    }
-}
-
-function _parseApiTimestamp(value) {
-    if (value === null || value === undefined || value === "") return null;
-
-    const text = String(value).trim();
-    const date = new Date(text);
-    return Number.isFinite(date.getTime()) ? date : null;
 }
 
 function _renderContextHeader() {
