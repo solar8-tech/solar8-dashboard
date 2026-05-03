@@ -3,14 +3,17 @@
 window.TRANSLATIONS = {
     tr: {
         // Nav
-        nav_dashboard: "Ana Sayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
+        nav_dashboard: "Anasayfa", nav_twin: "Kestirimci Bakım", nav_reports: "Raporlar",
         // Page titles
         page_overview: "Genel Bakış", page_twin: "Solar8+", page_reports: "Rapor Merkezi", nav_settings: "Sistem Ayarları",
         // System
         system_active: "SİSTEM AKTİF",
+        system_data_unavailable: "VERİ ALINAMIYOR",
+        device_data_unavailable: "Cihaz verisi alınamadı",
+        device_data_stale: "Cihaz verisi güncel değil",
         card_instant_power: "Anlık Güç", card_compare_yest: "Düne göre",
         card_daily_prod: "Günlük Üretim", card_daily_rev: "Günlük Gelir",
-        card_base_price: "~75 USD/MWh baz alınmıştır.", card_critical_alert: "Kritik Uyarı",
+        card_base_price: "Baz fiyat alınamadı.", revenue_unavailable: "Gelir hesaplanamadı.", epias_based_price: "EPİAŞ PTF baz fiyatı: %{price}", card_critical_alert: "Kritik Uyarı",
         btn_open_analysis: "Arıza Analizini Aç →",
         // Reports
         rep_card_prod: "Bu Ay Üretim", rep_card_income: "Aylık Kazanç", rep_card_carbon: "Karbon Nötr",
@@ -43,6 +46,8 @@ window.TRANSLATIONS = {
         weather_impact_tooltip_fallback: "Bulutluluk verisi alınamadı. Üretime etki hesabı hava servisi yanıtına göre gösterilir.",
         weather_service_unavailable: "Servis Dışı",
         legend_prod: "Üretim",
+        msg_work_order_no_fault: "İş emri oluşturmak için aktif bir arıza bulunamadı.",
+        msg_report_download_unavailable: "İndirilebilir bir rapor bulunamadı.",
         // Auth
         msg_demo_feature: "Demo modunda bu özellik aktif değildir.",
         btn_login: "GİRİŞ YAP", inp_id_placeholder: "Kullanıcı Adı", inp_pass_placeholder: "Parola",
@@ -83,6 +88,7 @@ window.TRANSLATIONS = {
         inp_email: "E-Mail",
         inp_pass: "Parola",
         inp_pass_confirm: "Parola (Tekrar)",
+        inp_register_token: "Register Token",
         inp_forgot_email: "E-Mail Adresiniz",
         forgot_pass_link: "Şifremi Unuttum",
         btn_login: "GİRİŞ YAP",
@@ -110,9 +116,12 @@ window.TRANSLATIONS = {
         nav_dashboard: "Dashboard", nav_twin: "Predictive Maint.", nav_reports: "Reports", nav_settings: "System Settings",
         page_overview: "Overview", page_twin: "Solar8+", page_reports: "Report Center",
         system_active: "SYSTEM ACTIVE",
+        system_data_unavailable: "DATA UNAVAILABLE",
+        device_data_unavailable: "Device data unavailable",
+        device_data_stale: "Device data is stale",
         card_instant_power: "Instant Power", card_compare_yest: "vs Yesterday",
         card_daily_prod: "Daily Production", card_daily_rev: "Daily Revenue",
-        card_base_price: "Based on ~75 USD/MWh.", card_critical_alert: "Critical Alert",
+        card_base_price: "Base price unavailable.", revenue_unavailable: "Revenue unavailable.", epias_based_price: "EPİAŞ PTF base price: %{price}", card_critical_alert: "Critical Alert",
         btn_open_analysis: "Open Failure Analysis →",
         rep_card_prod: "Monthly Prod.", rep_card_income: "Monthly Income", rep_card_carbon: "Carbon Neutral",
         rep_compare_prev: "vs Last Month", rep_collection: "Collection:", rep_trees: "Trees equivalent",
@@ -140,6 +149,8 @@ window.TRANSLATIONS = {
         weather_impact_tooltip_fallback: "Cloud cover data is unavailable. Production impact is shown when the weather service responds.",
         weather_service_unavailable: "Service Unavailable",
         legend_prod: "Production",
+        msg_work_order_no_fault: "No active fault was found to create a work order.",
+        msg_report_download_unavailable: "There is no downloadable report available.",
         msg_demo_feature: "This feature is disabled in demo mode.",
         btn_login: "LOG IN", inp_id_placeholder: "User ID", inp_pass_placeholder: "Password",
         title_plant_selection: 'Plant <span class="font-bold text-solar">List</span>',
@@ -176,6 +187,7 @@ window.TRANSLATIONS = {
         inp_email: "E-Mail",
         inp_pass: "Password",
         inp_pass_confirm: "Confirm Password",
+        inp_register_token: "Register Token",
         inp_forgot_email: "E-Mail Address",
         forgot_pass_link: "Forgot Password?",
         btn_login: "LOGIN",

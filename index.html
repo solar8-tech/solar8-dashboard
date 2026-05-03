@@ -44,9 +44,12 @@
     <canvas id="canvas-bg"></canvas>
 
     <!--TOAST-->
-    <div id="toast-notification" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] hidden transition-all duration-300 transform -translate-y-6 opacity-0 w-[calc(100%-2rem)] max-w-[18rem]">
-        <div id="toast-panel" class="glass-panel px-3.5 py-3 rounded-xl flex items-center gap-3 border border-red-500/50">
-            <div id="toast-icon-wrap" class="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+    <div id="toast-notification"
+        class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] hidden transition-all duration-300 transform -translate-y-6 opacity-0 w-[calc(100%-2rem)] max-w-[18rem]">
+        <div id="toast-panel"
+            class="glass-panel px-3.5 py-3 rounded-xl flex items-center gap-3 border border-red-500/50">
+            <div id="toast-icon-wrap"
+                class="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
                 <i id="toast-icon" class="fa-solid fa-lock text-red-500"></i>
             </div>
             <div class="min-w-0">
@@ -145,7 +148,7 @@
 
                 <div
                     class="flex gap-3 p-4 md:p-6 border-t border-[var(--surface-glass-bdr)] bg-[var(--surface-glass)] z-10 shrink-0">
-                    <button onclick="showToast('msg_demo_feature')"
+                    <button onclick="notifyNoWorkOrderFault()"
                         class="w-full bg-solar text-black font-bold py-3 rounded-xl hover:bg-white transition text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-solar/20 group">
                         <i class="fa-solid fa-hammer group-hover:-rotate-12 transition-transform"></i>
                         <span data-key="btn_work_order">İş Emri Oluştur</span>
@@ -177,7 +180,7 @@
                 class="mt-4 pt-4 border-t border-[var(--surface-glass-bdr)] flex justify-between items-center text-xs text-[color:var(--txt-faint)]">
                 <span data-key="modal_total_rec">Toplam: <b class="text-[color:var(--txt-strong)]"
                         id="total-history-count">0</b></span>
-                <button onclick="event.stopPropagation(); showToast('msg_demo_feature')"
+                <button onclick="event.stopPropagation(); notifyReportDownloadUnavailable()"
                     class="text-blue-400 hover:text-[color:var(--txt-strong)] transition flex items-center gap-1">
                     <i class="fa-solid fa-download"></i> <span data-key="btn_download_csv">--</span>
                 </button>
@@ -210,7 +213,7 @@
             </div>
         </div>
         <div
-            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
@@ -230,7 +233,8 @@
             </div>
             <div class="flex flex-col justify-center items-center p-10 md:p-14 relative bg-white">
                 <div class="mb-12 transition-all duration-300">
-                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3" class="w-[140px] h-auto object-contain opacity-90" alt="logo">
+                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3"
+                        class="w-[140px] h-auto object-contain opacity-90" alt="logo">
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
@@ -238,10 +242,12 @@
                             class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
                             placeholder="E-Mail">
                     </div>
-                    <div class="relative group">
+                    <div class="relative group flex items-center">
                         <input type="password" id="login-pass" data-ph-key="inp_pass"
-                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-xs outline-none"
                             placeholder="Parola">
+                        <i class="fa-regular fa-eye absolute right-4 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                            onclick="toggleLoginPass('login-pass', this)"></i>
                     </div>
                     <div class="flex justify-end px-1">
                         <a href="javascript:void(0)" onclick="navToForgot()"
@@ -293,7 +299,7 @@
             </div>
         </div>
         <div
-            class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            class="register-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:150%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
@@ -312,9 +318,15 @@
             </div>
             <div class="flex flex-col justify-center items-center p-10 md:p-14 relative bg-white">
                 <div class="mb-12 transition-all duration-300">
-                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3" class="w-[140px] h-auto object-contain opacity-90" alt="logo">
+                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3"
+                        class="w-[140px] h-auto object-contain opacity-90" alt="logo">
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
+                    <div class="relative group">
+                        <input type="text" id="reg-token" data-ph-key="inp_register_token"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Register Token">
+                    </div>
                     <div class="relative group">
                         <input type="text" id="reg-name" data-ph-key="inp_name"
                             class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
@@ -325,8 +337,12 @@
                             class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
                             placeholder="E-Mail">
                     </div>
-                    <div class="relative group">
-                        <input type="password" id="reg-pass" data-ph-key="inp_pass" class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none" placeholder="Parola">
+                    <div class="relative group flex items-center">
+                        <input type="password" id="reg-pass" data-ph-key="inp_pass"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            placeholder="Parola">
+                        <i class="fa-regular fa-eye absolute right-4 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                            onclick="toggleRegPass('reg-pass', this)"></i>
                         <div id="register-password-tooltip" class="password-tooltip" aria-live="polite">
                             <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
                             <div class="password-tooltip-rule" data-password-rule="length">
@@ -347,10 +363,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="relative group">
+                    <div class="relative group flex items-center">
                         <input type="password" id="reg-pass-confirm" data-ph-key="inp_pass_confirm"
-                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-xs outline-none"
+                            class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-xs outline-none"
                             placeholder="Parola (Tekrar)">
+                        <i class="fa-regular fa-eye absolute right-4 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                            onclick="toggleRegPass('reg-pass-confirm', this)"></i>
                     </div>
                     <div id="register-error" class="hidden text-center text-xs text-red-400"></div>
                     <div id="register-success" class="hidden text-center text-xs text-green-500"></div>
@@ -372,7 +390,7 @@
         </div>
     </div>
 
-    <!--SANTRAL SEÇİM-->
+    <!--ŞİFREMİ UNUTTUM-->
     <div id="view-forgot" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div class="absolute top-6 right-6 z-50 flex gap-2">
             <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)]"
@@ -398,7 +416,7 @@
         </div>
 
         <div
-            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)]">
+            class="login-modern grid grid-cols-1 md:grid-cols-2 w-[90%] max-w-[850px] min-h-[480px] rounded-[2.5rem] overflow-hidden">
             <div
                 class="hidden md:flex flex-col justify-center items-center p-10 relative bg-[url('https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/bg.png')] bg-[length:125%] bg-center text-center">
                 <div class="absolute inset-0 z-0"></div>
@@ -417,7 +435,8 @@
             </div>
             <div class="flex flex-col justify-center items-center p-10 md:p-14 relative bg-white">
                 <div class="mb-12 transition-all duration-300">
-                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3" class="w-[140px] h-auto object-contain opacity-90" alt="logo">
+                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3"
+                        class="w-[140px] h-auto object-contain opacity-90" alt="logo">
                 </div>
                 <div class="w-full max-w-[280px] space-y-4">
                     <div class="relative group">
@@ -449,7 +468,7 @@
     <!--Doğrulama-->
     <div id="view-verify" class="view-section view-hidden flex items-center justify-center fixed inset-0 z-[200]">
         <div
-            class="register-modern flex w-[90%] max-w-[400px] min-h-[400px] rounded-[2.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.06),_0_8px_32px_rgba(0,0,0,0.06)] bg-white relative">
+            class="register-modern flex w-[90%] max-w-[400px] min-h-[400px] rounded-[2.5rem] overflow-hidden bg-white relative">
             <div class="absolute top-8 left-8 z-50">
                 <button onclick="navToRegister()"
                     class="flex items-center justify-center w-10 h-10 rounded-full transition-all group text-[#2C2072] hover:bg-slate-50">
@@ -457,10 +476,11 @@
                 </button>
             </div>
             <div class="flex flex-col justify-center items-center p-10 w-full relative">
-                <div class="mb-8">
-                    <img src="logo1.png" class="w-[120px] h-auto object-contain opacity-90" alt="logo">
+                <div id="verify-logo-wrapper" class="mb-8">
+                    <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png?v=3"
+                        class="w-[120px] h-auto object-contain opacity-90" alt="logo">
                 </div>
-                <div class="text-center mb-6">
+                <div id="verify-heading-wrapper" class="text-center mb-6">
                     <h2 class="text-[1.6rem] font-bold text-[#2C2072] leading-tight" data-key="verify_title">Kodu
                         Doğrula</h2>
                     <p class="text-xs px-4 mt-2 text-slate-500" data-key="verify_desc">Lütfen e-posta adresinize
@@ -476,8 +496,10 @@
                     <div id="verify-reset-fields" class="hidden space-y-4">
                         <div class="relative group">
                             <input type="password" id="verify-new-pass"
-                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-sm outline-none"
                                 placeholder="Yeni Parola">
+                            <i class="fa-regular fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                                onclick="toggleRegPass('verify-new-pass', this)"></i>
                             <div id="reset-password-tooltip" class="password-tooltip" aria-live="polite">
                                 <p class="password-tooltip-title" data-key="password_rules_title">Parola koşulları</p>
                                 <div class="password-tooltip-rule" data-password-rule="length">
@@ -500,8 +522,10 @@
                         </div>
                         <div class="relative group">
                             <input type="password" id="verify-new-pass-confirm"
-                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-4 text-sm outline-none"
-                                placeholder="Yeni Parola (tekrar)">
+                                class="input-modern w-full rounded-xl py-3.5 pl-4 pr-10 text-sm outline-none"
+                                placeholder="Yeni Parola (Tekrar)">
+                            <i class="fa-regular fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer text-[14px] hover:text-[#D579EF] transition-colors"
+                                onclick="toggleRegPass('verify-new-pass-confirm', this)"></i>
                         </div>
                     </div>
                     <div id="verify-error" class="hidden text-center text-xs text-red-400"></div>
@@ -559,11 +583,11 @@
 
         <div class="flex-1 relative w-full h-full">
             <div id="map-container"></div>
-            <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/80 to-transparent pointer-events-none z-[400]"
-                style="mix-blend-mode:multiply;"></div>
             <div class="absolute top-8 right-8 z-[500] pointer-events-none drop-shadow-2xl hidden md:block">
-                <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo.png?v=3" class="w-[137px] h-[40px] object-contain opacity-90 dark-logo" alt="Solar8">
-                <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png" class="w-[137px] h-[40px] object-contain opacity-90 light-logo" alt="Solar8">
+                <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo.png?v=3"
+                    class="w-[137px] h-[40px] object-contain opacity-90 dark-logo" alt="Solar8">
+                <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png"
+                    class="w-[137px] h-[40px] object-contain opacity-90 light-logo" alt="Solar8">
             </div>
         </div>
     </div>
@@ -578,10 +602,10 @@
                 <div class="h-24 flex items-center justify-between px-6 border-b border-[var(--surface-soft-bdr)]">
                     <a href="index.html"
                         class="grid grid-cols-1 grid-rows-1 w-[137px] h-[40px] hover:opacity-80 transition-opacity">
-                        <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo.png?v=3" alt="Solar8"
-                            class="col-start-1 row-start-1 h-full w-auto object-contain dark-logo">
-                        <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png" alt="Solar8"
-                            class="col-start-1 row-start-1 h-full w-auto object-contain light-logo">
+                        <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo.png?v=3"
+                            alt="Solar8" class="col-start-1 row-start-1 h-full w-auto object-contain dark-logo">
+                        <img src="https://dashboard-bucket-369118448200-eu-central-1-an.s3.eu-central-1.amazonaws.com/logo1.png"
+                            alt="Solar8" class="col-start-1 row-start-1 h-full w-auto object-contain light-logo">
                     </a>
                     <button onclick="toggleMobileMenu()" class="md:hidden text-[color:var(--txt-muted)]">
                         <i class="fa-solid fa-xmark text-xl"></i>
@@ -639,7 +663,7 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto relative h-full flex flex-col">
-            <div class="absolute top-7 right-6 md:top-13 md:right-12 z-[50] flex flex-col items-end gap-2">
+            <div class="absolute top-5 right-6 md:top-13 md:right-12 z-[50] flex flex-col items-end gap-2">
                 <div class="flex gap-2">
                     <div class="glass-panel p-1 rounded-full flex items-center cursor-pointer border border-[var(--surface-glass-bdr)] backdrop-blur-md"
                         onclick="toggleLanguage()">
@@ -668,10 +692,11 @@
                     <i class="fa-regular fa-clock mr-2"></i><span id="clock">--:--</span>
                 </div> -->
                 <div
-                    class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 backdrop-blur-md border border-[var(--surface-glass-bdr)] shadow-sm">
-                    <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></span>
-                    <span data-key="system_active"
-                        class="text-[9px] md:text-[10px] font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
+                    class="glass-panel h-7 md:h-8 px-3 rounded-full inline-flex items-center gap-2 backdrop-blur-md border border-[var(--surface-glass-bdr)] shadow-sm">
+                    <span id="system-status-dot"
+                        class="w-1.5 h-1.5 md:w-2 md:h-2 shrink-0 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse"></span>
+                    <span id="system-status-label" data-key="system_active"
+                        class="leading-none text-[9px] md:text-[10px] font-medium tracking-wide text-[color:var(--txt-secondary)]">--</span>
                 </div>
             </div>
 
@@ -694,7 +719,7 @@
 
                 <!--OVERVIEW-->
                 <div id="view-overview" class="pb-6">
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-10">
                         <div
                             class="glass-hero hero-energy rounded-2xl md:rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
                             <div
@@ -706,19 +731,22 @@
                                 --</p>
                             <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
                                 <span id="val-power" class="inline-block min-w-[40px] md:min-w-[80px]">--</span><span
-                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal"> MW</span>
+                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal"> kW</span>
                             </h3>
                             <div id="power-loading"
                                 class="mt-2 h-1.5 md:h-3 w-16 md:w-24 bg-[var(--surface-soft)] rounded animate-pulse skeleton-loader">
                             </div>
-                            <div class="mt-2 md:mt-4 flex items-center gap-1 md:gap-2">
-                                <span
+                            <div class="mt-3 md:mt-4 h-4 md:h-5 flex items-center gap-1 md:gap-2">
+                                <span id="power-normal-footer"
                                     class="bg-green-500/10 text-green-400 text-[8px] md:text-xs px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-arrow-trend-up"></i>
                                     <span id="val-power-delta">--</span>
                                 </span>
-                                <span data-key="card_compare_yest"
+                                <span id="power-compare-footer" data-key="card_compare_yest"
                                     class="text-[8px] md:text-xs text-[color:var(--txt-faint)]">--</span>
+                                <span id="power-device-warning" data-key="device_data_unavailable"
+                                    class="hidden min-w-0 truncate text-[9px] md:text-xs device-warning font-medium leading-none md:-translate-y-2">
+                                    --</span>
                             </div>
                         </div>
 
@@ -733,11 +761,17 @@
                                 --</p>
                             <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
                                 <span id="val-daily">--</span> <span
-                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal">MWh</span>
+                                    class="text-xs md:text-lg text-[color:var(--txt-faint)] font-normal">kWh</span>
                             </h3>
-                            <div
-                                class="mt-3 md:mt-4 w-full bg-slate-200 dark:bg-slate-800/50 rounded-full h-1 md:h-1.5 overflow-hidden">
-                                <div id="daily-bar" class="bg-blue-500 h-full rounded-full" style="width:65%"></div>
+                            <div class="mt-3 md:mt-4 relative w-full h-4 md:h-5">
+                                <div id="daily-normal-footer"
+                                    class="absolute left-0 right-0 top-1/2 -translate-y-1/2 bg-slate-200 dark:bg-slate-800/50 rounded-full h-1 md:h-1.5 overflow-hidden">
+                                    <div id="daily-bar" class="bg-blue-500 h-full rounded-full" style="width:65%">
+                                    </div>
+                                </div>
+                                <p id="daily-device-warning" data-key="device_data_unavailable"
+                                    class="hidden absolute left-0 right-0 top-1/2 -translate-y-1/2 truncate text-[9px] md:text-xs device-warning font-medium leading-none">
+                                    --</p>
                             </div>
                         </div>
 
@@ -751,10 +785,11 @@
                                 class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2">
                                 --</p>
                             <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
-                                $<span id="val-revenue">--</span>
+                                <span id="val-revenue">--</span> <span
+                                    class="text-base md:text-2xl font-medium text-[color:var(--txt-faint)]">TL</span>
                             </h3>
-                            <p data-key="card_base_price"
-                                class="text-[8px] md:text-xs text-[color:var(--txt-faint)] mt-2 md:mt-4">--</p>
+                            <p id="val-base-price" data-key="card_base_price"
+                                class="truncate text-[9px] md:text-xs text-[color:var(--txt-faint)] mt-2 md:mt-4 h-4 md:h-5 leading-4 md:leading-5">--</p>
                         </div>
 
                         <div
@@ -780,7 +815,7 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div
-                            class="lg:col-span-2 glass-panel rounded-3xl p-4 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-[500px]">
+                            class="lg:col-span-2 glass-panel rounded-3xl p-4 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-full">
                             <div class="flex justify-between items-center mb-4 md:mb-6">
                                 <div>
                                     <h3 data-key="chart_daily_analysis"
@@ -808,14 +843,14 @@
 
                         <div class="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
                             <div
-                                class="glass-panel rounded-3xl p-4 lg:p-6 flex flex-col relative overflow-hidden h-[180px] lg:h-full lg:min-h-[260px]">
+                                class="glass-panel rounded-3xl p-4 lg:p-6 flex flex-col relative overflow-hidden min-h-[200px] md:min-h-[240px] lg:min-h-[260px] lg:h-full">
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none">
                                 </div>
 
                                 <div class="relative z-10 flex flex-col h-full">
                                     <div class="flex justify-between items-start">
-                                        <div class="flex-1">
+                                        <div>
                                             <p class="text-[color:var(--txt-muted)] text-[9px] lg:text-lg uppercase tracking-wider font-semibold truncate"
                                                 id="w-city">--</p>
                                             <div class="flex items-baseline gap-1 mt-0.5">
@@ -824,41 +859,38 @@
                                                 <p class="text-blue-400 text-[10px] lg:text-sm font-medium truncate"
                                                     id="w-desc">--</p>
                                             </div>
-                                            <div class="relative mt-1.5 inline-flex max-w-full group">
-                                                <button id="w-impact"
-                                                    type="button"
-                                                    aria-describedby="w-impact-tooltip"
-                                                    class="inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[8px] lg:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.16em] px-1 sm:px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/10 whitespace-nowrap transition-colors">
-                                                    <span>--</span>
-                                                    <i class="fa-solid fa-circle-info text-[7px] sm:text-[8px] lg:text-[10px] opacity-70"></i>
+                                            <div class="relative mt-1.5 inline-flex group">
+                                                <button id="w-impact" type="button" aria-describedby="w-impact-tooltip"
+                                                    class="inline-flex items-center gap-0.5 sm:gap-1 max-w-full text-[6px] sm:text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60">
+                                                    <span>--</span> <i class="fa-solid fa-circle-info opacity-70"></i>
                                                 </button>
-                                                <div id="w-impact-tooltip"
-                                                    class="weather-impact-tooltip pointer-events-none absolute left-0 top-full z-20 mt-2 w-[145px] sm:w-[220px] rounded-xl sm:rounded-2xl border border-[var(--surface-soft-bdr)] px-2 py-1.5 sm:px-3 sm:py-2 text-left text-[9px] sm:text-[10px] normal-case tracking-normal leading-snug opacity-0 translate-y-2 transition duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0">
+                                                <div id="w-impact-tooltip" role="tooltip"
+                                                    class="weather-impact-tooltip pointer-events-none absolute left-0 top-full z-20 mt-2 w-52 rounded-2xl border border-slate-200/10 bg-slate-950/95 px-3 py-2 text-[10px] normal-case tracking-normal text-slate-200 opacity-0 shadow-2xl shadow-slate-950/30 transition duration-150 ease-out group-hover:opacity-100 group-focus-within:opacity-100">
                                                     --
                                                 </div>
                                             </div>
                                         </div>
                                         <i
-                                            class="fa-solid fa-cloud-sun text-xl lg:text-4xl text-[color:var(--txt-secondary)] ml-2 shadow-sm"></i>
+                                            class="fa-solid fa-cloud-sun text-xl lg:text-4xl text-[color:var(--txt-secondary)]"></i>
                                     </div>
-                                    <div class="mt-auto space-y-1.5 lg:space-y-2">
+                                    <div class="mt-4 lg:mt-auto space-y-1.5 lg:space-y-2">
                                         <div
-                                            class="flex justify-between items-center py-1 lg:py-1.5 border-b border-[var(--surface-soft-bdr)]">
+                                            class="flex justify-between items-center py-1 border-b border-[var(--surface-soft-bdr)]">
                                             <span
                                                 class="text-[color:var(--txt-muted)] text-[9px] lg:text-xs flex items-center">
-                                                <i class="fa-solid fa-wind w-4 lg:w-5"></i>
-                                                <span data-key="weather_wind">--</span>
+                                                <i class="fa-solid fa-wind w-4"></i> <span
+                                                    data-key="weather_wind">--</span>
                                             </span>
                                             <span
                                                 class="text-[color:var(--txt-strong)] text-[9px] lg:text-xs font-medium"
                                                 id="w-wind">--</span>
                                         </div>
                                         <div
-                                            class="flex justify-between items-center py-1 lg:py-1.5 border-b border-[var(--surface-soft-bdr)] last:border-0">
+                                            class="flex justify-between items-center py-1 border-b border-[var(--surface-soft-bdr)] last:border-0">
                                             <span
                                                 class="text-[color:var(--txt-muted)] text-[9px] lg:text-xs flex items-center">
-                                                <i class="fa-solid fa-droplet w-4 lg:w-5"></i>
-                                                <span data-key="weather_hum">--</span>
+                                                <i class="fa-solid fa-droplet w-4"></i> <span
+                                                    data-key="weather_hum">--</span>
                                             </span>
                                             <span
                                                 class="text-[color:var(--txt-strong)] text-[9px] lg:text-xs font-medium"
@@ -866,23 +898,24 @@
                                         </div>
                                         <div class="grid grid-cols-2 gap-2 pt-1">
                                             <div
-                                                class="rounded-2xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2 py-1.5 sm:px-2.5 sm:py-2">
+                                                class="rounded-xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2 py-1.5">
                                                 <span
-                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] uppercase tracking-[0.16em] flex items-center gap-1 sm:gap-1.5">
-                                                    <i class="fa-solid fa-sun text-amber-400 text-[10px] sm:text-sm"></i>
-                                                    <span class="hidden sm:inline" data-key="weather_sunrise">--</span>
+                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] flex items-center gap-1.5">
+                                                    <i
+                                                        class="fa-solid fa-sun text-amber-400 text-[10px] sm:text-sm"></i>
+                                                    <span class="hidden xl:inline" data-key="weather_sunrise">--</span>
                                                     <span id="w-sunrise"
-                                                        class="text-[color:var(--txt-strong)] text-[10px] lg:text-xs font-semibold sm:mt-1 sm:block">--</span>
+                                                        class="text-[color:var(--txt-strong)] font-semibold">--</span>
                                                 </span>
                                             </div>
                                             <div
-                                                class="rounded-2xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2 py-1.5 sm:px-2.5 sm:py-2">
+                                                class="rounded-xl border border-[var(--surface-soft-bdr)] bg-[var(--surface-soft)]/70 px-2 py-1.5">
                                                 <span
-                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] uppercase tracking-[0.16em] flex items-center gap-1 sm:gap-1.5">
+                                                    class="text-[color:var(--txt-muted)] text-[8px] lg:text-[10px] flex items-center gap-1.5">
                                                     <i class="fa-solid fa-moon text-sky-300 text-[10px] sm:text-sm"></i>
-                                                    <span class="hidden sm:inline" data-key="weather_sunset">--</span>
+                                                    <span class="hidden xl:inline" data-key="weather_sunset">--</span>
                                                     <span id="w-sunset"
-                                                        class="text-[color:var(--txt-strong)] text-[10px] lg:text-xs font-semibold sm:mt-1 sm:block">--</span>
+                                                        class="text-[color:var(--txt-strong)] font-semibold">--</span>  
                                                 </span>
                                             </div>
                                         </div>
@@ -891,16 +924,20 @@
                             </div>
 
                             <div
-                                class="glass-panel rounded-3xl p-4 lg:p-8 flex flex-col justify-center border-l border-danger bg-gradient-to-r from-danger/5 to-transparent h-[180px] lg:h-auto">
-                                <h4
-                                    class="text-[color:var(--txt-strong)] text-xs lg:text-base font-medium mb-1 lg:mb-2 flex items-center gap-2">
-                                    <i class="fa-solid fa-circle-exclamation text-danger"></i>
-                                    <span data-key="card_critical_alert">--</span>
-                                </h4>
-                                <p class="text-[10px] lg:text-sm text-[color:var(--txt-muted)] leading-tight lg:leading-relaxed font-light"
-                                    id="alert-msg">--</p>
-                                <button onclick="toggleAnalysisModal(true)"
-                                    class="mt-3 lg:mt-4 text-[9px] lg:text-xs font-bold text-danger uppercase tracking-wider hover:text-[color:var(--txt-strong)] transition-colors flex items-center gap-2 group">
+                                class="glass-soft rounded-3xl p-4 lg:p-8 flex flex-col items-start min-h-[200px] md:min-h-[240px] lg:h-auto border border-danger/20">
+                                <div class="mb-4 flex items-center gap-3">
+                                    <i class="fa-solid fa-circle-exclamation text-danger text-base shrink-0"></i>
+                                    <h4
+                                        class="text-[color:var(--txt-strong)] text-xs lg:text-base font-semibold leading-none">
+                                        <span data-key="card_critical_alert">--</span>
+                                    </h4>
+                                </div>
+                                <div class="flex min-h-[72px] w-full flex-1 items-start">
+                                    <p class="max-w-[32ch] text-[10px] lg:text-sm text-[color:var(--txt-muted)] leading-relaxed font-medium"
+                                        id="alert-msg"></p>
+                                </div>
+                                <button id="alert-analysis-btn" onclick="toggleAnalysisModal(true)"
+                                    class="mt-3 lg:mt-6 text-[9px] lg:text-xs font-bold text-danger uppercase tracking-wider hover:text-[color:var(--txt-strong)] transition-colors flex items-center gap-2 group w-fit">
                                     <span data-key="btn_open_analysis">--</span>
                                     <i
                                         class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
@@ -912,7 +949,7 @@
 
                 <!--KESTİRİMCİ BAKIM-->
                 <div id="view-twin" class="view-hidden pb-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-10">
                         <div
                             class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
                             <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
@@ -923,7 +960,6 @@
                                 --</p>
                             <h3 class="text-xl md:text-2xl font-bold text-[color:var(--txt-strong)]" id="t-eff">--</h3>
                         </div>
-
                         <div
                             class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
                             <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
@@ -939,7 +975,6 @@
                                     class="text-[8px] md:text-[10px] text-orange-400 mb-0.5 md:mb-1">--</span>
                             </div>
                         </div>
-
                         <div
                             class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden border border-danger/20">
                             <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50 animate-pulse">
@@ -954,7 +989,6 @@
                                     class="text-[10px] md:text-xs font-normal text-[color:var(--txt-muted)]">--</span>
                             </h3>
                         </div>
-
                         <div
                             class="glass-soft rounded-2xl md:rounded-3xl p-4 md:p-6 card-hover relative overflow-hidden group">
                             <div class="absolute top-2 right-2 md:top-4 md:right-4 opacity-50">
@@ -967,10 +1001,9 @@
                             </h3>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div
-                            class="glass-panel rounded-3xl p-5 md:p-8 flex flex-col h-[280px] md:h-[400px] lg:h-[540px]">
+                            class="glass-panel rounded-3xl p-5 md:p-8 flex flex-col h-[280px] md:h-[400px] xl:h-[540px]">
                             <div class="flex justify-between items-center mb-6">
                                 <div>
                                     <h3 data-key="chart_projection"
@@ -995,10 +1028,9 @@
                                 <canvas id="projectionChart"></canvas>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-2 lg:flex lg:flex-row gap-3 lg:gap-6 lg:h-[540px]">
+                        <div class="grid grid-cols-2 xl:flex xl:flex-row gap-3 xl:gap-6 xl:h-[540px]">
                             <div
-                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-full lg:flex-1 overflow-hidden">
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] xl:h-full xl:flex-1 overflow-hidden">
                                 <h3
                                     class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2 mb-4 shrink-0">
                                     <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-xs md:text-base"></i>
@@ -1006,13 +1038,11 @@
                                         class="text-[10px] md:text-base truncate">--</span>
                                 </h3>
                                 <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 touch-scroll">
-                                    <div id="predictive-list-container" class="grid grid-cols-1 gap-3">
-                                    </div>
+                                    <div id="predictive-list-container" class="grid grid-cols-1 gap-3"></div>
                                 </div>
                             </div>
-
                             <div
-                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] lg:h-full lg:flex-1 overflow-hidden">
+                                class="glass-panel rounded-3xl p-3 md:p-6 flex flex-col h-auto min-h-[160px] xl:h-full xl:flex-1 overflow-hidden">
                                 <div class="flex flex-col gap-2 md:gap-3 mb-4 shrink-0">
                                     <h3 class="text-[color:var(--txt-strong)] font-medium flex items-center gap-2">
                                         <i
@@ -1028,8 +1058,7 @@
                                     </button>
                                 </div>
                                 <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 touch-scroll">
-                                    <div id="fault-list-container" class="grid grid-cols-1 gap-3">
-                                    </div>
+                                    <div id="fault-list-container" class="grid grid-cols-1 gap-3"></div>
                                 </div>
                             </div>
                         </div>
@@ -1039,7 +1068,7 @@
                 <!--RAPORLAR-->
                 <div id="view-reports" class="view-hidden w-full h-full flex flex-col pb-10">
                     <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-4 lg:mb-8 flex-none">
-                        <div class="glass-hero rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
+                        <div class="glass-soft rounded-3xl p-4 md:p-8 card-hover relative overflow-hidden group">
                             <div
                                 class="absolute top-0 right-0 p-4 md:p-6 opacity-40 group-hover:opacity-80 transition-opacity hidden lg:block">
                                 <i class="fa-solid fa-bolt text-3xl text-solar"></i>
@@ -1065,8 +1094,10 @@
                             </div>
                             <p class="text-[color:var(--txt-faint)] text-[9px] md:text-xs font-semibold uppercase tracking-wider mb-1 md:mb-2"
                                 data-key="rep_card_income">--</p>
-                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight"
-                                id="val-rep-income">--</h3>
+                            <h3 class="text-xl md:text-4xl font-semibold text-[color:var(--txt-strong)] tracking-tight">
+                                <span class="text-base md:text-2xl font-medium text-white">₺</span>
+                                <span id="val-rep-income">--</span>
+                            </h3>
                             <div
                                 class="mt-2 md:mt-4 w-full bg-[var(--surface-soft)] rounded-full h-1 md:h-1.5 overflow-hidden">
                                 <div id="rep-collection-bar" class="bg-blue-500 h-full rounded-full" style="width:0%">
@@ -1186,7 +1217,7 @@
                             <div class="flex justify-between items-start mb-4">
                                 <h2 id="rep-detail-title"
                                     class="text-lg md:text-2xl font-light text-[color:var(--txt-strong)]">--</h2>
-                                <button
+                                <button onclick="notifyReportDownloadUnavailable()"
                                     class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-solar text-black flex items-center justify-center shadow-lg">
                                     <i class="fa-solid fa-download text-xs"></i>
                                 </button>
@@ -1236,7 +1267,7 @@
     <!--SCRIPTS yükleme sırasına mümkün olduğunca dokunmayın 08.04.2026-->
     <!--Core-->
     <script src="js/core/state.js?v=4"></script>
-    <script src="js/core/i18n.js?v=4"></script>
+    <script src="js/core/i18n.js?v=5"></script>
 
     <!--Auth config: public browser-side Cognito identifiers-->
     <script>
@@ -1248,14 +1279,14 @@
     </script>
 
     <!--Custom auth layer: reads the form and calls Cognito directly-->
-    <script src="js/auth/cognito.js?v=4"></script>
+    <script src="js/auth/cognito.js?v=5"></script>
 
     <!--API-->
-    <script src="js/api/aws.js?v=4"></script>
+    <script src="js/api/aws.js?v=9"></script>
     <script src="js/api/weather.js?v=4"></script>
 
     <!--UI-->
-    <script src="js/ui/renderer.js?v=4"></script>
+    <script src="js/ui/renderer.js?v=6"></script>
     <script src="js/ui/charts.js?v=4"></script>
     <script src="js/ui/modals.js?v=4"></script>
     <script src="js/ui/navigation.js?v=4"></script>

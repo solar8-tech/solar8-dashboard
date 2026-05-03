@@ -6,8 +6,17 @@
     const AUTH_STORAGE_KEY = "solar8.auth.session";
     const PENDING_SIGNUP_KEY = "solar8.auth.pendingSignup";
     const PENDING_RESET_KEY = "solar8.auth.pendingReset";
+    const PENDING_PASSWORD_CHANGE_KEY = "solar8.auth.pendingPasswordChange";
+    const TAB_SESSION_KEY = "solar8.auth.tabSessionId";
+    const TAB_HEARTBEAT_PREFIX = "solar8.auth.tabHeartbeat.";
+    const TAB_HEARTBEAT_MS = 1000;
+    const TAB_HEARTBEAT_STALE_MS = 4000;
     const CODE_RESEND_COOLDOWN_SECONDS = 60;
-    const REGISTER_PROFILE_ENDPOINT = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod/register-profile";
+    const DASHBOARD_API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
+    const ME_ENDPOINT = `${DASHBOARD_API_BASE}/me`;
+    const REGISTER_START_ENDPOINT = `${DASHBOARD_API_BASE}/register-start`;
+    const REGISTER_CONFIRM_ENDPOINT = `${DASHBOARD_API_BASE}/register-confirm`;
+    const REGISTER_RESEND_ENDPOINT = `${DASHBOARD_API_BASE}/register-resend`;
 
     const defaultConfig = {
         region: "eu-central-1",
@@ -17,7 +26,8 @@
 
     const state = {
         config: { ...defaultConfig },
-        initialized: false
+        initialized: false,
+        heartbeatIntervalId: null
     };
 
     const authMessages = {
@@ -39,6 +49,7 @@
             registerRequired: "Lütfen tüm alanları doldurun.",
             registerInvalidEmail: "Geçerli bir e-posta adresi girin.",
             registerPasswordMismatch: "Parolalar birbiriyle aynı değil.",
+            registerInvalidToken: "Register token geçersiz.",
             registerVerifySent: "Doğrulama kodu e-posta adresinize gönderildi.",
             verifySignupFirst: "Doğrulama için önce kayıt olmanız gerekiyor.",
             verifyCodeRequired: "Lütfen doğrulama kodunu girin.",
@@ -48,6 +59,7 @@
             resendSuccess: "Doğrulama kodu tekrar gönderildi.",
             forgotEmailRequired: "Lütfen kayıtlı e-posta adresinizi girin.",
             forgotInvalidEmail: "Geçerli bir e-posta adresi girin.",
+            forgotResetUnavailable: "Bu e-posta için şifre sıfırlama yapılamıyor. Hesap doğrulanmamış veya kayıtlı değil.",
             forgotRequestSuccess: "Şifre sıfırlama kodu e-posta adresinize gönderildi.",
             forgotCodeRequired: "Lütfen doğrulama kodunu girin.",
             forgotPasswordRequired: "Lütfen yeni parolanızı girin.",
@@ -63,6 +75,9 @@
             resetPasswordTitle: "Yeni Şifrenizi Belirleyin",
             resetPasswordDesc: "Doğrulama kodunu girdiniz. Şimdi yeni şifrenizi oluşturun.",
             resetCodeAccepted: "Kod girildi. Şimdi yeni şifrenizi belirleyin.",
+            forcePasswordTitle: "Yeni Şifrenizi Belirleyin",
+            forcePasswordDesc: "Güvenliğiniz için geçici şifrenizi değiştirmeniz gerekiyor.",
+            forcePasswordSuccess: "Şifreniz güncellendi.",
             resendAvailableIn: "Tekrar gönderim için kalan süre: {time}"
         },
         en: {
@@ -83,6 +98,7 @@
             registerRequired: "Please fill in all fields.",
             registerInvalidEmail: "Enter a valid email address.",
             registerPasswordMismatch: "The passwords do not match.",
+            registerInvalidToken: "The register token is invalid.",
             registerVerifySent: "A verification code has been sent to your email address.",
             verifySignupFirst: "You need to sign up before completing verification.",
             verifyCodeRequired: "Please enter the verification code.",
@@ -92,6 +108,7 @@
             resendSuccess: "The verification code has been sent again.",
             forgotEmailRequired: "Please enter your registered email address.",
             forgotInvalidEmail: "Enter a valid email address.",
+            forgotResetUnavailable: "Password reset is not available for this email. The account may be unverified or not registered.",
             forgotRequestSuccess: "A password reset code has been sent to your email address.",
             forgotCodeRequired: "Please enter the verification code.",
             forgotPasswordRequired: "Please enter your new password.",
@@ -107,6 +124,9 @@
             resetPasswordTitle: "Set Your New Password",
             resetPasswordDesc: "Your verification code has been entered. Now create your new password.",
             resetCodeAccepted: "Code entered. Now set your new password.",
+            forcePasswordTitle: "Set Your New Password",
+            forcePasswordDesc: "For your security, you need to change your temporary password.",
+            forcePasswordSuccess: "Your password has been updated.",
             resendAvailableIn: "Resend available in: {time}"
         }
     };
@@ -143,6 +163,7 @@
             emailInput: document.getElementById("reg-email"),
             passwordInput: document.getElementById("reg-pass"),
             confirmInput: document.getElementById("reg-pass-confirm"),
+            tokenInput: document.getElementById("reg-token"),
             tooltipEl: document.getElementById("register-password-tooltip"),
             errorBox: document.getElementById("register-error"),
             successBox: document.getElementById("register-success")
@@ -170,6 +191,8 @@
         return {
             titleEl: document.querySelector('#view-verify [data-key="verify_title"]'),
             descEl: document.querySelector('#view-verify [data-key="verify_desc"]'),
+            logoWrapper: document.getElementById("verify-logo-wrapper"),
+            headingWrapper: document.getElementById("verify-heading-wrapper"),
             codeGroup: document.getElementById("verify-code-group"),
             codeInput: document.getElementById("inp-verify-code"),
             resetFields: document.getElementById("verify-reset-fields"),
@@ -344,11 +367,12 @@
     }
 
     window.resetRegisterForm = function resetRegisterForm() {
-        const { nameInput, emailInput, passwordInput, confirmInput, tooltipEl } = getRegisterElements();
+        const { nameInput, emailInput, passwordInput, confirmInput, tokenInput, tooltipEl } = getRegisterElements();
         clearInputValue(nameInput);
         clearInputValue(emailInput);
         clearInputValue(passwordInput);
         clearInputValue(confirmInput);
+        clearInputValue(tokenInput);
         clearRegisterMessages();
         updatePasswordTooltip(tooltipEl, "", false);
     };
@@ -513,6 +537,8 @@
         const {
             titleEl,
             descEl,
+            logoWrapper,
+            headingWrapper,
             codeGroup,
             codeInput,
             resetFields,
@@ -528,48 +554,66 @@
 
         const isResetVerify = mode === "reset-verify";
         const isResetPassword = mode === "reset-password";
+        const isForcePasswordChange = mode === "force-password-change";
+        const isPasswordOnlyMode = isResetPassword || isForcePasswordChange;
+
+        if (logoWrapper) {
+            logoWrapper.classList.toggle("hidden", isForcePasswordChange);
+        }
+
+        if (headingWrapper) {
+            headingWrapper.classList.toggle("mt-8", isForcePasswordChange);
+        }
 
         if (titleEl) {
-            titleEl.textContent = isResetPassword
-                ? t("resetPasswordTitle")
-                : isResetVerify
-                    ? t("resetVerifyTitle")
-                    : (appCopy.verify_title || "Kodu Doğrula");
+            if (isForcePasswordChange) {
+                titleEl.textContent = t("forcePasswordTitle");
+            } else if (isResetPassword) {
+                titleEl.textContent = t("resetPasswordTitle");
+            } else if (isResetVerify) {
+                titleEl.textContent = t("resetVerifyTitle");
+            } else {
+                titleEl.textContent = appCopy.verify_title || "Kodu Doğrula";
+            }
         }
 
         if (descEl) {
-            descEl.textContent = isResetPassword
-                ? t("resetPasswordDesc")
-                : isResetVerify
-                    ? t("resetVerifyDesc")
-                    : (appCopy.verify_desc || "Lütfen doğrulama kodunu giriniz.");
+            if (isForcePasswordChange) {
+                descEl.textContent = t("forcePasswordDesc");
+            } else if (isResetPassword) {
+                descEl.textContent = t("resetPasswordDesc");
+            } else if (isResetVerify) {
+                descEl.textContent = t("resetVerifyDesc");
+            } else {
+                descEl.textContent = appCopy.verify_desc || "Lütfen doğrulama kodunu giriniz.";
+            }
         }
 
         if (resetFields) {
-            resetFields.classList.toggle("hidden", !isResetPassword);
+            resetFields.classList.toggle("hidden", !isPasswordOnlyMode);
         }
 
         if (codeGroup) {
-            codeGroup.classList.toggle("hidden", isResetPassword);
+            codeGroup.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (metaBox) {
-            metaBox.classList.toggle("hidden", isResetPassword);
+            metaBox.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (resendGroup) {
-            resendGroup.classList.toggle("hidden", isResetPassword);
+            resendGroup.classList.toggle("hidden", isPasswordOnlyMode);
         }
 
         if (codeInput) {
-            codeInput.readOnly = isResetPassword;
-            codeInput.classList.toggle("opacity-70", isResetPassword);
-            if (!isResetPassword) {
+            codeInput.readOnly = isPasswordOnlyMode;
+            codeInput.classList.toggle("opacity-70", isPasswordOnlyMode);
+            if (!isPasswordOnlyMode) {
                 codeInput.value = "";
             }
         }
 
-        if (!isResetPassword) {
+        if (!isPasswordOnlyMode) {
             if (passwordInput) passwordInput.value = "";
             if (confirmInput) confirmInput.value = "";
         }
@@ -583,7 +627,7 @@
         }
 
         if (submitLabel) {
-            submitLabel.textContent = isResetPassword
+            submitLabel.textContent = isPasswordOnlyMode
                 ? t("forgotSubmitConfirm")
                 : (appCopy.btn_verify || "ONAYLA");
         }
@@ -591,14 +635,26 @@
         if (backButton) {
             const pendingSignup = readPendingSignup();
             const backTarget = pendingSignup?.sourceView === "login" ? window.navToLogin : window.navToRegister;
-            backButton.onclick = isResetVerify || isResetPassword ? window.navToForgot : backTarget;
+            backButton.onclick = isForcePasswordChange
+                ? () => {
+                    clearPendingPasswordChange();
+                    window.navToLogin?.();
+                }
+                : isResetVerify || isResetPassword ? window.navToForgot : backTarget;
         }
-        updatePasswordTooltip(getVerifyFlowElements().tooltipEl, passwordInput?.value || "", isResetPassword && document.activeElement === passwordInput);
+        updatePasswordTooltip(getVerifyFlowElements().tooltipEl, passwordInput?.value || "", isPasswordOnlyMode && document.activeElement === passwordInput);
     }
 
     function syncVerifyFlowUI() {
+        const pendingPasswordChange = readPendingPasswordChange();
         const pendingReset = readPendingReset();
         const { codeInput } = getVerifyFlowElements();
+
+        if (pendingPasswordChange?.username && pendingPasswordChange?.session) {
+            setVerifyMode("force-password-change");
+            stopVerifyTimer();
+            return;
+        }
 
         if (pendingReset?.email && pendingReset?.stage === "set-password") {
             if (codeInput) codeInput.value = pendingReset.code || "";
@@ -635,6 +691,52 @@
 
     function clearJson(key) {
         sessionStorage.removeItem(key);
+    }
+
+    function getTabHeartbeatKey(tabSessionId) {
+        return `${TAB_HEARTBEAT_PREFIX}${tabSessionId}`;
+    }
+
+    function getOrCreateTabSessionId() {
+        const existing = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (existing) return existing;
+
+        const nextId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem(TAB_SESSION_KEY, nextId);
+        return nextId;
+    }
+
+    function touchTabHeartbeat() {
+        const tabSessionId = getOrCreateTabSessionId();
+        localStorage.setItem(getTabHeartbeatKey(tabSessionId), String(Date.now()));
+    }
+
+    function clearTabHeartbeat() {
+        const tabSessionId = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (tabSessionId) {
+            localStorage.removeItem(getTabHeartbeatKey(tabSessionId));
+        }
+        sessionStorage.removeItem(TAB_SESSION_KEY);
+    }
+
+    function isRestoredClosedBrowserSession() {
+        const session = readPersistedSession();
+        const tabSessionId = sessionStorage.getItem(TAB_SESSION_KEY);
+        if (!session?.tokens || !tabSessionId) return false;
+
+        const lastHeartbeat = Number(localStorage.getItem(getTabHeartbeatKey(tabSessionId)) || 0);
+        if (!Number.isFinite(lastHeartbeat) || lastHeartbeat <= 0) return true;
+
+        return (Date.now() - lastHeartbeat) > TAB_HEARTBEAT_STALE_MS;
+    }
+
+    function startTabHeartbeat() {
+        touchTabHeartbeat();
+        if (state.heartbeatIntervalId !== null) return;
+
+        state.heartbeatIntervalId = setInterval(() => {
+            touchTabHeartbeat();
+        }, TAB_HEARTBEAT_MS);
     }
 
     function persistSession(session) {
@@ -675,6 +777,18 @@
         renderVerifyMeta();
     }
 
+    function persistPendingPasswordChange(data) {
+        persistJson(PENDING_PASSWORD_CHANGE_KEY, data);
+    }
+
+    function readPendingPasswordChange() {
+        return readJson(PENDING_PASSWORD_CHANGE_KEY);
+    }
+
+    function clearPendingPasswordChange() {
+        clearJson(PENDING_PASSWORD_CHANGE_KEY);
+    }
+
     function getConfigFromWindow() {
         const incoming = window.COGNITO_CONFIG;
         return incoming && typeof incoming === "object" ? incoming : {};
@@ -705,6 +819,7 @@
         if (!email) return;
 
         clearPendingReset();
+        clearPendingPasswordChange();
         persistPendingSignup(withCodeTiming({ email, sourceView: "login" }));
         window.navToVerify?.();
         syncVerifyFlowUI();
@@ -739,8 +854,8 @@
         return json;
     }
 
-    async function syncRegisterProfile(payload) {
-        const response = await fetch(REGISTER_PROFILE_ENDPOINT, {
+    async function postToDashboardApi(endpoint, payload) {
+        const response = await fetch(endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -750,8 +865,14 @@
 
         const json = await response.json().catch(() => ({}));
         if (!response.ok || json?.ok === false) {
-            const detail = json?.error || json?.message || response.statusText;
-            throw new Error(detail || "Register profile sync failed");
+            const detail = json?.detail || json?.error || json?.message || response.statusText;
+            const error = new Error(detail || "Request failed");
+            error.name = json?.error || json?.code || `HTTP ${response.status}`;
+            error.code = json?.code || json?.error || "";
+            error.detail = json?.detail || "";
+            error.payload = json;
+            error.status = response.status;
+            throw error;
         }
 
         return json;
@@ -828,18 +949,29 @@
     function getAuthErrorMessage(error) {
         const message = error instanceof Error ? error.message : String(error);
         const name = error?.name || "";
+        const details = [
+            name,
+            message,
+            error?.code,
+            error?.detail,
+            error?.payload ? JSON.stringify(error.payload) : ""
+        ].filter(Boolean).join(" ");
 
-        if (/UserNotFound/i.test(name) || /UserNotFound/i.test(message)) return t("userNotFound");
-        if (/UsernameExists/i.test(name) || /UsernameExists/i.test(message)) return t("usernameExists");
-        if (/NotAuthorized/i.test(name) || /Incorrect username or password/i.test(message)) return t("notAuthorized");
-        if (/UserNotConfirmed/i.test(name) || /UserNotConfirmed/i.test(message)) return t("userNotConfirmed");
-        if (/PasswordResetRequired/i.test(name) || /PasswordResetRequired/i.test(message)) return t("passwordResetRequired");
-        if (/CodeMismatch/i.test(name) || /CodeMismatch/i.test(message)) return t("codeMismatch");
-        if (/ExpiredCode/i.test(name) || /ExpiredCode/i.test(message)) return t("expiredCode");
-        if (/LimitExceeded/i.test(name) || /TooManyRequests/i.test(name) || /Attempt limit exceeded/i.test(message)) return t("attemptLimitExceeded");
-        if (/InvalidPassword/i.test(name) || /InvalidPassword/i.test(message)) return t("invalidPassword");
-        if (/InvalidParameter/i.test(name) || /InvalidParameter/i.test(message)) return t("invalidParameter");
+        if (/UserNotFound/i.test(details)) return t("userNotFound");
+        if (/UsernameExists|User already exists|Cognito user already exists/i.test(details)) return t("usernameExists");
+        if (/NotAuthorized|Incorrect username or password/i.test(details)) return t("notAuthorized");
+        if (/UserNotConfirmed/i.test(details)) return t("userNotConfirmed");
+        if (/PasswordResetRequired/i.test(details)) return t("passwordResetRequired");
+        if (/CodeMismatch|Invalid verification code|Invalid code|invalid confirmation code|incorrect confirmation code/i.test(details)) return t("codeMismatch");
+        if (/ExpiredCode|expired verification code|verification code has expired|confirmation code has expired/i.test(details)) return t("expiredCode");
+        if (/LimitExceeded|TooManyRequests|Attempt limit exceeded/i.test(details)) return t("attemptLimitExceeded");
+        if (/Cannot reset password|registered\/verified email|verified email|verified phone|phone_number/i.test(details)) return t("forgotResetUnavailable");
+        if (/InvalidPassword/i.test(details)) return t("invalidPassword");
+        if (/InvalidParameter/i.test(details)) return t("invalidParameter");
+        if (/Invalid register token/i.test(details)) return t("registerInvalidToken");
+        if (/Internal server error/i.test(details)) return t("unexpectedError");
         if (/Network/i.test(message) || /Failed to fetch/i.test(message)) return t("networkError");
+        if (/HTTP 401|HTTP 403|UNAUTHORIZED|user_not_found|profile/i.test(message)) return t("userNotFound");
 
         return message || t("unexpectedError");
     }
@@ -851,6 +983,32 @@
             AuthParameters: {
                 USERNAME: username,
                 PASSWORD: password
+            }
+        });
+
+        if (result.ChallengeName) {
+            if (result.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+                return {
+                    challengeName: result.ChallengeName,
+                    session: result.Session,
+                    username: result.ChallengeParameters?.USER_ID_FOR_SRP || username
+                };
+            }
+
+            throw new Error(`Additional auth step required: ${result.ChallengeName}`);
+        }
+
+        return buildSessionFromAuthResult(result.AuthenticationResult, username);
+    }
+
+    async function respondToNewPasswordChallenge(username, newPassword, session) {
+        const result = await postToCognito("AWSCognitoIdentityProviderService.RespondToAuthChallenge", {
+            ChallengeName: "NEW_PASSWORD_REQUIRED",
+            ClientId: state.config.userPoolClientId,
+            Session: session,
+            ChallengeResponses: {
+                USERNAME: username,
+                NEW_PASSWORD: newPassword
             }
         });
 
@@ -878,46 +1036,69 @@
     }
 
     async function fetchUserFromAccessToken(accessToken, idToken, fallbackUser) {
-        if (!accessToken) return fallbackUser;
+        const baseUser = {
+            ...(fallbackUser || {}),
+            ...buildUserFromIdToken(idToken, fallbackUser?.username)
+        };
 
-        const result = await postToCognito("AWSCognitoIdentityProviderService.GetUser", {
-            AccessToken: accessToken
+        if (!idToken) return baseUser;
+
+        const response = await fetch(ME_ENDPOINT, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${idToken}`
+            }
         });
 
-        const attrs = Object.fromEntries((result.UserAttributes || []).map((item) => [item.Name, item.Value]));
-        const baseUser = buildUserFromIdToken(idToken, result.Username);
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const detail = json?.error || json?.message || response.statusText;
+            throw new Error(`HTTP ${response.status}: ${detail}`);
+        }
+
+        return normaliseInternalUser(json?.user || json, baseUser);
+    }
+
+    function normaliseInternalUser(user, fallbackUser = {}) {
+        const name = user.full_name || user.fullName || user.name || fallbackUser.name || user.email || fallbackUser.email || fallbackUser.username;
+        const status = user.role_name || user.role || user.company_name || user.companyName || (user.is_active === false ? "Pasif" : "Aktif");
 
         return {
-            ...baseUser,
-            name: attrs.name || attrs.email || baseUser.name,
-            email: attrs.email || baseUser.email
+            ...fallbackUser,
+            ...user,
+            id: user.id ?? fallbackUser.id ?? null,
+            companyId: user.company_id ?? user.companyId ?? fallbackUser.companyId ?? null,
+            roleId: user.role_id ?? user.roleId ?? fallbackUser.roleId ?? null,
+            cognitoSub: user.cognito_sub ?? user.cognitoSub ?? fallbackUser.cognitoSub ?? null,
+            fullName: user.full_name ?? user.fullName ?? name,
+            companyName: user.company_name ?? user.companyName ?? fallbackUser.companyName ?? null,
+            name: name || "--",
+            email: user.email ?? fallbackUser.email ?? null,
+            status
         };
     }
 
-    async function signUpUser(name, email, password) {
-        return postToCognito("AWSCognitoIdentityProviderService.SignUp", {
-            ClientId: state.config.userPoolClientId,
-            Username: email,
-            Password: password,
-            UserAttributes: [
-                { Name: "email", Value: email },
-                { Name: "name", Value: name }
-            ]
+    async function signUpUser(name, email, password, registerToken) {
+        return postToDashboardApi(REGISTER_START_ENDPOINT, {
+            full_name: name,
+            email,
+            password,
+            register_token: registerToken
         });
     }
 
-    async function confirmUserSignUp(email, code) {
-        return postToCognito("AWSCognitoIdentityProviderService.ConfirmSignUp", {
-            ClientId: state.config.userPoolClientId,
-            Username: email,
-            ConfirmationCode: code
+    async function confirmUserSignUp(email, code, registerToken) {
+        return postToDashboardApi(REGISTER_CONFIRM_ENDPOINT, {
+            email,
+            code,
+            register_token: registerToken || ""
         });
     }
 
-    async function resendConfirmation(email) {
-        return postToCognito("AWSCognitoIdentityProviderService.ResendConfirmationCode", {
-            ClientId: state.config.userPoolClientId,
-            Username: email
+    async function resendConfirmation(email, registerToken) {
+        return postToDashboardApi(REGISTER_RESEND_ENDPOINT, {
+            email,
+            register_token: registerToken || ""
         });
     }
 
@@ -1000,6 +1181,7 @@
         bindEnterSubmit(document.getElementById("reg-email"), () => window.handleRegister?.(registerButton));
         bindEnterSubmit(document.getElementById("reg-pass"), () => window.handleRegister?.(registerButton));
         bindEnterSubmit(document.getElementById("reg-pass-confirm"), () => window.handleRegister?.(registerButton));
+        bindEnterSubmit(document.getElementById("reg-token"), () => window.handleRegister?.(registerButton));
 
         bindEnterSubmit(document.getElementById("forgot-email"), () => window.handleForgotPass?.(forgotButton));
         bindEnterSubmit(document.getElementById("inp-verify-code"), () => window.handleVerify?.(verifyButton));
@@ -1019,11 +1201,21 @@
 
     window.initAuth = async function initAuth() {
         ensureInitialized();
+        startTabHeartbeat();
         return { ...state.config };
     };
 
     window.restoreSession = async function restoreSession() {
         ensureInitialized();
+
+        if (isRestoredClosedBrowserSession()) {
+            clearPersistedSession();
+            clearPendingSignup();
+            clearPendingReset();
+            clearPendingPasswordChange();
+            clearTabHeartbeat();
+            return null;
+        }
 
         const session = readPersistedSession();
         if (!session?.tokens) return null;
@@ -1072,6 +1264,20 @@
 
         try {
             const session = await signInWithPassword(username, password);
+
+            if (session?.challengeName === "NEW_PASSWORD_REQUIRED") {
+                clearPendingSignup();
+                clearPendingReset();
+                persistPendingPasswordChange({
+                    username: session.username || username,
+                    session: session.session
+                });
+                clearVerifyMessages();
+                window.navToVerify?.();
+                syncVerifyFlowUI();
+                return null;
+            }
+
             session.user = await fetchUserFromAccessToken(
                 session.tokens.accessToken,
                 session.tokens.idToken,
@@ -1097,8 +1303,10 @@
 
     window.handleLogout = async function handleLogout() {
         clearPersistedSession();
+        clearTabHeartbeat();
         clearPendingSignup();
         clearPendingReset();
+        clearPendingPasswordChange();
         localStorage.removeItem("selectedPlant");
         localStorage.removeItem("activeTab");
         clearLoginError();
@@ -1136,13 +1344,14 @@
         ensureInitialized();
         clearRegisterMessages();
 
-        const { nameInput, emailInput, passwordInput, confirmInput } = getRegisterElements();
+        const { nameInput, emailInput, passwordInput, confirmInput, tokenInput } = getRegisterElements();
         const name = nameInput?.value.trim() || "";
         const email = emailInput?.value.trim().toLowerCase() || "";
         const password = passwordInput?.value || "";
         const confirmPassword = confirmInput?.value || "";
+        const registerToken = tokenInput?.value.trim() || "";
 
-        if (!name || !email || !password || !confirmPassword) {
+        if (!name || !email || !password || !confirmPassword || !registerToken) {
             showRegisterError(t("registerRequired"));
             return null;
         }
@@ -1166,18 +1375,21 @@
         setButtonBusy(buttonEl, true);
 
         try {
-            const result = await signUpUser(name, email, password);
+            const result = await signUpUser(name, email, password, registerToken);
+            const cognitoSub = result?.UserSub || result?.user?.cognito_sub || result?.user?.cognitoSub || null;
+
             clearPendingReset();
             persistPendingSignup(withCodeTiming({
                 name,
                 email,
+                registerToken,
                 sourceView: "register",
-                cognitoSub: result?.UserSub || null
+                cognitoSub
             }));
             showRegisterSuccess(t("registerVerifySent"));
 
-            if (result?.UserSub) {
-                console.info("[Auth] Signup created:", result.UserSub);
+            if (cognitoSub) {
+                console.info("[Auth] Signup created:", cognitoSub);
             }
 
             window.navToVerify?.();
@@ -1197,7 +1409,57 @@
 
         const pendingSignup = readPendingSignup();
         const pendingReset = readPendingReset();
+        const pendingPasswordChange = readPendingPasswordChange();
         const code = (getVerifyElements().codeInput?.value || "").replace(/\D+/g, "").slice(0, 6);
+
+        if (pendingPasswordChange?.username && pendingPasswordChange?.session) {
+            const { passwordInput, confirmInput } = getVerifyFlowElements();
+            const password = passwordInput?.value || "";
+            const confirmPassword = confirmInput?.value || "";
+
+            if (!password || !confirmPassword) {
+                showVerifyError(t("forgotPasswordRequired"));
+                return null;
+            }
+
+            if (password !== confirmPassword) {
+                showVerifyError(t("forgotPasswordMismatch"));
+                return null;
+            }
+
+            if (!isPasswordPolicySatisfied(password)) {
+                showVerifyError(t("invalidPassword"));
+                updatePasswordTooltip(getVerifyFlowElements().tooltipEl, password, true);
+                return null;
+            }
+
+            setButtonBusy(buttonEl, true);
+
+            try {
+                const session = await respondToNewPasswordChallenge(
+                    pendingPasswordChange.username,
+                    password,
+                    pendingPasswordChange.session
+                );
+                session.user = await fetchUserFromAccessToken(
+                    session.tokens.accessToken,
+                    session.tokens.idToken,
+                    session.user
+                );
+
+                clearPendingPasswordChange();
+                persistSession(session);
+                syncUserToApp(session.user);
+                showVerifySuccess(t("forcePasswordSuccess"));
+                await window.navToSelection?.();
+                return session.user;
+            } catch (error) {
+                showVerifyError(getAuthErrorMessage(error));
+                return null;
+            } finally {
+                setButtonBusy(buttonEl, false);
+            }
+        }
 
         if (pendingReset?.email) {
             const { passwordInput, confirmInput } = getVerifyFlowElements();
@@ -1275,14 +1537,7 @@
         setButtonBusy(buttonEl, true);
 
         try {
-            const result = await confirmUserSignUp(pendingSignup.email, code);
-            if (pendingSignup.cognitoSub) {
-                await syncRegisterProfile({
-                    cognito_sub: pendingSignup.cognitoSub,
-                    email: pendingSignup.email,
-                    full_name: pendingSignup.name || ""
-                });
-            }
+            const result = await confirmUserSignUp(pendingSignup.email, code, pendingSignup.registerToken);
             clearPendingSignup();
             showVerifySuccess(t("verifySuccess"));
 
@@ -1295,10 +1550,8 @@
 
             return result;
         } catch (error) {
-            const message = /Register profile sync failed|cognito_sub is required|email is required/i.test(error?.message || "")
-                ? `${t("verifyProfileSyncFailed")} (${error.message})`
-                : getAuthErrorMessage(error);
-            showVerifyError(message);
+            const message = getAuthErrorMessage(error);
+            showVerifyError(message === t("unexpectedError") ? t("codeMismatch") : message);
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
@@ -1340,7 +1593,7 @@
         }
 
         try {
-            const result = await resendConfirmation(pendingSignup.email);
+            const result = await resendConfirmation(pendingSignup.email, pendingSignup.registerToken);
             persistPendingSignup(withCodeTiming({ ...pendingSignup }));
             syncVerifyFlowUI();
             showVerifySuccess(t("resendSuccess"));
@@ -1379,7 +1632,8 @@
             window.navToVerify?.();
             return result;
         } catch (error) {
-            showForgotError(getAuthErrorMessage(error));
+            const message = getAuthErrorMessage(error);
+            showForgotError(message === t("invalidParameter") ? t("forgotResetUnavailable") : message);
             return null;
         } finally {
             setButtonBusy(buttonEl, false);
@@ -1388,11 +1642,9 @@
 
     window.syncForgotPasswordUI = syncForgotPasswordUI;
     window.syncVerifyFlowUI = syncVerifyFlowUI;
+    window.clearPendingPasswordChange = clearPendingPasswordChange;
     syncForgotPasswordUI();
     syncVerifyFlowUI();
     setupEnterKeyHandlers();
     setupPasswordTooltips();
 })();
-
-
-

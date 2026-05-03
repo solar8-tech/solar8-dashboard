@@ -7,8 +7,12 @@ window.renderApp = function renderApp() {
 
     const ids = [
         "power-loading","chart-loading",
-        "val-power","val-daily","val-revenue",
+        "val-power","val-daily","val-revenue","val-base-price",
+        "power-normal-footer","power-compare-footer","power-device-warning",
+        "daily-normal-footer","daily-device-warning","daily-bar",
+        "system-status-dot","system-status-label",
         "val-risk-title","val-risk-desc","alert-msg","risk-bar",
+        "alert-analysis-btn",
         "val-rep-prod","val-rep-income","val-rep-carbon","val-rep-trees",
         "rep-collection-bar","rep-collection-pct",
         "t-eff","t-risk-dev","t-fault-panel","t-total-panels","t-detect"
@@ -19,34 +23,72 @@ window.renderApp = function renderApp() {
     el["power-loading"] && (el["power-loading"].style.display = "none");
     el["chart-loading"] && (el["chart-loading"].style.display = "none");
 
-    if (el["val-power"])   el["val-power"].innerText   = live.instantPower !== null ? live.instantPower.toLocaleString("tr-TR") : "--";
-    if (el["val-daily"])   el["val-daily"].innerText   = window.safe(live.dailyProduction);
-    if (el["val-revenue"]) el["val-revenue"].innerText = window.safe(live.revenue);
+    const isDeviceUnavailable = live.deviceActive === false || live.dataFreshness?.isActive === false;
+    const unavailableText = t.device_data_unavailable ?? "--";
+
+    _renderSystemDataStatus(el, isDeviceUnavailable, t);
+    _toggleMetricFooter(el["power-normal-footer"], !isDeviceUnavailable);
+    _toggleMetricFooter(el["power-compare-footer"], !isDeviceUnavailable);
+    _toggleMetricFooter(el["power-device-warning"], isDeviceUnavailable, unavailableText);
+    _toggleMetricFooter(el["daily-normal-footer"], !isDeviceUnavailable);
+    _toggleMetricFooter(el["daily-device-warning"], isDeviceUnavailable, unavailableText);
+
+    if (el["val-power"])   el["val-power"].innerText   = !isDeviceUnavailable && live.instantPower !== null ? live.instantPower.toLocaleString("tr-TR") : "--";
+    if (el["val-daily"])   el["val-daily"].innerText   = !isDeviceUnavailable ? window.safe(live.dailyProduction) : "--";
+    if (el["val-revenue"]) el["val-revenue"].innerText = !isDeviceUnavailable ? _formatWholeTl(live.revenue) : "--";
+    if (el["val-base-price"]) {
+        const isRevenueUnavailable = isDeviceUnavailable || live.revenue === null;
+        const fallbackText = t.card_base_price ?? "--";
+        const template = t.epias_based_price ?? fallbackText;
+        el["val-base-price"].innerText = isDeviceUnavailable
+            ? unavailableText
+            : (live.revenue === null ? (t.revenue_unavailable ?? fallbackText) : (live.basePriceLabel ? template.replace("%{price}", live.basePriceLabel) : fallbackText));
+        el["val-base-price"].classList.toggle("device-warning", isRevenueUnavailable);
+        el["val-base-price"].classList.toggle("text-[color:var(--txt-faint)]", !isRevenueUnavailable);
+        el["val-base-price"].classList.toggle("font-medium", isRevenueUnavailable);
+    }
 
     const riskTitleRaw = window.localise(live.riskTitle);
     const riskKeyMap   = { "Stabil": "data_stabil", "Stable": "data_stabil" };
-    if (el["val-risk-title"]) el["val-risk-title"].innerText = riskKeyMap[riskTitleRaw] ? t[riskKeyMap[riskTitleRaw]] : window.safe(riskTitleRaw);
-    if (el["val-risk-desc"])  el["val-risk-desc"].innerText  = window.safe(window.localise(live.riskDesc));
-    if (el["alert-msg"])      el["alert-msg"].innerText      = window.safe(window.localise(live.alertMsg));
+    if (el["val-risk-title"]) {
+        el["val-risk-title"].innerText = riskTitleRaw
+            ? (riskKeyMap[riskTitleRaw] ? t[riskKeyMap[riskTitleRaw]] : riskTitleRaw)
+            : "";
+    }
+    if (el["val-risk-desc"]) {
+        el["val-risk-desc"].innerText = window.localise(live.riskDesc) ?? "";
+    }
+    if (el["alert-msg"]) {
+        el["alert-msg"].innerText = window.localise(live.alertMsg) ?? "";
+    }
+    if (el["alert-analysis-btn"]) {
+        const hasAlertMessage = Boolean((window.localise(live.alertMsg) ?? "").trim());
+        el["alert-analysis-btn"].classList.toggle("hidden", !hasAlertMessage);
+    }
 
     if (el["risk-bar"] && typeof live.riskLevel === "number") {
-        el["risk-bar"].style.width = Math.min(live.riskLevel, 100) + "%";
+        el["risk-bar"].style.width = isDeviceUnavailable ? "0%" : Math.min(live.riskLevel, 100) + "%";
+    }
+    if (el["daily-bar"]) {
+        el["daily-bar"].style.width = isDeviceUnavailable ? "0%" : "65%";
     }
 
     if (el["val-rep-prod"]) {
-        el["val-rep-prod"].innerHTML = live.monthlyProduction !== null
+        el["val-rep-prod"].innerHTML = !isDeviceUnavailable && live.monthlyProduction !== null
             ? `${window.safe(live.monthlyProduction)} <span class="text-lg text-slate-500 font-normal">MWh</span>`
             : "--";
     }
-    if (el["val-rep-income"]) el["val-rep-income"].innerText = live.monthlyRevenue !== null ? `$${window.safe(live.monthlyRevenue)}` : "--";
+    if (el["val-rep-income"]) el["val-rep-income"].innerText = !isDeviceUnavailable && live.monthlyRevenue !== null ? _formatWholeTl(live.monthlyRevenue) : "--";
     if (el["val-rep-carbon"]) el["val-rep-carbon"].innerText = live.carbonOffset   !== null ? `${window.safe(live.carbonOffset)} Ton` : "--";
     if (el["val-rep-trees"])  el["val-rep-trees"].innerText  = live.treesEquivalent !== null ? `~${window.safe(live.treesEquivalent)}` : "--";
 
-    if (el["rep-collection-bar"] && live.collectionRate !== null) {
-        el["rep-collection-bar"].style.width = Math.min(live.collectionRate, 100) + "%";
+    if (el["rep-collection-bar"]) {
+        el["rep-collection-bar"].style.width = isDeviceUnavailable || live.collectionRate === null
+            ? "0%"
+            : Math.min(live.collectionRate, 100) + "%";
     }
-    if (el["rep-collection-pct"] && live.collectionRate !== null) {
-        el["rep-collection-pct"].innerText = `%${live.collectionRate}`;
+    if (el["rep-collection-pct"]) {
+        el["rep-collection-pct"].innerText = isDeviceUnavailable || live.collectionRate === null ? "%0" : `%${live.collectionRate}`;
     }
 
     // Twin metrikleri
@@ -62,17 +104,43 @@ window.renderApp = function renderApp() {
     window.generateFaultList(live.activeFaults);
 };
 
+function _renderSystemDataStatus(el, isDeviceUnavailable, t) {
+    const dot = el["system-status-dot"];
+    const label = el["system-status-label"];
+
+    if (dot) {
+        dot.classList.remove("bg-green-500", "bg-amber-400", "shadow-[0_0_10px_#22c55e]", "shadow-[0_0_10px_#f59e0b]", "animate-pulse");
+        dot.classList.add(isDeviceUnavailable ? "bg-amber-400" : "bg-green-500");
+        dot.classList.add(isDeviceUnavailable ? "shadow-[0_0_10px_#f59e0b]" : "shadow-[0_0_10px_#22c55e]");
+        dot.classList.toggle("animate-pulse", !isDeviceUnavailable);
+    }
+
+    if (label) {
+        label.innerText = isDeviceUnavailable
+            ? (t.system_data_unavailable ?? "--")
+            : (t.system_active ?? "--");
+    }
+}
+
+function _toggleMetricFooter(el, isVisible, text) {
+    if (!el) return;
+    if (text !== undefined) el.innerText = text;
+    el.classList.toggle("hidden", !isVisible);
+}
+
+function _formatWholeTl(value) {
+    if (value === null || value === undefined || value === "") return "--";
+    const parsed = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+    if (!Number.isFinite(parsed)) return String(value);
+    return Math.round(parsed).toLocaleString("tr-TR");
+}
+
 window.generatePredictiveList = function generatePredictiveList(list) {
     const container = document.getElementById("predictive-list-container");
     if (!container) return;
-    const t = window.TRANSLATIONS[window.App.lang];
 
     if (!Array.isArray(list) || list.length === 0) {
-        container.textContent = "";
-        const p = document.createElement("p");
-        p.className = "text-xs text-[color:var(--txt-faint)] p-4 font-medium";
-        p.textContent = t.no_predictions;
-        container.appendChild(p);
+        container.innerHTML = "";
         return;
     }
 
@@ -84,7 +152,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         const icon  = /^[\w-]+$/.test(item.icon ?? "") ? item.icon : "fa-circle-exclamation";
 
         const div = document.createElement("div");
-        // GÖRSELDEKİ STİL: Sol tarafa kalın şerit (border-l-[6px]) ve saydam cam efekti
+        // Visual style: thick left accent and glass background.
         div.className = `predict-item mb-5 p-5 rounded-2xl bg-[var(--surface-glass)] border border-[var(--surface-glass-bdr)] border-l-[6px] ${c.border.replace('border-', 'border-l-')} shadow-[var(--surface-glass-shd)] transition-all cursor-pointer group hover:translate-y-[-2px] backdrop-blur-md`;
 
         const header = document.createElement("div");
@@ -94,7 +162,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         iconEl.className = `fa-solid ${icon} ${c.text} text-sm`;
 
         const h4 = document.createElement("h4");
-        // Başlıklar görseldeki gibi tamamen büyük harf ve geniş aralıklı
+        // Headings stay uppercase with wide tracking.
         h4.className = "text-xs font-bold text-[color:var(--txt-strong)] uppercase tracking-widest";
         h4.textContent = title;
 
@@ -102,7 +170,7 @@ window.generatePredictiveList = function generatePredictiveList(list) {
         header.appendChild(h4);
 
         const p = document.createElement("p");
-        // Yazı kalınlığını font-medium yaparak okunaklılığı koruyoruz
+        // Medium weight keeps the copy readable.
         p.className = "text-xs text-[color:var(--txt-muted)] leading-relaxed font-medium";
         p.textContent = desc;
 
@@ -115,9 +183,12 @@ window.generatePredictiveList = function generatePredictiveList(list) {
 window.generateFaultList = function generateFaultList(list) {
     const container = document.getElementById("fault-list-container");
     if (!container) return;
-    const t = window.TRANSLATIONS[window.App.lang];
 
     container.innerHTML = "";
+    if (!Array.isArray(list) || list.length === 0) {
+        return;
+    }
+
     (list ?? []).forEach(item => {
         const colorKey = window.FAULT_COLOR_MAP[item.tagColor] ? item.tagColor : "orange";
         const c        = window.FAULT_COLOR_MAP[colorKey];

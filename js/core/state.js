@@ -4,10 +4,13 @@ window.App = {
     lang              : localStorage.getItem("appLang") || "tr",
     theme             : localStorage.getItem("theme") || "dark",
     isRefreshing      : false,
+    dashboardRequestSeq: 0,
+    dashboardPendingCount: 0,
     dashboardIntervalId: null,
-    weatherStarted    : false,
     weatherIntervalId : null,
+    weatherCoordsKey  : null,
     toastTimeout      : null,
+    epiasCache        : null,
 
     charts: {
         main       : null,
@@ -146,10 +149,94 @@ window.showToast = function showToast(messageKey, options = {}) {
     }, 4000);
 };
 
+window.notifyNoWorkOrderFault = function notifyNoWorkOrderFault() {
+    window.showToast("msg_work_order_no_fault", {
+        title: window.App.lang === "tr" ? "İş Emri Oluşturulamadı" : "Work Order Unavailable",
+        variant: "info",
+        iconClass: "fa-solid fa-hammer text-sky-400"
+    });
+};
+
+window.notifyReportDownloadUnavailable = function notifyReportDownloadUnavailable() {
+    window.showToast("msg_report_download_unavailable", {
+        title: window.App.lang === "tr" ? "Rapor İndirilemedi" : "Report Unavailable",
+        variant: "info",
+        iconClass: "fa-solid fa-download text-sky-400"
+    });
+};
+
 window.setLoadingState = function setLoadingState(isLoading) {
     Array.from(document.querySelectorAll(".skeleton-loader")).forEach(el => {
         isLoading ? el.classList.add("animate-pulse") : el.classList.remove("animate-pulse");
     });
+};
+
+window.resetDashboardView = function resetDashboardView() {
+    window.App.data.live = null;
+    window.App.data.reports = null;
+    window.App.data.history = null;
+
+    [
+        "val-power", "val-daily", "val-revenue", "val-base-price",
+        "val-risk-title", "val-risk-desc", "alert-msg",
+        "val-rep-prod", "val-rep-income", "val-rep-carbon", "val-rep-trees",
+        "w-city", "w-temp", "w-desc", "w-wind", "w-hum", "w-sunrise", "w-sunset"
+    ].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = id === "w-temp" ? "--°C" : "--";
+    });
+
+    const riskBar = document.getElementById("risk-bar");
+    if (riskBar) riskBar.style.width = "0%";
+
+    const collectionBar = document.getElementById("rep-collection-bar");
+    if (collectionBar) collectionBar.style.width = "0%";
+
+    const collectionPct = document.getElementById("rep-collection-pct");
+    if (collectionPct) collectionPct.innerText = "%0";
+
+    const impactText = document.getElementById("w-impact")?.querySelector("span");
+    if (impactText) impactText.innerText = "--";
+
+    const impactTooltip = document.getElementById("w-impact-tooltip");
+    if (impactTooltip) impactTooltip.innerText = "--";
+
+    const alertAnalysisBtn = document.getElementById("alert-analysis-btn");
+    if (alertAnalysisBtn) alertAnalysisBtn.classList.add("hidden");
+
+    ["power-device-warning", "daily-device-warning"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+    });
+
+    ["power-normal-footer", "power-compare-footer", "daily-normal-footer"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("hidden");
+    });
+
+    const basePriceEl = document.getElementById("val-base-price");
+    if (basePriceEl) {
+        basePriceEl.classList.remove("device-warning", "font-medium");
+        basePriceEl.classList.add("text-[color:var(--txt-faint)]");
+    }
+
+    const systemStatusDot = document.getElementById("system-status-dot");
+    if (systemStatusDot) {
+        systemStatusDot.classList.remove("bg-amber-400", "shadow-[0_0_10px_#f59e0b]");
+        systemStatusDot.classList.add("bg-green-500", "shadow-[0_0_10px_#22c55e]", "animate-pulse");
+    }
+
+    const systemStatusLabel = document.getElementById("system-status-label");
+    if (systemStatusLabel) {
+        const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
+        systemStatusLabel.innerText = t.system_active ?? "--";
+    }
+
+    const predictiveList = document.getElementById("predictive-list-container");
+    if (predictiveList) predictiveList.innerHTML = "";
+
+    const faultList = document.getElementById("fault-list-container");
+    if (faultList) faultList.innerHTML = "";
 };
 
 window.handleApiError = function handleApiError(context, error) {
@@ -158,6 +245,41 @@ window.handleApiError = function handleApiError(context, error) {
     if (msgEl) {
         const t = window.TRANSLATIONS?.[window.App.lang] ?? {};
         msgEl.innerText = t.error_data_source ?? "Veri kaynagina ulasilamiyor";
+    }
+
+    if (context === "dashboard-summary") {
+        const previous = window.App.data.live || {};
+        window.App.data.live = {
+            ...previous,
+            instantPower: null,
+            dailyProduction: null,
+            revenue: null,
+            monthlyProduction: null,
+            monthlyRevenue: null,
+            carbonOffset: null,
+            treesEquivalent: null,
+            collectionRate: null,
+            efficiency: null,
+            riskyDevices: null,
+            faultyPanels: null,
+            totalPanels: null,
+            detectTime: null,
+            riskLevel: 0,
+            deviceActive: false,
+            dataFreshness: {
+                isActive: false,
+                reason: "unavailable",
+                status: null,
+                lastSeenAt: null,
+                ageMs: null
+            },
+            hourlyLabels: previous.hourlyLabels ?? [],
+            hourlyData: previous.hourlyData ?? [],
+            predictions: previous.predictions ?? [],
+            activeFaults: previous.activeFaults ?? [],
+            projection: previous.projection ?? { labels: [], p50: [], p10: [] }
+        };
+        window.renderApp?.();
     }
 };
 

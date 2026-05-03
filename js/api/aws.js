@@ -1,61 +1,131 @@
-const API_BASE = "https://0uxb8wh1x8.execute-api.eu-central-1.amazonaws.com/dev";
-const LIVE_REFRESH_MS = 5000;
+const API_BASE = "https://o66ehjhmy5.execute-api.eu-central-1.amazonaws.com/prod";
+const DASHBOARD_REFRESH_MS = 30000;
+const DEVICE_DATA_STALE_MS = 4 * 60 * 1000;
+const AUTH_STORAGE_KEY = "solar8.auth.session";
+const DEVICE_FRESHNESS_STORAGE_PREFIX = "solar8.deviceFreshness";
+const EPIAS_BASE_URL = "https://jf9xwpexhf.execute-api.eu-central-1.amazonaws.com/epias";
+const EPIAS_CACHE_MS = 5 * 60 * 1000;
 
 const ENDPOINTS = {
-    live: `${API_BASE}/live`
+    me: `${API_BASE}/me`,
+    sites: `${API_BASE}/sites`,
+    dashboardSummary: (siteId) => `${API_BASE}/sites/${encodeURIComponent(siteId)}/dashboard-summary`
 };
 
 async function _apiFetch(url, options = {}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const token = _getIdToken();
+    const shouldAttachAuth = options.attachAuth ?? url.startsWith(API_BASE);
 
     try {
         const res = await fetch(url, {
             method: "GET",
             signal: controller.signal,
-            ...options
+            ...options,
+            headers: {
+                ...(shouldAttachAuth && token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(options.headers || {})
+            }
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        return await res.json();
+        const body = await res.json().catch(() => null);
+
+        if (!res.ok) {
+            const detail = body?.error || body?.message || res.statusText;
+            throw new Error(`HTTP ${res.status}: ${detail}`);
+        }
+
+        return _unwrapPayload(body);
     } finally {
         clearTimeout(timeout);
     }
 }
 
+window.fetchCurrentUser = async function fetchCurrentUser() {
+    const json = await _apiFetch(ENDPOINTS.me);
+    const user = _normaliseUser(json?.user || json);
+
+    window.App.data.context.user = {
+        ...(window.App.data.context.user || {}),
+        ...user
+    };
+
+    _setText("user-name", user.name || "--");
+    _setText("user-status", user.status || "--");
+
+    return user;
+};
+
+window.fetchPlants = async function fetchPlants() {
+    try {
+        if (!window.App.data.context.user?.id) {
+            await window.fetchCurrentUser?.();
+        }
+
+        const json = await _apiFetch(ENDPOINTS.sites);
+        const plants = _normaliseSites(json?.sites || []);
+        window.App.data.plants = plants;
+
+        const selectedPlant = _pickSelectedPlant(plants);
+        if (selectedPlant?.id !== undefined) {
+            window.App.data.context.plant = selectedPlant;
+        }
+
+        _renderContextHeader();
+        window.renderPlantList?.();
+        return plants;
+    } catch (err) {
+        window.handleApiError("sites", err);
+        _renderPlantLoadError(err);
+        return [];
+    }
+};
+
 window.fetchDashboardFromAWS = async function fetchDashboardFromAWS() {
-    if (window.App.isRefreshing) return;
+    const siteId = _getSelectedSiteId();
+    if (siteId === null) {
+        await window.fetchPlants?.();
+        return;
+    }
+
+    const requestId = ++window.App.dashboardRequestSeq;
+    const requestedSiteId = String(siteId);
+    window.App.dashboardPendingCount += 1;
     window.App.isRefreshing = true;
     window.setLoadingState?.(true);
 
     try {
-        const json = await _apiFetch(ENDPOINTS.live);
-        _mapLivePayload(json);
+        const [json, epias] = await Promise.all([
+            _apiFetch(ENDPOINTS.dashboardSummary(siteId)),
+            _fetchEpiasBasePrice()
+        ]);
 
-        _setText("user-name", window.App.data.context.user?.name ?? "--");
-        _setText("user-status", window.App.data.context.user?.status ?? "--");
+        const activeSiteId = String(_getSelectedSiteId() ?? "");
+        if (requestId !== window.App.dashboardRequestSeq || activeSiteId !== requestedSiteId) {
+            return;
+        }
 
-        const pName = window.App.data.context.plant?.name;
-        _setText("plant-title", typeof pName === "object"
-            ? (pName[window.App.lang] || pName.tr || "--")
-            : (pName ?? "--"));
+        _mapDashboardSummaryPayload(json);
+        _applyEpiasBasePrice(epias);
 
+        _renderContextHeader();
         window.renderApp?.();
-        window.renderPlantList?.();
 
         if (localStorage.getItem("activeTab") === "dashboard") {
             window.initCharts?.();
         }
     } catch (err) {
-        window.handleApiError("live", err);
+        if (requestId === window.App.dashboardRequestSeq) {
+            window.handleApiError("dashboard-summary", err);
+        }
     } finally {
-        window.App.isRefreshing = false;
-        window.setLoadingState?.(false);
+        window.App.dashboardPendingCount = Math.max(0, window.App.dashboardPendingCount - 1);
+        if (window.App.dashboardPendingCount === 0) {
+            window.App.isRefreshing = false;
+            window.setLoadingState?.(false);
+        }
     }
-};
-
-window.fetchPlants = async function fetchPlants() {
-    await window.fetchDashboardFromAWS?.();
 };
 
 window.fetchReports = async function fetchReports() {
@@ -76,7 +146,7 @@ window.startDashboardRefresh = function startDashboardRefresh() {
 
     window.App.dashboardIntervalId = setInterval(() => {
         window.fetchDashboardFromAWS?.();
-    }, LIVE_REFRESH_MS);
+    }, DASHBOARD_REFRESH_MS);
 };
 
 window.stopDashboardRefresh = function stopDashboardRefresh() {
@@ -85,147 +155,588 @@ window.stopDashboardRefresh = function stopDashboardRefresh() {
     window.App.dashboardIntervalId = null;
 };
 
-function _mapLivePayload(api) {
+function _mapDashboardSummaryPayload(api) {
     if (!api || typeof api !== "object") {
-        console.warn("[API:live] Beklenmeyen yanit formati:", api);
+        console.warn("[API:dashboard-summary] Beklenmeyen yanit formati:", api);
         return;
     }
 
-    const toCoord = (value) => {
-        const parsed = parseFloat(value);
-        return Number.isFinite(parsed) ? parsed : null;
+    const currentPlant = window.App.data.context.plant || {};
+    const apiSite = api.site ? _normaliseSite(api.site) : null;
+    const selectedPlant = {
+        ...currentPlant,
+        ...(apiSite || {})
     };
 
-    const plants = _normalisePlants(api, toCoord);
-    const selectedPlant = _pickSelectedPlant(plants);
-    const liveSource = _pickLiveSource(api, selectedPlant);
+    if (!Number.isFinite(selectedPlant.lat) && Number.isFinite(currentPlant.lat)) {
+        selectedPlant.lat = currentPlant.lat;
+    }
+    if (!Number.isFinite(selectedPlant.lon) && Number.isFinite(currentPlant.lon)) {
+        selectedPlant.lon = currentPlant.lon;
+    }
 
-    window.App.data.plants = plants;
-    window.App.data.context = {
-        user: {
-            name: api.user?.name ?? api.userName ?? window.App.data.context.user?.name ?? null,
-            status: api.user?.status ?? api.userStatus ?? window.App.data.context.user?.status ?? null
-        },
-        plant: selectedPlant
-    };
+    if (selectedPlant?.id !== undefined) {
+        window.App.data.context.plant = selectedPlant;
+        localStorage.setItem("selectedPlant", JSON.stringify(selectedPlant));
+    }
+
+    const cards = api.cards || api.summary || api.dashboard || api.metrics || api;
+    const instantPowerKw = _number(cards.instant_power_kw ?? cards.instantPowerKw);
+    const instantPowerMw = _number(cards.instant_power_mw ?? cards.instantPowerMw);
+    const instantPowerW = _number(cards.instant_power_w ?? cards.instantPowerW);
+    const dailyProductionMwh = _number(cards.daily_production_mwh ?? cards.dailyProductionMwh);
+    const dailyProductionKwh = _number(cards.daily_production_kwh ?? cards.dailyProductionKwh);
+    const revenue = _number(
+        cards.daily_revenue_try ??
+        cards.dailyRevenueTry ??
+        cards.daily_revenue_tl ??
+        cards.dailyRevenueTl ??
+        cards.daily_revenue ??
+        cards.dailyRevenue ??
+        cards.revenue
+    );
+    const activeFaultCount = _number(cards.active_fault_count ?? cards.activeFaultCount) || 0;
+    const apiRiskTitle = _pickLocalizedValue(
+        cards.risk_title ?? cards.riskTitle ?? api.risk_title ?? api.riskTitle
+    );
+    const apiRiskDesc = _pickLocalizedValue(
+        cards.risk_desc ?? cards.riskDesc ?? api.risk_desc ?? api.riskDesc
+    );
+    const apiAlertMsg = _pickLocalizedValue(
+        cards.alert_message ??
+        cards.alertMessage ??
+        cards.alert_msg ??
+        cards.alertMsg ??
+        api.alert_message ??
+        api.alertMessage ??
+        api.alert_msg ??
+        api.alertMsg
+    );
+
+    const instantPower = instantPowerKw ?? (instantPowerW !== null ? instantPowerW / 1000 : (instantPowerMw !== null ? instantPowerMw * 1000 : null));
+    const dailyProduction = dailyProductionKwh ?? (dailyProductionMwh !== null ? dailyProductionMwh * 1000 : null);
+    const basePrice = _toFiniteNumber(
+        cards.base_price ??
+        cards.basePrice ??
+        cards.epias_ptf ??
+        cards.epiasPtf
+    );
+    const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
+    const deviceMetricSignature = _buildDeviceMetricSignature({ instantPower, dailyProduction, revenue });
+    const dataFreshness = _resolveDataFreshness(api, cards, deviceMetricSignature);
 
     window.App.data.live = {
-        instantPower: liveSource.instantPower ?? api.instantPower ?? null,
-        dailyProduction: liveSource.dailyProduction ?? api.dailyProduction ?? null,
-        revenue: liveSource.revenue ?? api.revenue ?? null,
-        hourlyLabels: Array.isArray(liveSource.hourlyLabels) ? liveSource.hourlyLabels : [],
-        hourlyData: Array.isArray(liveSource.hourlyData) ? liveSource.hourlyData : [],
-        riskTitle: liveSource.riskTitle ?? null,
-        riskLevel: typeof liveSource.riskLevel === "number" ? liveSource.riskLevel : 0,
-        riskDesc: liveSource.riskDesc ?? null,
-        alertMsg: liveSource.alertMsg ?? null,
-        monthlyProduction: liveSource.monthlyProduction ?? null,
-        monthlyRevenue: liveSource.monthlyRevenue ?? null,
-        carbonOffset: liveSource.carbonOffset ?? null,
-        collectionRate: liveSource.collectionRate ?? null,
-        treesEquivalent: liveSource.treesEquivalent ?? null,
-        efficiency: liveSource.efficiency ?? api.efficiency ?? null,
-        riskyDevices: liveSource.riskyDevices ?? null,
-        faultyPanels: liveSource.faultyPanels ?? null,
-        totalPanels: liveSource.totalPanels ?? null,
-        detectTime: liveSource.detectTime ?? null,
-        predictions: Array.isArray(liveSource.predictions) ? liveSource.predictions : [],
-        activeFaults: Array.isArray(liveSource.activeFaults) ? liveSource.activeFaults : [],
-        projection: liveSource.projection ?? { labels: [], p50: [], p10: [] }
+        instantPower,
+        dailyProduction,
+        revenue,
+        deviceActive: dataFreshness.isActive,
+        dataFreshness,
+        basePrice,
+        basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
+        hourlyLabels: [],
+        hourlyData: [],
+        riskTitle: apiRiskTitle ?? { tr: "Stabil", en: "Stable" },
+        riskLevel: activeFaultCount > 0 ? Math.min(activeFaultCount * 20, 100) : 0,
+        riskDesc: apiRiskDesc ?? { tr: "Aktif arıza kaydı bulunmuyor.", en: "No active fault records." },
+        alertMsg: apiAlertMsg ?? { tr: "Santral için kritik alarm bulunmuyor.", en: "No critical alarm for this site." },
+        monthlyProduction: _number(cards.monthly_production_mwh ?? cards.monthlyProductionMwh),
+        monthlyRevenue: _number(cards.monthly_revenue_try ?? cards.monthlyRevenueTry ?? cards.monthly_revenue ?? cards.monthlyRevenue),
+        carbonOffset: _number(cards.carbon_offset ?? cards.carbonOffset),
+        collectionRate: _number(cards.collection_rate ?? cards.collectionRate),
+        treesEquivalent: _number(cards.trees_equivalent ?? cards.treesEquivalent),
+        efficiency: _number(cards.efficiency ?? api.efficiency),
+        riskyDevices: _number(cards.risky_devices ?? cards.riskyDevices),
+        faultyPanels: activeFaultCount,
+        totalPanels: _number(cards.total_panels ?? cards.totalPanels),
+        detectTime: _number(cards.detect_time ?? cards.detectTime),
+        predictions: Array.isArray(api.predictions) ? api.predictions : [],
+        activeFaults: Array.isArray(api.activeFaults) ? api.activeFaults : [],
+        projection: api.projection ?? { labels: [], p50: [], p10: [] }
     };
 
-    window.App.data.reports = _normaliseReports(api, selectedPlant);
-    window.App.data.history = _normaliseHistory(api, selectedPlant);
+    window.App.data.reports = api.reports ?? window.App.data.reports ?? null;
+    window.App.data.history = api.history ?? api.activeFaults ?? window.App.data.history ?? [];
 
-    if (!window.App.weatherStarted) {
-        const { lat, lon } = window.App.data.context.plant;
-        if (lat !== null && lon !== null) {
-            window.startWeatherRefresh?.();
-            window.App.weatherStarted = true;
+    window.syncWeatherToActivePlant?.();
+}
+
+function _normaliseSites(sites) {
+    return (Array.isArray(sites) ? sites : []).map(_normaliseSite);
+}
+
+function _unwrapPayload(payload) {
+    if (!payload || typeof payload !== "object") return payload;
+
+    if (typeof payload.body === "string") {
+        try {
+            return JSON.parse(payload.body);
+        } catch {
+            return payload;
         }
     }
+
+    return payload;
 }
 
-function _normalisePlants(api, toCoord) {
-    const rawPlants = [
-        ...(Array.isArray(api.plants) ? api.plants : []),
-        ...(Array.isArray(api.live?.plants) ? api.live.plants : []),
-        ...(Array.isArray(api.data?.plants) ? api.data.plants : [])
-    ];
+function _pickLocalizedValue(value) {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "object") {
+        const tr = _cleanText(value.tr);
+        const en = _cleanText(value.en);
+        if (tr || en) return { tr: tr ?? en, en: en ?? tr };
+        return null;
+    }
 
-    const plants = rawPlants.map((plant, index) => {
-        const lat = toCoord(plant.lat ?? plant.latitude ?? plant.coords?.[0] ?? plant.location?.lat);
-        const lon = toCoord(plant.lon ?? plant.lng ?? plant.longitude ?? plant.coords?.[1] ?? plant.location?.lon ?? plant.location?.lng);
-
-        return {
-            ...plant,
-            id: plant.id ?? plant.plantId ?? index,
-            name: plant.name ?? plant.plantName ?? plant.title ?? `Plant ${index + 1}`,
-            city: plant.city ?? plant.location?.city ?? null,
-            lat,
-            lon,
-            capacity: plant.capacity ?? plant.capacityMw ?? plant.installedPower ?? null,
-            inverters: plant.inverters ?? plant.inverterCount ?? null
-        };
-    }).filter((plant) => Number.isFinite(plant.lat) && Number.isFinite(plant.lon));
-
-    if (plants.length > 0) return plants;
-
-    const fallbackPlant = {
-        id: api.plant?.id ?? api.plantId ?? window.App.data.context.plant?.id ?? "live",
-        name: api.plant?.name ?? api.plantName ?? window.App.data.context.plant?.name ?? null,
-        city: api.plant?.city ?? api.city ?? window.App.data.context.plant?.city ?? null,
-        lat: toCoord(api.plant?.lat ?? api.lat ?? window.App.data.context.plant?.lat),
-        lon: toCoord(api.plant?.lon ?? api.lng ?? api.lon ?? window.App.data.context.plant?.lon)
-    };
-
-    return Number.isFinite(fallbackPlant.lat) && Number.isFinite(fallbackPlant.lon) ? [fallbackPlant] : [];
+    const cleaned = _cleanText(value);
+    return cleaned ? { tr: cleaned, en: cleaned } : null;
 }
 
-function _pickSelectedPlant(plants) {
-    const current = window.App.data.context.plant ?? {};
-    const currentName = _plantName(current.name);
+function _cleanText(value) {
+    if (value === null || value === undefined) return null;
+    const text = String(value).trim();
+    return text ? text : null;
+}
 
-    const selected = plants.find((plant) =>
-        (current.id !== undefined && plant.id === current.id) ||
-        (currentName && _plantName(plant.name) === currentName) ||
-        (Number.isFinite(current.lat) && Number.isFinite(current.lon) && plant.lat === current.lat && plant.lon === current.lon)
+function _normaliseSite(site, index = 0) {
+    const capacityKwp = _number(site.installed_capacity_kwp ?? site.installedCapacityKwp);
+    const capacityW = _number(site.installed_capacity_w ?? site.installedCapacityW);
+    const capacityMw = _number(site.capacity ?? site.capacityMw);
+    const lat = _number(
+        site.latitude ??
+        site.lat ??
+        site.site_latitude ??
+        site.siteLatitude ??
+        site.coordinate_latitude ??
+        site.coordinateLatitude ??
+        site.location_lat ??
+        site.locationLat ??
+        site.coords?.lat ??
+        site.coordinates?.lat ??
+        site.coordinates?.latitude
+    );
+    const lon = _number(
+        site.longitude ??
+        site.lon ??
+        site.lng ??
+        site.site_longitude ??
+        site.siteLongitude ??
+        site.coordinate_longitude ??
+        site.coordinateLongitude ??
+        site.location_lon ??
+        site.locationLon ??
+        site.location_lng ??
+        site.locationLng ??
+        site.coords?.lon ??
+        site.coords?.lng ??
+        site.coordinates?.lon ??
+        site.coordinates?.lng ??
+        site.coordinates?.longitude
     );
 
     return {
-        ...(plants[0] ?? {}),
-        ...current,
-        ...(selected ?? plants[0] ?? {})
+        ...site,
+        id: site.site_id ?? site.siteId ?? site.id ?? index,
+        siteId: site.site_id ?? site.siteId ?? site.id ?? index,
+        siteUuid: site.site_uuid ?? site.siteUuid ?? null,
+        siteCodePrefix: site.site_code_prefix ?? site.siteCodePrefix ?? null,
+        name: site.name ?? site.title ?? `Plant ${index + 1}`,
+        city: site.city ?? null,
+        address: site.address ?? null,
+        timezone: site.timezone ?? null,
+        status: site.status ?? null,
+        lat,
+        lon,
+        capacity: capacityMw ?? (capacityKwp !== null ? capacityKwp / 1000 : (capacityW !== null ? capacityW / 1000000 : null))
     };
 }
 
-function _pickLiveSource(api, selectedPlant) {
-    const currentName = _plantName(selectedPlant?.name);
-    const namedPlantPayload = (Array.isArray(api.plants) ? api.plants : []).find((plant) =>
-        _plantName(plant?.name ?? plant?.plantName) === currentName
+function _normaliseUser(user) {
+    const name = user.full_name || user.fullName || user.name || user.email || "--";
+    const status = user.role_name || user.role || user.company_name || user.companyName || (user.is_active === false ? "Pasif" : "Aktif");
+
+    return {
+        ...user,
+        id: user.id ?? null,
+        companyId: user.company_id ?? user.companyId ?? null,
+        roleId: user.role_id ?? user.roleId ?? null,
+        cognitoSub: user.cognito_sub ?? user.cognitoSub ?? null,
+        fullName: user.full_name ?? user.fullName ?? name,
+        companyName: user.company_name ?? user.companyName ?? null,
+        name,
+        email: user.email ?? null,
+        status
+    };
+}
+
+function _pickSelectedPlant(plants) {
+    const current = window.App.data.context.plant || {};
+    const selected = plants.find((plant) =>
+        String(plant.id) === String(current.id) ||
+        String(plant.siteId) === String(current.siteId) ||
+        String(plant.siteCodePrefix || "") === String(current.siteCodePrefix || "")
     );
 
-    return namedPlantPayload ?? api.live ?? api.dashboard ?? api.metrics ?? api;
+    return selected || plants[0] || null;
 }
 
-function _normaliseReports(api, selectedPlant) {
-    if (api.reports && typeof api.reports === "object" && !Array.isArray(api.reports)) return api.reports;
-    if (selectedPlant?.reports && typeof selectedPlant.reports === "object") return selectedPlant.reports;
-    return window.App.data.reports ?? null;
+function _getSelectedSiteId() {
+    const plant = window.App.data.context.plant || {};
+    const siteId = plant.siteId ?? plant.site_id ?? plant.id;
+    return siteId === undefined || siteId === null || siteId === "" ? null : siteId;
 }
 
-function _normaliseHistory(api, selectedPlant) {
-    if (Array.isArray(api.history)) return api.history;
-    if (Array.isArray(selectedPlant?.history)) return selectedPlant.history;
-    if (Array.isArray(api.activeFaults)) return api.activeFaults;
-    return window.App.data.history ?? [];
+function _getIdToken() {
+    const session = _readAuthSession();
+    return session?.tokens?.idToken || null;
 }
 
-function _plantName(value) {
-    return String(window.localise(value) ?? value ?? "").trim().toLowerCase();
+function _readAuthSession() {
+    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function _number(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _resolveDataFreshness(api, cards, deviceMetricSignature) {
+    const timestampValue = _pickFirstPresent([
+        api.measured_at,
+        api.measuredAt,
+        api.timestamp_utc,
+        api.telemetry_timestamp_utc,
+        api.last_data_timestamp_utc,
+        api.last_seen_at,
+        api.inverter_telemetry_data?.meta?.timestamp_utc,
+        api.telemetry?.timestamp_utc,
+        api.telemetry?.last_seen_at,
+        cards.measured_at,
+        cards.measuredAt,
+        cards.timestamp_utc,
+        cards.telemetry_timestamp_utc,
+        cards.last_data_timestamp_utc,
+        cards.last_seen_at,
+        cards.inverter_telemetry_data?.meta?.timestamp_utc,
+        cards.telemetry?.timestamp_utc,
+        cards.telemetry?.last_seen_at
+    ]);
+
+    const telemetryOk = _pickFirstPresent([
+        api.telemetry?.is_data_read_successful,
+        api.http?.is_last_http_send_successful,
+        api.network?.is_connected,
+        api.wifi?.is_wifi_connected
+    ]);
+
+    const signatureFreshness = _resolveMetricSignatureFreshness(deviceMetricSignature);
+    const lastSeenAt = _parseApiTimestamp(timestampValue);
+    const ageMs = lastSeenAt ? Date.now() - lastSeenAt.getTime() : null;
+    const isStale = Number.isFinite(ageMs) && ageMs > DEVICE_DATA_STALE_MS;
+
+    if (isStale) {
+        return { isActive: false, reason: "stale", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (timestampValue !== undefined && timestampValue !== null && timestampValue !== "" && !lastSeenAt) {
+        return { isActive: false, reason: "invalid_timestamp", telemetryOk: telemetryOk ?? null, lastSeenAt: null, rawTimestamp: timestampValue, ageMs: null };
+    }
+
+    if (lastSeenAt) {
+        return { isActive: true, reason: "fresh", telemetryOk: telemetryOk ?? null, lastSeenAt: lastSeenAt.toISOString(), rawTimestamp: timestampValue ?? null, ageMs };
+    }
+
+    if (signatureFreshness && signatureFreshness.ageMs > DEVICE_DATA_STALE_MS) {
+        return {
+            isActive: false,
+            reason: "stale",
+            staleSource: "unchanged_metrics",
+            telemetryOk: telemetryOk ?? null,
+            lastSeenAt: null,
+            rawTimestamp: null,
+            ageMs: signatureFreshness.ageMs,
+            signatureFirstSeenAt: new Date(signatureFreshness.firstSeenAt).toISOString()
+        };
+    }
+
+    return {
+        isActive: true,
+        reason: "missing_timestamp",
+        telemetryOk: telemetryOk ?? null,
+        lastSeenAt: null,
+        rawTimestamp: null,
+        ageMs: signatureFreshness?.ageMs ?? null,
+        signatureFirstSeenAt: signatureFreshness ? new Date(signatureFreshness.firstSeenAt).toISOString() : null
+    };
+}
+
+function _pickFirstPresent(values) {
+    return values.find((value) => value !== null && value !== undefined && value !== "");
+}
+
+function _buildDeviceMetricSignature(metrics) {
+    const parts = [
+        metrics.instantPower,
+        metrics.dailyProduction,
+        metrics.revenue
+    ].map((value) => Number.isFinite(value) ? Number(value).toFixed(6) : "null");
+
+    return parts.every((part) => part === "null") ? null : parts.join("|");
+}
+
+function _resolveMetricSignatureFreshness(signature) {
+    if (!signature) return null;
+
+    const key = _getMetricSignatureStorageKey();
+    if (!key) return null;
+
+    const now = Date.now();
+    const stored = _readMetricSignatureState(key);
+
+    if (!stored || stored.signature !== signature || !Number.isFinite(stored.firstSeenAt)) {
+        const nextState = { signature, firstSeenAt: now };
+        _writeMetricSignatureState(key, nextState);
+        return { ...nextState, ageMs: 0 };
+    }
+
+    return {
+        signature,
+        firstSeenAt: stored.firstSeenAt,
+        ageMs: Math.max(0, now - stored.firstSeenAt)
+    };
+}
+
+function _getMetricSignatureStorageKey() {
+    const siteId = _getSelectedSiteId();
+    if (siteId === null) return null;
+    return `${DEVICE_FRESHNESS_STORAGE_PREFIX}.${String(siteId)}`;
+}
+
+function _readMetricSignatureState(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        const firstSeenAt = Number(parsed?.firstSeenAt);
+        if (!parsed?.signature || !Number.isFinite(firstSeenAt)) return null;
+
+        return { signature: String(parsed.signature), firstSeenAt };
+    } catch {
+        return null;
+    }
+}
+
+function _writeMetricSignatureState(key, state) {
+    try {
+        localStorage.setItem(key, JSON.stringify(state));
+    } catch {
+        // Storage is best-effort; timestamp-based freshness still works without it.
+    }
+}
+
+function _parseApiTimestamp(value) {
+    if (value === null || value === undefined || value === "") return null;
+
+    const text = String(value).trim();
+    const date = new Date(text);
+    return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function _renderContextHeader() {
+    const user = window.App.data.context.user || {};
+    const plant = window.App.data.context.plant || {};
+
+    _setText("user-name", user.name || user.fullName || user.email || "--");
+    _setText("user-status", user.status || "--");
+    _setText("plant-title", window.localise(plant.name) || plant.name || "--");
+}
+
+window.renderContextHeader = _renderContextHeader;
+
+function _renderPlantLoadError(error) {
+    console.error("[API:sites]", error);
+    window.App.data.plants = [];
+
+    const container = document.getElementById("plant-list-container");
+    if (!container) return;
+
+    const t = window.TRANSLATIONS?.[window.App.lang] || {};
+    container.innerHTML = `
+        <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-red-300 leading-relaxed">
+            ${t.error_data_source || "Veri kaynagina ulasilamiyor"}
+        </div>
+    `;
 }
 
 function _setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
+}
+
+async function _fetchEpiasBasePrice() {
+    const cached = window.App.epiasCache;
+    if (cached?.fetchedAt && Date.now() - cached.fetchedAt < EPIAS_CACHE_MS) {
+        return cached.data;
+    }
+
+    const payloads = [_buildEpiasPayload(0), _buildEpiasPayload(-1)];
+
+    try {
+        let data = null;
+        let lastError = null;
+
+        for (const payload of payloads) {
+            try {
+                data = await _apiFetch(EPIAS_BASE_URL, {
+                    method: "POST",
+                    attachAuth: false,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                break;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+
+        if (!data) throw lastError || new Error("EPİAŞ verisi alınamadı");
+
+        const parsed = _normaliseEpiasResponse(data);
+        window.App.epiasCache = { fetchedAt: Date.now(), data: parsed };
+        return parsed;
+    } catch (error) {
+        console.warn("[API:epias]", error);
+        return cached?.data ?? null;
+    }
+}
+
+function _buildEpiasPayload(offsetDays = 0) {
+    const today = _getIstanbulDateParts(offsetDays);
+    return {
+        startDate: `${today}T00:00:00+03:00`,
+        endDate: offsetDays === 0 ? _getIstanbulCurrentHourEnd() : `${today}T23:59:59+03:00`,
+        page: {
+            number: 1,
+            size: 100,
+            sort: { direction: "ASC", field: "date" }
+        }
+    };
+}
+
+function _getIstanbulDateParts(offsetDays = 0) {
+    const date = new Date();
+    if (Number.isFinite(offsetDays) && offsetDays !== 0) {
+        date.setUTCDate(date.getUTCDate() + offsetDays);
+    }
+
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Istanbul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+
+    const parts = formatter.formatToParts(date);
+    const year = parts.find((p) => p.type === "year")?.value ?? "1970";
+    const month = parts.find((p) => p.type === "month")?.value ?? "01";
+    const day = parts.find((p) => p.type === "day")?.value ?? "01";
+    return `${year}-${month}-${day}`;
+}
+
+function _getIstanbulCurrentHourEnd() {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Istanbul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hourCycle: "h23",
+        hour12: false
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find((p) => p.type === "year")?.value ?? "1970";
+    const month = parts.find((p) => p.type === "month")?.value ?? "01";
+    const day = parts.find((p) => p.type === "day")?.value ?? "01";
+    const hourPart = parts.find((p) => p.type === "hour")?.value ?? "00";
+    const hour = hourPart === "24" ? "00" : hourPart.padStart(2, "0");
+    return `${year}-${month}-${day}T${hour}:59:59+03:00`;
+}
+
+function _normaliseEpiasResponse(raw) {
+    const root = raw?.data ?? raw?.body ?? raw;
+    const items = Array.isArray(root?.items) ? root.items : Array.isArray(root) ? root : [];
+    const stats = root?.statistic ?? root?.statistics ?? root?.summary ?? {};
+
+    const latestItemPrice = _latestEpiasPrice(items);
+    const numericCandidates = [
+        latestItemPrice,
+        stats.ptfWeightedAvg,
+        stats.priceAvg,
+        root?.ptfWeightedAvg,
+        root?.priceAvg,
+        _averageEpiasPrices(items),
+        items[items.length - 1]?.price,
+        items[items.length - 1]?.ptf
+    ];
+
+    const basePrice = numericCandidates
+        .map(_toFiniteNumber)
+        .find((value) => Number.isFinite(value)) ?? null;
+
+    return {
+        basePrice,
+        unit: root?.unit ?? stats?.unit ?? "TL/MWh",
+        items
+    };
+}
+
+function _latestEpiasPrice(items) {
+    for (let i = items.length - 1; i >= 0; i -= 1) {
+        const price = _toFiniteNumber(items[i]?.price ?? items[i]?.ptf);
+        if (Number.isFinite(price)) return price;
+    }
+    return null;
+}
+
+function _averageEpiasPrices(items) {
+    const prices = items
+        .map((item) => _toFiniteNumber(item?.price ?? item?.ptf))
+        .filter((value) => Number.isFinite(value));
+
+    if (prices.length === 0) return null;
+    return prices.reduce((sum, value) => sum + value, 0) / prices.length;
+}
+
+function _toFiniteNumber(value) {
+    const parsed = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function _applyEpiasBasePrice(epias) {
+    if (!window.App.data.live || !Number.isFinite(epias?.basePrice)) return;
+
+    window.App.data.live.basePrice = epias.basePrice;
+    window.App.data.live.basePriceLabel = _formatEpiasPrice(epias.basePrice, epias.unit);
+
+    if (!Number.isFinite(window.App.data.live.revenue) && Number.isFinite(window.App.data.live.dailyProduction)) {
+        window.App.data.live.revenue = (window.App.data.live.dailyProduction / 1000) * epias.basePrice;
+    }
+}
+
+function _formatEpiasPrice(value, unit) {
+    const formatted = Number(value).toLocaleString("tr-TR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+
+    return `${formatted} ${unit ?? "TL/MWh"}`;
 }
