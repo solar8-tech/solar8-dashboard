@@ -24,8 +24,11 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
         _setText("w-temp", `${Math.round(data.main.temp)}°C`);
         _setText("w-wind", `${Math.round((data.wind?.speed ?? 0) * 3.6)} km/h`);
         _setText("w-hum", `%${data.main.humidity}`);
-        _setText("w-sunrise", _formatLocalTime(data.sys?.sunrise, data.timezone));
-        _setText("w-sunset", _formatLocalTime(data.sys?.sunset, data.timezone));
+        const sunrise = _formatLocalTime(data.sys?.sunrise, data.timezone);
+        const sunset = _formatLocalTime(data.sys?.sunset, data.timezone);
+        _setText("w-sunrise", sunrise);
+        _setText("w-sunset", sunset);
+        _storeSunWindow(sunrise, sunset);
 
         const main = data.weather?.[0]?.main?.toLowerCase() ?? "";
         let descKey = "data_weather_default";
@@ -47,6 +50,7 @@ window.fetchWeather = async function fetchWeather(lat, lon) {
         _setText("w-desc", t.weather_service_unavailable ?? "Service Unavailable");
         _setText("w-sunrise", "--");
         _setText("w-sunset", "--");
+        _storeSunWindow(null, null);
         _setImpactFallback(t);
     }
 };
@@ -95,6 +99,31 @@ function _formatLocalTime(unixSeconds, timezoneOffsetSeconds = 0) {
     const hours = String(localDate.getUTCHours()).padStart(2, "0");
     const minutes = String(localDate.getUTCMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
+}
+
+function _storeSunWindow(sunrise, sunset) {
+    window.App.data.weather = {
+        ...(window.App.data.weather || {}),
+        sunrise: sunrise || null,
+        sunset: sunset || null,
+        sunriseMinutes: _timeToMinutes(sunrise),
+        sunsetMinutes: _timeToMinutes(sunset)
+    };
+
+    if (window.App.charts?.main && typeof window.updateMainChart === "function") {
+        window.updateMainChart(window.App.data.live);
+    }
+}
+
+function _timeToMinutes(value) {
+    const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || "").trim());
+    if (!match) return null;
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours > 23 || minutes > 59) return null;
+
+    return hours * 60 + minutes;
 }
 
 function _setImpactState(isLowImpact, cloudiness, t) {

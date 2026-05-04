@@ -11,8 +11,10 @@ window.renderApp = function renderApp() {
         "power-normal-footer","power-compare-footer","power-device-warning",
         "daily-normal-footer","daily-device-warning","daily-bar",
         "system-status-dot","system-status-label",
-        "val-risk-title","val-risk-desc","alert-msg","risk-bar",
-        "alert-analysis-btn",
+        "risk-status-card","risk-status-glow","risk-status-icon",
+        "val-risk-title","val-risk-desc","risk-bar-track","risk-bar",
+        "critical-alert-card","critical-alert-icon","critical-alert-title",
+        "alert-msg","alert-analysis-btn",
         "val-rep-prod","val-rep-income","val-rep-carbon","val-rep-trees",
         "rep-collection-bar","rep-collection-pct",
         "t-eff","t-risk-dev","t-fault-panel","t-total-panels","t-detect"
@@ -61,9 +63,14 @@ window.renderApp = function renderApp() {
     if (el["alert-msg"]) {
         el["alert-msg"].innerText = window.localise(live.alertMsg) ?? "";
     }
+
+    const hasRiskAlert = Boolean(live.hasApiRiskInfo || (typeof live.riskLevel === "number" && live.riskLevel > 0));
+    const hasCriticalAlert = Boolean(live.hasApiAlertMessage);
+    _renderRiskStatus(el, hasRiskAlert);
+    _renderCriticalAlertStatus(el, hasCriticalAlert, t);
+
     if (el["alert-analysis-btn"]) {
-        const hasAlertMessage = Boolean((window.localise(live.alertMsg) ?? "").trim());
-        el["alert-analysis-btn"].classList.toggle("hidden", !hasAlertMessage);
+        el["alert-analysis-btn"].classList.toggle("hidden", !hasCriticalAlert);
     }
 
     if (el["risk-bar"] && typeof live.riskLevel === "number") {
@@ -126,6 +133,56 @@ function _toggleMetricFooter(el, isVisible, text) {
     if (!el) return;
     if (text !== undefined) el.innerText = text;
     el.classList.toggle("hidden", !isVisible);
+}
+
+function _renderRiskStatus(el, hasRiskAlert) {
+    _setClassState(el["risk-status-card"], hasRiskAlert, {
+        on: ["border-danger/20", "shadow-[0_0_30px_-10px_rgba(239,68,68,0.2)]"],
+        off: ["border-green-500/20", "shadow-[0_0_30px_-10px_rgba(16,185,129,0.18)]"]
+    });
+    _setClassState(el["risk-status-glow"], hasRiskAlert, {
+        on: ["bg-danger/20"],
+        off: ["bg-green-500/20"]
+    });
+    _setClassState(el["risk-status-icon"], hasRiskAlert, {
+        on: ["fa-triangle-exclamation", "text-danger", "animate-pulse"],
+        off: ["fa-circle-check", "text-green-400"]
+    });
+    _setClassState(el["risk-bar-track"], hasRiskAlert, {
+        on: ["bg-danger/10"],
+        off: ["bg-green-500/10"]
+    });
+    _setClassState(el["risk-bar"], hasRiskAlert, {
+        on: ["bg-danger"],
+        off: ["bg-green-500"]
+    });
+}
+
+function _renderCriticalAlertStatus(el, hasCriticalAlert, t) {
+    _setClassState(el["critical-alert-card"], hasCriticalAlert, {
+        on: ["border-danger/20"],
+        off: ["border-green-500/20"]
+    });
+    _setClassState(el["critical-alert-icon"], hasCriticalAlert, {
+        on: ["fa-circle-exclamation", "text-danger"],
+        off: ["fa-circle-check", "text-green-400"]
+    });
+    _setClassState(el["alert-analysis-btn"], hasCriticalAlert, {
+        on: ["text-danger"],
+        off: ["text-green-400"]
+    });
+
+    if (el["critical-alert-title"]) {
+        el["critical-alert-title"].innerText = hasCriticalAlert
+            ? (t.card_critical_alert ?? "--")
+            : (t.card_system_normal ?? t.card_critical_alert ?? "--");
+    }
+}
+
+function _setClassState(el, isOn, classes) {
+    if (!el) return;
+    el.classList.remove(...classes.on, ...classes.off);
+    el.classList.add(...(isOn ? classes.on : classes.off));
 }
 
 function _formatWholeTl(value) {

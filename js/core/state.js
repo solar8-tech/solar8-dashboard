@@ -273,8 +273,7 @@ window.handleApiError = function handleApiError(context, error) {
                 lastSeenAt: null,
                 ageMs: null
             },
-            hourlyLabels: previous.hourlyLabels ?? [],
-            hourlyData: previous.hourlyData ?? [],
+            hourlyProduction: previous.hourlyProduction ?? [],
             predictions: previous.predictions ?? [],
             activeFaults: previous.activeFaults ?? [],
             projection: previous.projection ?? { labels: [], p50: [], p10: [] }
