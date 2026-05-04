@@ -235,6 +235,9 @@ function _mapDashboardSummaryPayload(api) {
     const basePriceUnit = cards.base_price_unit ?? cards.basePriceUnit ?? "TL/MWh";
     const deviceMetricSignature = window.Live?.buildMetricSignature?.({ instantPower, dailyProduction, revenue });
     const dataFreshness = window.Live?.resolveFreshness?.(api, cards, deviceMetricSignature) ?? { isActive: true, reason: "unchecked" };
+    const hourlyProduction = Array.isArray(cards.hourlyProduction ?? api.hourlyProduction)
+        ? (cards.hourlyProduction ?? api.hourlyProduction)
+        : [];
 
     window.App.data.live = {
         instantPower,
@@ -244,8 +247,9 @@ function _mapDashboardSummaryPayload(api) {
         dataFreshness,
         basePrice,
         basePriceLabel: Number.isFinite(basePrice) ? _formatEpiasPrice(basePrice, basePriceUnit) : null,
-        hourlyLabels: [],
-        hourlyData: [],
+        hourlyProduction,
+        hasApiRiskInfo: Boolean(apiRiskTitle || apiRiskDesc),
+        hasApiAlertMessage: Boolean(apiAlertMsg),
         riskTitle: apiRiskTitle ?? { tr: "Stabil", en: "Stable" },
         riskLevel: activeFaultCount > 0 ? Math.min(activeFaultCount * 20, 100) : 0,
         riskDesc: apiRiskDesc ?? { tr: "Aktif arıza kaydı bulunmuyor.", en: "No active fault records." },

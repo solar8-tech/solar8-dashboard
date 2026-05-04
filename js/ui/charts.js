@@ -16,9 +16,29 @@ window.initCharts = function initCharts() {
 
     _buildMainChart(live);
     _buildProjectionChart(live);
+    _bindHourlyRefresh();
 
     const loading = document.getElementById("chart-loading");
     if (loading) loading.style.display = "none";
+};
+
+function _bindHourlyRefresh() {
+    const button = document.getElementById("refresh-hourly");
+    if (!button || button.dataset.bound === "true") return;
+
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => {
+        window.fetchDashboardFromAWS?.();
+    });
+}
+
+window.updateMainChart = function updateMainChart(live = window.App.data.live) {
+    if (!live || !window.App.charts.main) return;
+
+    const series = _buildSunWindowSeries(live);
+    window.App.charts.main.data.labels = series.labels;
+    window.App.charts.main.data.datasets[0].data = series.data;
+    window.App.charts.main.update();
 };
 
 window.updateReportChart = function updateReportChart(chartData) {
@@ -122,19 +142,22 @@ function _buildMainChart(live) {
     gradient.addColorStop(0, "rgba(245,158,11,0.5)");
     gradient.addColorStop(1, "rgba(245,158,11,0.0)");
 
+    const series = _buildSunWindowSeries(live);
+
     window.App.charts.main = new Chart(ctx, {
         type: "line",
         data: {
-            labels  : live.hourlyLabels ?? [],
+            labels  : series.labels,
             datasets: [{
                 label          : `${t.data_production} (MWh)`,
-                data           : live.hourlyData ?? [],
+                data           : series.data,
                 backgroundColor: gradient,
                 borderColor    : "#F59E0B",
                 borderWidth    : 2,
                 fill           : true,
                 tension        : 0.4,
                 pointRadius    : 0,
+                spanGaps       : true,
                 pointHoverRadius: 6
             }]
         },
@@ -153,6 +176,31 @@ function _buildMainChart(live) {
             }
         }
     });
+}
+
+function _buildSunWindowSeries(live) {
+    const labels = _buildHourlyLabels();
+    const valuesByTime = new Map(
+        (live.hourlyProduction ?? []).map(item => [item.time, Number(item.productionMwh)])
+    );
+
+    return {
+        labels,
+        data: labels.map(label => Number.isFinite(valuesByTime.get(label)) ? valuesByTime.get(label) : null)
+    };
+}
+
+function _buildHourlyLabels() {
+    const weather = window.App.data.weather || {};
+    const start = Math.floor((weather.sunriseMinutes ?? 6 * 60) / 60);
+    const end = Math.ceil((weather.sunsetMinutes ?? 20 * 60) / 60);
+    const labels = [];
+
+    for (let hour = start; hour <= end; hour += 1) {
+        labels.push(`${String(hour).padStart(2, "0")}:00`);
+    }
+
+    return labels;
 }
 
 function _buildProjectionChart(live) {
